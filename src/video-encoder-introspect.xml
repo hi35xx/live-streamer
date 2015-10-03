@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<node name="/ipcam/Media/VideoEncoder">
+  <interface name="ipcam.Media.VideoEncoder">
+    <property name="Encoding" type="u" access="read"/>
+    <property name="Resolution" type="s" access="readwrite"/>
+  </interface>
+  <interface name="ipcam.Media.VideoEncoder.RateControl">
+    <property name="RateControlMode" type="u" access="readwrite"/>
+    <property name="FrameRate" type="u" access="readwrite"/>
+    <property name="EncodingInterval" type="u" access="readwrite"/>
+    <property name="Bitrate" type="u" access="readwrite"/>
+  </interface>
+  <interface name="ipcam.Media.VideoEncoder.H264">
+    <property name="H264Profile" type="u" access="readwrite"/>
+    <property name="GovLength" type="u" access="readwrite"/>
+  </interface>
+</node>
