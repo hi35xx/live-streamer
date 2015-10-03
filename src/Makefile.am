@@ -62,6 +62,10 @@ CLEANFILES = $(BUILT_SOURCES)
 dist-hook:
 	cd $(distdir); rm -f $(BUILT_SOURCES)
 
+dbuspolicydir=$(sysconfdir)/dbus-1/system.d
+dbuspolicy_DATA = \
+	live-streamer.conf
+
 EXTRA_DIST = \
 	video-source-introspect.xml \
 	video-encoder-introspect.xml
