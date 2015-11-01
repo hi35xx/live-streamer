@@ -25,21 +25,30 @@
 #include "ipcam-media.h"
 #include "video-source-server-glue.h"
 
+using namespace Ipcam::Interface;
+
 class IpcamVideoSource :
   public ipcam::Media::VideoSource_adaptor,
   public ipcam::Media::VideoSource::Imaging_adaptor,
+  public ipcam::Media::VideoSource::Imaging::Backlight_adaptor,
+  public ipcam::Media::VideoSource::Imaging::Focus_adaptor,
+  public ipcam::Media::VideoSource::Imaging::Exposure_adaptor,
+  public ipcam::Media::VideoSource::Imaging::WhiteBalance_adaptor,
+  public ipcam::Media::VideoSource::Imaging::WideDynamicRange_adaptor,
   public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
   public DBus::IntrospectableAdaptor,
   public DBus::PropertiesAdaptor,
   public DBus::ObjectAdaptor
 {
 public:
-	IpcamVideoSource(DBus::Connection &connection, std::string obj_path, Ipcam::Media::VideoSource *video_source);
+	IpcamVideoSource(DBus::Connection &connection, std::string obj_path, IVideoSource *video_source);
 
+	void on_get_property
+		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-    Ipcam::Media::VideoSource *_video_source;
+    IVideoSource *_video_source;
 };
 
 #endif // _IPCAM_VIDEO_SOURCE_H_

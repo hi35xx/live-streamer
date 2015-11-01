@@ -32,12 +32,18 @@ live_streamer_SOURCES = \
 	dbusxx-libev-integration.h \
 	video-source-server-glue.h \
 	video-encoder-server-glue.h \
+	audio-source-server-glue.h \
+	audio-encoder-server-glue.h \
 	ipcam-media.cpp \
 	ipcam-media.h \
 	ipcam-video-encoder.cpp \
 	ipcam-video-encoder.h \
 	ipcam-video-source.cpp \
-	ipcam-video-source.h
+	ipcam-video-source.h \
+	ipcam-audio-encoder.cpp \
+	ipcam-audio-encoder.h \
+	ipcam-audio-source.cpp \
+	ipcam-audio-source.h
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) \
 	$(DBUSXX_LIBS) \
@@ -52,10 +58,16 @@ video-source-server-glue.h: video-source-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@
 video-encoder-server-glue.h: video-encoder-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@
+audio-source-server-glue.h: audio-source-introspect.xml
+	dbusxx-xml2cpp $^ --adaptor=$@
+audio-encoder-server-glue.h: audio-encoder-introspect.xml
+	dbusxx-xml2cpp $^ --adaptor=$@
 
 BUILT_SOURCES = \
 	video-source-server-glue.h \
-	video-encoder-server-glue.h
+	video-encoder-server-glue.h \
+	audio-source-server-glue.h \
+	audio-encoder-server-glue.h
 
 CLEANFILES = $(BUILT_SOURCES)
 
@@ -68,4 +80,6 @@ dbuspolicy_DATA = \
 
 EXTRA_DIST = \
 	video-source-introspect.xml \
-	video-encoder-introspect.xml
+	video-encoder-introspect.xml \
+	audio-source-introspect.xml \
+	audio-encoder-introspect.xml

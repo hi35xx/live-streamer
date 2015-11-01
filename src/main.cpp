@@ -38,6 +38,8 @@
 #include "dbusxx-libev-integration.h"
 #include "ipcam-video-source.h"
 #include "ipcam-video-encoder.h"
+#include "ipcam-audio-source.h"
+#include "ipcam-audio-encoder.h"
 
 #ifdef HAVE_HIMPP_SUPPORT
 #include <himpp/himpp-media.h>
@@ -49,6 +51,8 @@ ev::default_loop mainloop;
 static const char *IPCAM_SERVER_NAME = "ipcam.Media";
 static const char *VIDEO_SOURCE_SERVER_PATH = "/ipcam/Media/VideoSource";
 static const char *VIDEO_ENCODER_SERVER_PATH = "/ipcam/Media/VideoEncoder";
+static const char *AUDIO_SOURCE_SERVER_PATH = "/ipcam/Media/AudioSource";
+static const char *AUDIO_ENCODER_SERVER_PATH = "/ipcam/Media/AudioEncoder";
 
 static const char* sensor_type = "ov9712";
 static int rtsp_port = 554;
@@ -124,8 +128,10 @@ std::vector<std::string> split(const std::string &s, char delim)
 }
 
 static DBus::Ev::BusDispatcher dispatcher;
-static std::list<IpcamVideoSource> dbus_vs_list;
-static std::list<IpcamH264VideoEncoder> dbus_ve_list;
+static std::list<IpcamVideoSource> dbus_vsrc_list;
+static std::list<IpcamH264VideoEncoder> dbus_venc_list;
+static std::list<IpcamAudioSource> dbus_asrc_list;
+static std::list<IpcamAudioEncoder> dbus_aenc_list;
 
 int main(int argc, char *argv[])
 {
@@ -241,16 +247,30 @@ int main(int argc, char *argv[])
 	// register DBus object 'ipcam.Media.VideoSource'
 	std::list<HimppVideoSource*> vsl = media.getVideoSourceList();
 	for (auto vs : vsl) {
-		int i = dbus_vs_list.size();
+		int i = dbus_vsrc_list.size();
 		std::string obj_path = std::string(VIDEO_SOURCE_SERVER_PATH) + std::to_string(i);
-		dbus_vs_list.emplace_back(conn, obj_path, (HimppVideoSource*)vs);
+		dbus_vsrc_list.emplace_back(conn, obj_path, (HimppVideoSource*)vs);
 	}
 	// register DBus object 'ipcam.Media.VideoEncoder'
 	std::list<HimppVideoEncoder*> vel = media.getVideoEncoderList();
 	for (auto ve : vel) {
-		int i = dbus_ve_list.size();
+		int i = dbus_venc_list.size();
 		std::string obj_path = std::string(VIDEO_ENCODER_SERVER_PATH) + std::to_string(i);
-		dbus_ve_list.emplace_back(conn, obj_path, (HimppVideoEncoder*)ve);
+		dbus_venc_list.emplace_back(conn, obj_path, (HimppVideoEncoder*)ve);
+	}
+	// register DBus object 'ipcam.Media.AudioSource'
+	std::list<HimppAudioSource*> asl = media.getAudioSourceList();
+	for (auto as : asl) {
+		int i = dbus_asrc_list.size();
+		std::string obj_path = std::string(AUDIO_SOURCE_SERVER_PATH) + std::to_string(i);
+		dbus_asrc_list.emplace_back(conn, obj_path, (HimppAudioSource*)as);
+	}
+	// register DBus object 'ipcam.Media.AudioEncoder'
+	std::list<HimppAudioEncoder*> ael = media.getAudioEncoderList();
+	for (auto ae : ael) {
+		int i = dbus_aenc_list.size();
+		std::string obj_path = std::string(AUDIO_ENCODER_SERVER_PATH) + std::to_string(i);
+		dbus_aenc_list.emplace_back(conn, obj_path, (HimppAudioEncoder*)ae);
 	}
 #endif
 
@@ -262,8 +282,10 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	dbus_vs_list.clear();
-	dbus_ve_list.clear();
+	dbus_vsrc_list.clear();
+	dbus_venc_list.clear();
+	dbus_asrc_list.clear();
+	dbus_aenc_list.clear();
 
 	Medium::close(rtspServer);
 

@@ -186,7 +186,7 @@ bool HimppVideoISP::enableObject()
     }
 
     if (HI_MPI_ISP_SetImageAttr(pstImageAttr) != HI_SUCCESS) {
-        //goto err_exit_isp;
+        goto err_exit_isp;
     }
 
     if (HI_MPI_ISP_SetInputTiming(pstInputTiming) != HI_SUCCESS) {
@@ -237,6 +237,90 @@ uint32_t HimppVideoISP::getFramerate()
 {
     ISP_IMAGE_ATTR_S *attr = *video_sensor;
     return attr->u16FrameRate;
+}
+
+bool HimppVideoISP::setMinExpTime(uint32_t value)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        attrex.u32ExpTimeMin = value;
+        HI_MPI_ISP_SetAEAttrEx(&attrex);
+        if (HI_MPI_ISP_GetAEAttrEx(&attrex) != HI_SUCCESS)
+            return true;
+    }
+    return false;
+}
+
+uint32_t HimppVideoISP::getMinExpTime(void)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        return attrex.u32ExpTimeMin;
+    }
+    return (uint32_t)-1;
+}
+
+bool HimppVideoISP::setMaxExpTime(uint32_t value)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        attrex.u32ExpTimeMax = value;
+        HI_MPI_ISP_SetAEAttrEx(&attrex);
+        if (HI_MPI_ISP_GetAEAttrEx(&attrex) != HI_SUCCESS)
+            return true;
+    }
+    return false;
+}
+
+uint32_t HimppVideoISP::getMaxExpTime(void)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        return attrex.u32ExpTimeMax;
+    }
+    return (uint32_t)-1;
+}
+
+bool HimppVideoISP::setMinGain(uint32_t value)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        attrex.u32AGainMin = value;
+        HI_MPI_ISP_SetAEAttrEx(&attrex);
+        if (HI_MPI_ISP_GetAEAttrEx(&attrex) != HI_SUCCESS)
+            return true;
+    }
+    return false;
+}
+
+uint32_t HimppVideoISP::getMinGain(void)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        return attrex.u32AGainMin;
+    }
+    return (uint32_t)-1;
+}
+
+bool HimppVideoISP::setMaxGain(uint32_t value)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        attrex.u32AGainMax = value;
+        HI_MPI_ISP_SetAEAttrEx(&attrex);
+        if (HI_MPI_ISP_GetAEAttrEx(&attrex) != HI_SUCCESS)
+            return true;
+    }
+    return false;
+}
+
+uint32_t HimppVideoISP::getMaxGain(void)
+{
+    ISP_AE_ATTR_EX_S attrex;
+    if (HI_MPI_ISP_GetAEAttrEx(&attrex) == HI_SUCCESS) {
+        return attrex.u32AGainMax;
+    }
+    return (uint32_t)-1;
 }
 
 HimppVideoISP::operator MPP_CHN_S* ()

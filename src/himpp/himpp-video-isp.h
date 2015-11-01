@@ -42,13 +42,28 @@ class HimppVideoISP: public HimppVideoObject
 public:
     HimppVideoISP(HimppVideoSensor *sensor);
     ~HimppVideoISP();
-protected:
-    bool enableObject();
-    bool disableObject();
+
     bool setResolution(ImageResolution &res);
     ImageResolution getResolution();
     bool setFramerate(uint32_t fps);
     uint32_t getFramerate();
+    bool setMinExpTime(uint32_t value);
+    uint32_t getMinExpTime(void);
+    bool setMaxExpTime(uint32_t value);
+    uint32_t getMaxExpTime(void);
+    bool setMinGain(uint32_t value);
+    uint32_t getMinGain(void);
+    bool setMaxGain(uint32_t value);
+    uint32_t getMaxGain(void);
+#if 0
+    bool setExpTime(uint32_t value);
+    uint32_t getExpTime(void);
+    bool setGain(uint32_t value);
+    uint32_t getGain(void);
+#endif
+protected:
+    bool enableObject();
+    bool disableObject();
     operator MPP_CHN_S* ();
 private:
     HimppVideoSensor  *video_sensor;

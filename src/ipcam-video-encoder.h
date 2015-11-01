@@ -21,8 +21,11 @@
 #define _IPCAM_VIDEO_ENCODER_H_
 
 #include <dbus-c++/dbus.h>
+#include <dbus-c++/error.h>
 #include "ipcam-media.h"
 #include "video-encoder-server-glue.h"
+
+using namespace Ipcam::Interface;
 
 class IpcamVideoEncoder : 
   public ipcam::Media::VideoEncoder_adaptor,
@@ -32,12 +35,14 @@ class IpcamVideoEncoder :
   public DBus::ObjectAdaptor
 {
 public:
-    IpcamVideoEncoder(DBus::Connection &connection, std::string obj_path, Ipcam::Media::VideoEncoder *encoder);
+    IpcamVideoEncoder(DBus::Connection &connection, std::string obj_path, IVideoEncoder *encoder);
 
+	void on_get_property
+		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-    Ipcam::Media::VideoEncoder *_video_encoder;
+    IVideoEncoder *_video_encoder;
 };
 
 class IpcamH264VideoEncoder : 
@@ -45,8 +50,10 @@ class IpcamH264VideoEncoder :
   public ipcam::Media::VideoEncoder::H264_adaptor
 {
 public:
-    IpcamH264VideoEncoder(DBus::Connection &connection, std::string obj_path, Ipcam::Media::H264VideoEncoder *encoder);
+    IpcamH264VideoEncoder(DBus::Connection &connection, std::string obj_path, IH264VideoEncoder *encoder);
 
+	void on_get_property
+		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 };

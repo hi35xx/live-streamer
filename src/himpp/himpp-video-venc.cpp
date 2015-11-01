@@ -23,10 +23,10 @@
 
 HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN chn)
     : HimppVideoObject(source), _grpid(grp), _chnid(chn),
-      _encoding(H264), _rcmode(VBR),
+      _encoding(IVideoEncoder::H264), _rcmode(IVideoEncoder::VBR),
       _resolution(source->getResolution()),
       _framerate(source->getFramerate()),
-      _h264profile(MAIN)
+      _h264profile(IH264VideoEncoder::MAIN)
 {
     _bitrate = 2048;
     _gop = 30;
@@ -37,19 +37,19 @@ HimppVencChan::~HimppVencChan()
 {
 }
 
-bool HimppVencChan::setEncoding(VIDEO_ENCODING encoding)
+bool HimppVencChan::setEncoding(IVideoEncoder::EncodingType encoding)
 {
     _encoding = encoding;
 
     return true;
 }
 
-VIDEO_ENCODING HimppVencChan::getEncoding()
+IVideoEncoder::EncodingType HimppVencChan::getEncoding()
 {
     return _encoding;
 }
 
-bool HimppVencChan::setH264Profile(H264_PROFILE profile)
+bool HimppVencChan::setH264Profile(IH264VideoEncoder::H264Profile profile)
 {
     _h264profile = profile;
 
@@ -63,12 +63,12 @@ bool HimppVencChan::setH264Profile(H264_PROFILE profile)
     return true;
 }
 
-H264_PROFILE HimppVencChan::getProfile()
+IH264VideoEncoder::H264Profile HimppVencChan::getProfile()
 {
     return _h264profile;
 }
 
-bool HimppVencChan::setRcMode(RC_MODE mode)
+bool HimppVencChan::setRcMode(IH264VideoEncoder::RateCtrlMode mode)
 {
     _rcmode = mode;
 
@@ -82,7 +82,7 @@ bool HimppVencChan::setRcMode(RC_MODE mode)
     return true;
 }
 
-RC_MODE HimppVencChan::getRcMode()
+IH264VideoEncoder::RateCtrlMode HimppVencChan::getRcMode()
 {
     return _rcmode;
 }
@@ -194,7 +194,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
     stattime = stattime > 0 ? stattime : 1;
 
     switch (_encoding) {
-    case H264:
+    case IVideoEncoder::H264:
         attr.stVeAttr.enType = PT_H264;
         attr.stVeAttr.stAttrH264e.u32MaxPicWidth = _resolution.Width;
         attr.stVeAttr.stAttrH264e.u32MaxPicHeight = _resolution.Height;
@@ -209,7 +209,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
         attr.stVeAttr.stAttrH264e.bVIField = HI_FALSE;
         // Rate Control Attribute
         switch (_rcmode) {
-        case CBR:
+        case IVideoEncoder::CBR:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_H264CBRv2;
             attr.stRcAttr.stAttrH264Cbr.u32Gop = _gop;
             attr.stRcAttr.stAttrH264Cbr.u32StatTime = stattime;
@@ -218,7 +218,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.stAttrH264Cbr.u32BitRate = _bitrate;
             attr.stRcAttr.stAttrH264Cbr.u32FluctuateLevel = 0;
             break;
-        case VBR:
+        case IVideoEncoder::VBR:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_H264VBRv2;
             attr.stRcAttr.stAttrH264Vbr.u32Gop = _gop;
             attr.stRcAttr.stAttrH264Vbr.u32StatTime = stattime;
@@ -228,7 +228,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.stAttrH264Vbr.u32MaxQp = 45;
             attr.stRcAttr.stAttrH264Vbr.u32MaxBitRate = _bitrate;
             break;
-        case FIXQP:
+        case IVideoEncoder::FIXQP:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_H264FIXQP;
             attr.stRcAttr.stAttrH264FixQp.u32Gop = _gop;
             attr.stRcAttr.stAttrH264FixQp.u32ViFrmRate = videoSource()->getFramerate();
@@ -241,7 +241,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             return false;
         }
         break;
-    case MJPEG:
+    case IVideoEncoder::MJPEG:
         attr.stVeAttr.enType = PT_MJPEG;
         attr.stVeAttr.stAttrMjpeg.u32MaxPicWidth = _resolution.Width;
         attr.stVeAttr.stAttrMjpeg.u32MaxPicHeight = _resolution.Height;
@@ -254,7 +254,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
         attr.stVeAttr.stAttrMjpeg.u32Priority = 0;
         // Rate Control Attribute
         switch (_rcmode) {
-        case CBR:
+        case IVideoEncoder::CBR:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGCBR;
             attr.stRcAttr.stAttrMjpegeCbr.u32StatTime = 1;
             attr.stRcAttr.stAttrMjpegeCbr.u32ViFrmRate = videoSource()->getFramerate();
@@ -262,7 +262,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.stAttrMjpegeCbr.u32BitRate = _bitrate;
             attr.stRcAttr.stAttrMjpegeCbr.u32FluctuateLevel = 0;
             break;
-        case VBR:
+        case IVideoEncoder::VBR:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGVBR;
             attr.stRcAttr.stAttrMjpegeVbr.u32StatTime = 1;
             attr.stRcAttr.stAttrMjpegeVbr.u32ViFrmRate = videoSource()->getFramerate();
@@ -270,7 +270,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.stAttrMjpegeVbr.u32MinQfactor = 50;
             attr.stRcAttr.stAttrMjpegeVbr.u32MaxQfactor = 95;
             break;
-        case FIXQP:
+        case IVideoEncoder::FIXQP:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGFIXQP;
             attr.stRcAttr.stAttrMjpegeFixQp.u32ViFrmRate = videoSource()->getFramerate();
             attr.stRcAttr.stAttrMjpegeFixQp.fr32TargetFrmRate = _framerate;
@@ -281,7 +281,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             return false;
         }
         break;
-    case JPEG:
+    case IVideoEncoder::JPEG:
         attr.stVeAttr.enType = PT_JPEG;
         attr.stVeAttr.stAttrJpeg.u32PicWidth = _resolution.Width;
         attr.stVeAttr.stAttrJpeg.u32PicHeight = _resolution.Height;

@@ -108,7 +108,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_live_streamer_OBJECTS = main.$(OBJEXT) EvUsageEnvironment.$(OBJEXT) \
 	DynamicRTSPServer.$(OBJEXT) dbusxx-libev-integration.$(OBJEXT) \
 	ipcam-media.$(OBJEXT) ipcam-video-encoder.$(OBJEXT) \
-	ipcam-video-source.$(OBJEXT)
+	ipcam-video-source.$(OBJEXT) ipcam-audio-encoder.$(OBJEXT) \
+	ipcam-audio-source.$(OBJEXT)
 live_streamer_OBJECTS = $(am_live_streamer_OBJECTS)
 @ENABLE_HIMPP_TRUE@live_streamer_DEPENDENCIES =  \
 @ENABLE_HIMPP_TRUE@	$(builddir)/himpp/libhimpp-media.la
@@ -426,12 +427,18 @@ live_streamer_SOURCES = \
 	dbusxx-libev-integration.h \
 	video-source-server-glue.h \
 	video-encoder-server-glue.h \
+	audio-source-server-glue.h \
+	audio-encoder-server-glue.h \
 	ipcam-media.cpp \
 	ipcam-media.h \
 	ipcam-video-encoder.cpp \
 	ipcam-video-encoder.h \
 	ipcam-video-source.cpp \
-	ipcam-video-source.h
+	ipcam-video-source.h \
+	ipcam-audio-encoder.cpp \
+	ipcam-audio-encoder.h \
+	ipcam-audio-source.cpp \
+	ipcam-audio-source.h
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) \
 	$(DBUSXX_LIBS) \
@@ -441,7 +448,9 @@ live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) \
 @ENABLE_HIMPP_TRUE@live_streamer_LDADD = $(builddir)/himpp/libhimpp-media.la
 BUILT_SOURCES = \
 	video-source-server-glue.h \
-	video-encoder-server-glue.h
+	video-encoder-server-glue.h \
+	audio-source-server-glue.h \
+	audio-encoder-server-glue.h
 
 CLEANFILES = $(BUILT_SOURCES)
 dbuspolicydir = $(sysconfdir)/dbus-1/system.d
@@ -450,7 +459,9 @@ dbuspolicy_DATA = \
 
 EXTRA_DIST = \
 	video-source-introspect.xml \
-	video-encoder-introspect.xml
+	video-encoder-introspect.xml \
+	audio-source-introspect.xml \
+	audio-encoder-introspect.xml
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -549,6 +560,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicRTSPServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EvUsageEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbusxx-libev-integration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-audio-encoder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-audio-source.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-media.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-video-encoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-video-source.Po@am__quote@
@@ -899,6 +912,10 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dbuspolicyDATA
 video-source-server-glue.h: video-source-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@
 video-encoder-server-glue.h: video-encoder-introspect.xml
+	dbusxx-xml2cpp $^ --adaptor=$@
+audio-source-server-glue.h: audio-source-introspect.xml
+	dbusxx-xml2cpp $^ --adaptor=$@
+audio-encoder-server-glue.h: audio-encoder-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@
 
 dist-hook:

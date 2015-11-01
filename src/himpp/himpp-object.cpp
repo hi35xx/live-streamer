@@ -44,9 +44,14 @@ bool HimppObject::enable()
 
         if (!enableObject()) {
             enableCount--;
+
+            if (_source)
+                _source->disable();
+
             return false;
         }
     }
+
     return true;
 }
 
@@ -67,6 +72,7 @@ bool HimppObject::disable()
             }
         }
     }
+
     return true;
 }
 

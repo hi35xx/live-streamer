@@ -25,25 +25,21 @@
 
 #include <ipcam-media.h>
 
-using namespace Ipcam::Media;
+using namespace Ipcam::Interface;
 
 class HimppVencChan: public HimppVideoObject 
 {
 public:
-    //enum ENCODING { H264, MJPEG, JPEG, MPEG4 };
-    //enum RC_MODE { CBR, VBR, FIXQP };
-    //enum H264PROFILE { BASELINE = 0, MAIN = 1, HIGH = 2, SVC_T = 3 };
-
     HimppVencChan(HimppVideoObject *, VENC_GRP, VENC_CHN);
     ~HimppVencChan();
 
     // virtual functions
-    bool setEncoding(VIDEO_ENCODING);
-    VIDEO_ENCODING getEncoding();
-    bool setH264Profile(H264_PROFILE);
-    H264_PROFILE getProfile();
-    bool setRcMode(RC_MODE);
-    RC_MODE getRcMode();
+    bool setEncoding(IVideoEncoder::EncodingType);
+    IVideoEncoder::EncodingType getEncoding();
+    bool setH264Profile(IH264VideoEncoder::H264Profile);
+    IH264VideoEncoder::H264Profile getProfile();
+    bool setRcMode(IVideoEncoder::RateCtrlMode);
+    IVideoEncoder::RateCtrlMode getRcMode();
     bool setBitrate(uint32_t);
     uint32_t getBitrate();
     bool setGop(uint32_t);
@@ -62,16 +58,17 @@ protected:
     bool enableObject();
     bool disableObject();
 private:
-    VENC_GRP            _grpid;
-    VENC_CHN            _chnid;
-    VIDEO_ENCODING      _encoding;
-    H264_PROFILE         _h264profile;
-    ImageResolution     _resolution;
-    uint32_t            _framerate;
-    RC_MODE             _rcmode;
-    uint32_t            _bitrate;
-    uint32_t            _gop;
-    GROUP_CROP_CFG_S    _crop_cfg;
+    MPP_CHN_S                   _mpp_chn;
+    VENC_GRP                    _grpid;
+    VENC_CHN                    _chnid;
+    IVideoEncoder::EncodingType _encoding;
+    IH264VideoEncoder::H264Profile _h264profile;
+    ImageResolution             _resolution;
+    uint32_t                    _framerate;
+    IVideoEncoder::RateCtrlMode _rcmode;
+    uint32_t                    _bitrate;
+    uint32_t                    _gop;
+    GROUP_CROP_CFG_S            _crop_cfg;
 
     bool prepareVencChnAttr(VENC_CHN_ATTR_S &attr);
 };

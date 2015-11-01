@@ -26,16 +26,17 @@
 #include <mpi_venc.h>
 #include <mpi_sys.h>
 
+#include <SimpleRTPSink.hh>
 #include <H264VideoRTPSink.hh>
 #include <H264VideoStreamDiscreteFramer.hh>
 
 #include "HimppStreamInput.hh"
 
 
-class HimppStreamSource: public FramedSource
+class HimppVideoStreamSource: public FramedSource
 {
 public:
-    static HimppStreamSource* createNew(UsageEnvironment& env, HimppVideoEncoder& encoder);
+    static HimppVideoStreamSource* createNew(UsageEnvironment& env, HimppVideoEncoder& encoder);
     //static unsigned getRefCount();
 
 public:
@@ -45,9 +46,9 @@ public:
     // You can, however, redefine this to be a non-static member variable.
 
 protected:
-    HimppStreamSource(UsageEnvironment& env, HimppVideoEncoder& encoder);
+    HimppVideoStreamSource(UsageEnvironment& env, HimppVideoEncoder& encoder);
     // called only by createNew(), or by subclass constructors
-    virtual ~HimppStreamSource();
+    virtual ~HimppVideoStreamSource();
 
 private:
     // redefined virtual functions:
@@ -64,25 +65,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-// HimppStreamSource
+// HimppVideoStreamSource
 //////////////////////////////////////////////////////////////////////////////
 
-HimppStreamSource*
-HimppStreamSource::createNew(UsageEnvironment& env, HimppVideoEncoder& encoder)
+HimppVideoStreamSource*
+HimppVideoStreamSource::createNew(UsageEnvironment& env, HimppVideoEncoder& encoder)
 {
-    return new HimppStreamSource(env, encoder);
+    return new HimppVideoStreamSource(env, encoder);
 }
 
-void HimppStreamSource::backgroundHandler(void *clientData, int mask)
+void HimppVideoStreamSource::backgroundHandler(void *clientData, int mask)
 {
-    HimppStreamSource *stream_source = (HimppStreamSource *)clientData; 
+    HimppVideoStreamSource *stream_source = (HimppVideoStreamSource *)clientData; 
 
     //stream_source->envir().taskScheduler().triggerEvent(stream_source->eventTriggerId, stream_source);
 
     stream_source->deliverFrame();
 }
 
-HimppStreamSource::HimppStreamSource(UsageEnvironment& env, HimppVideoEncoder& encoder)
+HimppVideoStreamSource::HimppVideoStreamSource(UsageEnvironment& env, HimppVideoEncoder& encoder)
 : FramedSource(env), fVideoEncoder(encoder), /*eventTriggerId(0),*/
   firstDeliverFrame(True)
 {
@@ -108,7 +109,7 @@ HimppStreamSource::HimppStreamSource(UsageEnvironment& env, HimppVideoEncoder& e
     //eventTriggerId = envir().taskScheduler().createEventTrigger(deliverFrame0);
 }
 
-HimppStreamSource::~HimppStreamSource() {
+HimppVideoStreamSource::~HimppVideoStreamSource() {
     // Any instance-specific 'destruction' (i.e., resetting) of the device would be done here:
     envir().taskScheduler().disableBackgroundHandling(fVideoEncoder.fileDescriptor());
 
@@ -118,7 +119,7 @@ HimppStreamSource::~HimppStreamSource() {
     fVideoEncoder.disable();
 }
 
-void HimppStreamSource::doGetNextFrame() {
+void HimppVideoStreamSource::doGetNextFrame() {
     // This function is called (by our 'downstream' object) when it asks for new data.
 
     // Note: If, for some reason, the source device stops being readable (e.g., it gets closed), then you do the following:
@@ -137,13 +138,13 @@ void HimppStreamSource::doGetNextFrame() {
 }
 
 #if 0
-void HimppStreamSource::deliverFrame0(void* clientData) {
+void HimppVideoStreamSource::deliverFrame0(void* clientData) {
     if (clientData)
-        ((HimppStreamSource*)clientData)->deliverFrame();
+        ((HimppVideoStreamSource*)clientData)->deliverFrame();
 }
 #endif
 
-void HimppStreamSource::deliverFrame() {
+void HimppVideoStreamSource::deliverFrame() {
     // This function is called when new frame data is available from the device.
     // We deliver this data by copying it to the 'downstream' object, using the following parameters (class members):
     // 'in' parameters (these should *not* be modified by this function):
@@ -191,8 +192,6 @@ void HimppStreamSource::deliverFrame() {
         return;
     }
 
-    //fPresentationTime.tv_sec = stStream.pstPack[0].u64PTS / 1000000UL;
-    //fPresentationTime.tv_usec = stStream.pstPack[0].u64PTS % 1000000UL;
     gettimeofday(&fPresentationTime, NULL);
 
     fFrameSize = 0;
@@ -237,35 +236,35 @@ void HimppStreamSource::deliverFrame() {
 
 
 //////////////////////////////////////////////////////////////////////////////
-// HimppServerMediaSubsession
+// HimppVideoServerMediaSubsession
 //////////////////////////////////////////////////////////////////////////////
 
 
-HimppServerMediaSubsession*
-HimppServerMediaSubsession::createNew(UsageEnvironment& env, HimppVideoEncoder& encoder)
+HimppVideoServerMediaSubsession*
+HimppVideoServerMediaSubsession::createNew(UsageEnvironment& env, HimppVideoEncoder& encoder)
 {
-  return new HimppServerMediaSubsession(env, encoder);
+  return new HimppVideoServerMediaSubsession(env, encoder);
 }
 
-HimppServerMediaSubsession
-::HimppServerMediaSubsession(UsageEnvironment& env, HimppVideoEncoder& encoder)
+HimppVideoServerMediaSubsession
+::HimppVideoServerMediaSubsession(UsageEnvironment& env, HimppVideoEncoder& encoder)
     : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
       fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL),
       fVideoEncoder(encoder)
 {
 }
 
-HimppServerMediaSubsession::~HimppServerMediaSubsession()
+HimppVideoServerMediaSubsession::~HimppVideoServerMediaSubsession()
 {
     delete[] fAuxSDPLine;
 }
 
 static void afterPlayingDummy(void* clientData) {
-    HimppServerMediaSubsession* subsess = (HimppServerMediaSubsession*)clientData;
+    HimppVideoServerMediaSubsession* subsess = (HimppVideoServerMediaSubsession*)clientData;
     subsess->afterPlayingDummy1();
 }
 
-void HimppServerMediaSubsession::afterPlayingDummy1()
+void HimppVideoServerMediaSubsession::afterPlayingDummy1()
 {
     // Unschedule any pending 'checking' task:
     envir().taskScheduler().unscheduleDelayedTask(nextTask());
@@ -274,11 +273,11 @@ void HimppServerMediaSubsession::afterPlayingDummy1()
 }
 
 static void checkForAuxSDPLine(void* clientData) {
-    HimppServerMediaSubsession* subsess = (HimppServerMediaSubsession*)clientData;
+    HimppVideoServerMediaSubsession* subsess = (HimppVideoServerMediaSubsession*)clientData;
     subsess->checkForAuxSDPLine1();
 }
 
-void HimppServerMediaSubsession::checkForAuxSDPLine1()
+void HimppVideoServerMediaSubsession::checkForAuxSDPLine1()
 {
     char const* dasl;
 
@@ -299,7 +298,7 @@ void HimppServerMediaSubsession::checkForAuxSDPLine1()
     }
 }
 
-char const* HimppServerMediaSubsession
+char const* HimppVideoServerMediaSubsession
 ::getAuxSDPLine(RTPSink* rtpSink, FramedSource* inputSource)
 {
     if (fAuxSDPLine != NULL) return fAuxSDPLine; // it's already been set up (for a previous client)
@@ -322,22 +321,199 @@ char const* HimppServerMediaSubsession
     return fAuxSDPLine;
 }
 
-FramedSource* HimppServerMediaSubsession
+FramedSource* HimppVideoServerMediaSubsession
 ::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate)
 {
     estBitrate = fVideoEncoder.getBitrate(); // kbps, estimate
 
     // Create the video source:
-    HimppStreamSource *source = HimppStreamSource::createNew(envir(), fVideoEncoder);
+    HimppVideoStreamSource *source = HimppVideoStreamSource::createNew(envir(), fVideoEncoder);
     return H264VideoStreamDiscreteFramer::createNew(envir(), source);
 }
 
-RTPSink* HimppServerMediaSubsession
+RTPSink* HimppVideoServerMediaSubsession
 ::createNewRTPSink(Groupsock* rtpGroupsock,
 		   unsigned char rtpPayloadTypeIfDynamic,
 		   FramedSource* /*inputSource*/)
 {
     H264VideoRTPSink *rtp_sink = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
     rtp_sink->setPacketSizes(1000, 1456 * 10);
+    return rtp_sink;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Audio
+////////////////////////////////////////////////////////////////////////////////
+
+
+class HimppAudioStreamSource: public FramedSource
+{
+public:
+    static HimppAudioStreamSource* createNew(UsageEnvironment& env, HimppAudioEncoder& encoder);
+    //static unsigned getRefCount();
+
+public:
+    //EventTriggerId eventTriggerId; 
+    // Note that this is defined here to be a static class variable, because this code is intended to illustrate how to
+    // encapsulate a *single* device - not a set of devices.
+    // You can, however, redefine this to be a non-static member variable.
+
+protected:
+    HimppAudioStreamSource(UsageEnvironment& env, HimppAudioEncoder& encoder);
+    // called only by createNew(), or by subclass constructors
+    virtual ~HimppAudioStreamSource();
+
+private:
+    // redefined virtual functions:
+    virtual void doGetNextFrame();
+    //virtual void doStopGettingFrames(); // optional
+    static void backgroundHandler(void *clientData, int mask);
+    //static void deliverFrame0(void* clientData);
+    void deliverFrame();
+
+private:
+    //static unsigned referenceCount; // used to count how many instances of this class currently exist
+    bool firstDeliverFrame;
+    HimppAudioEncoder &fAudioEncoder;
+};
+
+HimppAudioStreamSource*
+HimppAudioStreamSource::createNew(UsageEnvironment& env, HimppAudioEncoder& encoder)
+{
+    return new HimppAudioStreamSource(env, encoder);
+}
+
+void HimppAudioStreamSource::backgroundHandler(void *clientData, int mask)
+{
+    HimppAudioStreamSource *stream_source = (HimppAudioStreamSource *)clientData; 
+    stream_source->deliverFrame();
+}
+
+HimppAudioStreamSource
+::HimppAudioStreamSource(UsageEnvironment& env, HimppAudioEncoder& encoder)
+    : FramedSource(env), fAudioEncoder(encoder),
+      firstDeliverFrame(True)
+{
+    TaskScheduler &scheduler = envir().taskScheduler();
+
+    scheduler.setBackgroundHandling(encoder.fileDescriptor(), SOCKET_READABLE,
+                                    (TaskScheduler::BackgroundHandlerProc*)backgroundHandler,
+                                    this);
+
+    fAudioEncoder.enable();
+}
+
+HimppAudioStreamSource::~HimppAudioStreamSource() {
+    envir().taskScheduler().disableBackgroundHandling(fAudioEncoder.fileDescriptor());
+
+    fAudioEncoder.disable();
+}
+
+void HimppAudioStreamSource::doGetNextFrame() {
+}
+
+void HimppAudioStreamSource::deliverFrame() {
+    if (!isCurrentlyAwaitingData()) return; // we're not ready for the data yet
+
+    AUDIO_STREAM_S stStream;
+    HI_S32 s32Ret;
+
+    int chnid = fAudioEncoder.channelId();
+
+    s32Ret = HI_MPI_AENC_GetStream(chnid, &stStream, HI_FALSE);
+    if (HI_SUCCESS != s32Ret) {
+        fprintf(stderr, "HI_MPI_AENC_GetStream %d failed [%#x]\n",
+                chnid, s32Ret);
+        return;
+    }
+
+    gettimeofday(&fPresentationTime, NULL);
+
+    fFrameSize = 0;
+    if (stStream.u32Len <= fMaxSize + 4) {
+        fFrameSize = stStream.u32Len - 4;
+        fNumTruncatedBytes = 0;
+    }
+    else {
+        fFrameSize = fMaxSize;
+        fNumTruncatedBytes = fFrameSize - fMaxSize;
+    }
+    memmove(&fTo[0], stStream.pStream + 4, fFrameSize);
+
+    s32Ret = HI_MPI_AENC_ReleaseStream(chnid, &stStream);
+    if (HI_SUCCESS != s32Ret) {
+        envir() << "HI_MPI_AENC_ReleaseStream failed [0x" << s32Ret << "]\n";
+    }
+
+    // After delivering the data, inform the reader that it is now available:
+    if (isCurrentlyAwaitingData()) {
+        FramedSource::afterGetting(this);
+    }
+}
+
+
+HimppAudioServerMediaSubsession* HimppAudioServerMediaSubsession
+::createNew(UsageEnvironment& env, HimppAudioEncoder& encoder)
+{
+    return new HimppAudioServerMediaSubsession(env, encoder);
+}
+
+HimppAudioServerMediaSubsession
+::HimppAudioServerMediaSubsession(UsageEnvironment& env, HimppAudioEncoder& encoder)
+    : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
+      fAudioEncoder(encoder)
+{
+}
+
+HimppAudioServerMediaSubsession::~HimppAudioServerMediaSubsession()
+{
+}
+
+FramedSource* HimppAudioServerMediaSubsession
+::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate)
+{
+    estBitrate = 64; // kbps, estimate
+
+    // Create the audio source:
+    HimppAudioStreamSource *source = HimppAudioStreamSource::createNew(envir(), fAudioEncoder);
+
+    return source;
+}
+
+RTPSink* HimppAudioServerMediaSubsession
+::createNewRTPSink(Groupsock* rtpGroupsock,
+                   unsigned char rtpPayloadTypeIfDynamic,
+				   FramedSource* inputSource)
+{
+    uint32_t samplerate = fAudioEncoder.getSampleRate();
+    uint32_t nr_chans = 1;
+    const char *mimeType = "";
+    unsigned char payloadFormatCode = rtpPayloadTypeIfDynamic;
+
+    IAudioEncoder::EncodingType encoding;
+    encoding = fAudioEncoder.getEncoding();
+    switch (encoding) {
+    case IAudioEncoder::ADPCM:
+        mimeType = "DVI4";
+        break;
+    case IAudioEncoder::LPCM:
+        mimeType = "L16";
+        break;
+    case IAudioEncoder::G711A:
+        mimeType = "PCMA";
+        break;
+    case IAudioEncoder::G711U:
+        mimeType = "PCMU";
+        break;
+    case IAudioEncoder::G726:
+        mimeType = "G726-40";
+        break;
+    }
+
+    RTPSink *rtp_sink
+        = SimpleRTPSink::createNew(envir(), rtpGroupsock,
+                                   payloadFormatCode, samplerate,
+                                   "audio", mimeType, nr_chans);
     return rtp_sink;
 }

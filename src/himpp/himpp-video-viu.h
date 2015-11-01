@@ -31,16 +31,21 @@ public:
     ~HimppViDev();
 
     operator MPP_CHN_S* ();
+    operator HimppVideoISP* ();
     bool setResolution(ImageResolution &);
     ImageResolution getResolution();
     bool setFramerate(uint32_t);
     uint32_t getFramerate();
 
     VI_DEV getDeviceId() { return _devid; }
-    bool setBrightness(int32_t);
-    bool setContrast(int32_t);
-    bool setChroma(int32_t);
-    bool setSaturation(int32_t);
+    int32_t getBrightness();
+    bool    setBrightness(int32_t);
+    int32_t getContrast();
+    bool    setContrast(int32_t);
+    int32_t getChroma();
+    bool    setChroma(int32_t);
+    int32_t getSaturation();
+    bool    setSaturation(int32_t);
 protected:
     bool enableObject();
     bool disableObject();

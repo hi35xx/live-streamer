@@ -22,12 +22,11 @@
 #include <sstream>
 #include <map>
 #include <regex>
-#include "ipcam-media.h"
+#include <ipcam-media.h>
 
 namespace Ipcam
 {
-
-namespace Media
+namespace Interface
 {
 
 struct ImageResolutionEntry
@@ -136,6 +135,6 @@ ImageResolution::operator std::string()
     return std::to_string(Width) + "x" + std::to_string(Height);
 }
 
-} // namespace Media
 
-} // namespace ipcam
+} // namespace Interface
+} // namespace Ipcam

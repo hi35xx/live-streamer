@@ -21,17 +21,87 @@
 #define _HIMPP_AUDIO_H_
 
 #include <himpp-object.h>
+#include <hi_comm_aio.h>
+#include <hi_comm_aenc.h>
+#include <mpi_aenc.h>
 
-class HimppAudioCodec: public HimppObject 
+#include <ipcam-media.h>
+
+using namespace Ipcam::Interface;
+
+class HimppAudioCodec : public HimppObject 
 {
 public:
-    HimppAudioCodec();
+    HimppAudioCodec(AUDIO_SAMPLE_RATE_E sample_rate = AUDIO_SAMPLE_RATE_8000);
     ~HimppAudioCodec();
+
+    operator MPP_CHN_S* ();
+
+    uint32_t getSampleRate();
+    bool setSampleRate(uint32_t sample_rate);
 protected:
-    virtual bool enableObject() = 0;
-    virtual bool disableObject() = 0;
+    virtual bool enableObject();
+    virtual bool disableObject();
 private:
-    int codec_fd;
+    AUDIO_SAMPLE_RATE_E _sample_rate;
+};
+
+class HimppAiDev : public HimppObject
+{
+public:
+    HimppAiDev(HimppAudioCodec*, AUDIO_DEV);
+    ~HimppAiDev();
+
+    operator MPP_CHN_S* ();
+
+    AUDIO_DEV getDeviceId() { return _devid; }
+
+    uint32_t getSampleRate();
+    bool setSampleRate(uint32_t sample_rate);
+protected:
+    virtual bool enableObject();
+    virtual bool disableObject();
+private:
+    AUDIO_DEV   _devid;
+    uint32_t    _sample_rate;
+};
+
+class HimppAiChan : public HimppObject
+{
+public:
+    HimppAiChan(HimppAiDev*, AI_CHN);
+    ~HimppAiChan();
+
+    operator MPP_CHN_S* ();
+protected:
+    virtual bool enableObject();
+    virtual bool disableObject();
+private:
+    AI_CHN      _chnid;
+    MPP_CHN_S   _mpp_chn;
+};
+
+class HimppAencChan : public HimppObject
+{
+public:
+    HimppAencChan(HimppAiChan *aichan, AENC_CHN chnid);
+    ~HimppAencChan();
+
+    operator MPP_CHN_S* ();
+
+    AENC_CHN channelId() { return _chnid; }
+
+    IAudioEncoder::EncodingType getEncoding();
+    bool         setEncoding(IAudioEncoder::EncodingType encoding);
+    uint32_t     getBitrate();
+    bool         setBitrate(uint32_t bps);
+protected:
+    virtual bool enableObject();
+    virtual bool disableObject();
+private:
+    AENC_CHN            _chnid;
+    IAudioEncoder::EncodingType _encoding;
+    uint16_t            _bps;
 };
 
 #endif // _HIMPP_AUDIO_H_

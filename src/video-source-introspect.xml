@@ -12,6 +12,26 @@
     <property name="Sharpness" type="i" access="readwrite"/>
     <property name="IrCutFilter" type="u" access="readwrite"/>
   </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.Backlight">
+    <property name="Mode" type="b" access="readwrite"/>
+    <property name="Level" type="u" access="readwrite"/>
+  </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.Focus">
+    <property name="AutoFocusMode" type="b" access="readwrite"/>
+    <property name="DefaultSpeed" type="u" access="readwrite"/>
+    <property name="NearLimit" type="u" access="readwrite"/>
+    <property name="FarLimit" type="u" access="readwrite"/>
+  </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.Exposure">
+    <property name="Mode" type="u" access="readwrite"/>
+    <property name="Priority" type="u" access="readwrite"/>
+    <property name="MinExposureTime" type="u" access="readwrite"/>
+    <property name="MaxExposureTime" type="u" access="readwrite"/>
+    <property name="MinGain" type="u" access="readwrite"/>
+    <property name="MaxGain" type="u" access="readwrite"/>
+    <property name="ExposureTime" type="u" access="readwrite"/>
+    <property name="Gain" type="u" access="readwrite"/>
+  </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.WhiteBalance">
     <property name="Mode" type="u" access="readwrite"/>
     <property name="CrGain" type="u" access="readwrite"/>
@@ -22,10 +42,7 @@
     <property name="Level" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.LDC">
-    <property name="Enable" type="b" access="readwrite"/>
     <property name="Mode" type="u" access="readwrite"/>
-    <property name="CenterXOffset" type="i" access="readwrite"/>
-    <property name="CenterYOffset" type="i" access="readwrite"/>
     <property name="Ratio" type="u" access="readwrite"/>
   </interface>
 </node>

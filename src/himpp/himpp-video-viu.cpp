@@ -36,6 +36,11 @@ HimppViDev::~HimppViDev()
 {
 }
 
+int32_t HimppViDev::getBrightness()
+{
+    return _brightness;
+}
+
 bool HimppViDev::setBrightness(int32_t val)
 {
     _brightness = val;
@@ -55,6 +60,11 @@ bool HimppViDev::setBrightness(int32_t val)
     }
 
     return true;
+}
+
+int32_t HimppViDev::getContrast()
+{
+    return _contrast;
 }
 
 bool HimppViDev::setContrast(int32_t val)
@@ -78,6 +88,11 @@ bool HimppViDev::setContrast(int32_t val)
     return true;
 }
 
+int32_t HimppViDev::getChroma()
+{
+    return _chroma;
+}
+
 bool HimppViDev::setChroma(int32_t val)
 {
     _chroma = val;
@@ -97,6 +112,11 @@ bool HimppViDev::setChroma(int32_t val)
     }
 
     return true;
+}
+
+int32_t HimppViDev::getSaturation()
+{
+    return _saturation;
 }
 
 bool HimppViDev::setSaturation(int32_t val)
@@ -200,6 +220,11 @@ uint32_t HimppViDev::getFramerate()
 HimppViDev::operator MPP_CHN_S* ()
 {
     return NULL;
+}
+
+HimppViDev::operator HimppVideoISP* ()
+{
+    return _video_isp;
 }
 
 //////////////////////////////////////////////////////////////////////////////

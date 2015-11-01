@@ -21,17 +21,35 @@
 
 
 IpcamVideoEncoder::IpcamVideoEncoder
-(DBus::Connection &connection, std::string obj_path, Ipcam::Media::VideoEncoder *encoder)
+(DBus::Connection &connection, std::string obj_path, IVideoEncoder *encoder)
   : DBus::ObjectAdaptor(connection, obj_path), _video_encoder(encoder)
 {
     assert(encoder != NULL);
+}
 
-    Encoding = (uint32_t)encoder->getEncoding();
-    Resolution = encoder->getResolution();
-    RateControlMode = (uint32_t)encoder->getRcMode();
-    FrameRate = encoder->getFramerate();
-    EncodingInterval = 0;
-    Bitrate = encoder->getBitrate();
+void IpcamVideoEncoder::on_get_property
+(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
+{
+    value.clear();
+    DBus::MessageIter mi = value.writer();
+
+    if (interface.name() == "ipcam.Media.VideoEncoder") {
+        if (property == "Resolution") {
+            std::string s = (std::string)_video_encoder->getResolution();
+            mi.append_string(s.c_str());
+        }
+    }
+    else if (interface.name() == "ipcam.Media.VideoEncoder.RateControl") {
+        if (property == "RateControlMode") {
+            mi.append_uint32((uint32_t)_video_encoder->getRcMode());
+        }
+        else if (property == "FrameRate") {
+            mi.append_uint32(_video_encoder->getFramerate());
+        }
+        else if (property == "Bitrate") {
+            mi.append_uint32(_video_encoder->getBitrate());
+        }
+    }
 }
 
 void IpcamVideoEncoder::on_set_property
@@ -40,13 +58,13 @@ void IpcamVideoEncoder::on_set_property
     if (interface.name() == "ipcam.Media.VideoEncoder") {
         if (property == "Resolution") {
             std::string s = value;
-            Ipcam::Media::ImageResolution res(s);
+            ImageResolution res(s);
             _video_encoder->setResolution(res);
         }
     }
     else if (interface.name() == "ipcam.Media.VideoEncoder.RateControl") {
         if (property == "RateControlMode") {
-            _video_encoder->setRcMode((Ipcam::Media::RC_MODE)(uint32_t)value);
+            _video_encoder->setRcMode((IVideoEncoder::RateCtrlMode)(uint32_t)value);
         }
         else if (property == "FrameRate") {
             _video_encoder->setFramerate(value);
@@ -58,23 +76,41 @@ void IpcamVideoEncoder::on_set_property
 }
 
 IpcamH264VideoEncoder::IpcamH264VideoEncoder
-(DBus::Connection &connection, std::string obj_path, Ipcam::Media::H264VideoEncoder *encoder)
-  : IpcamVideoEncoder(connection, obj_path, dynamic_cast<Ipcam::Media::VideoEncoder*>(encoder))
+(DBus::Connection &connection, std::string obj_path, IH264VideoEncoder *encoder)
+  : IpcamVideoEncoder(connection, obj_path, dynamic_cast<IVideoEncoder*>(encoder))
 {
     assert(encoder != NULL);
+}
 
-    H264Profile = encoder->getProfile();
-    GovLength = encoder->getGovLength();
+void IpcamH264VideoEncoder::on_get_property
+(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
+{
+    value.clear();
+    DBus::MessageIter mi = value.writer();
+
+    if (interface.name() == "ipcam.Media.VideoEncoder.H264") {
+        IH264VideoEncoder *h264encoder
+            = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
+        if (property == "H264Profile") {
+            mi.append_uint32((uint32_t)h264encoder->getProfile());
+        }
+        else if (property == "GovLength") {
+            mi.append_uint32((uint32_t)h264encoder->getGovLength());
+        }
+    }
+    else {
+        IpcamVideoEncoder::on_get_property(interface, property, value);
+    }
 }
 
 void IpcamH264VideoEncoder::on_set_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
     if (interface.name() == "ipcam.Media.VideoEncoder.H264") {
-        Ipcam::Media::H264VideoEncoder *h264encoder
-            = dynamic_cast<Ipcam::Media::H264VideoEncoder*>(_video_encoder);
+        IH264VideoEncoder *h264encoder
+            = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
         if (property == "H264Profile") {
-            h264encoder->setProfile((Ipcam::Media::H264_PROFILE)(uint32_t)value);
+            h264encoder->setProfile((IH264VideoEncoder::H264Profile)(uint32_t)value);
         }
         else if (property == "GovLength") {
             h264encoder->setGovLength(value);

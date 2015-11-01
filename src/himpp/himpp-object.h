@@ -24,7 +24,7 @@
 #include "ipcam-media.h"
 #include <mpi_sys.h>
 
-using namespace Ipcam::Media;
+using namespace Ipcam::Interface;
 
 class HimppObject
 {
@@ -34,8 +34,8 @@ public:
 
     virtual operator MPP_CHN_S* () = 0; // bind source only
 
-    bool enable();
-    bool disable();
+    virtual bool enable();
+    virtual bool disable();
     bool isEnabled();
     HimppObject *source() { return _source; }
 protected:

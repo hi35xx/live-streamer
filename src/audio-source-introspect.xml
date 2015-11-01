@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<node name="/ipcam/Media/AudioSource">
+  <interface name="ipcam.Media.AudioSource">
+    <property name="Channels" type="u" access="readwrite"/>
+  </interface>
+</node>

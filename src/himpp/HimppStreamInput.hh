@@ -23,9 +23,10 @@
 #include <OnDemandServerMediaSubsession.hh>
 #include <himpp-media.h>
 
-class HimppServerMediaSubsession: public OnDemandServerMediaSubsession {
+
+class HimppVideoServerMediaSubsession: public OnDemandServerMediaSubsession {
 public:
-  static HimppServerMediaSubsession*
+  static HimppVideoServerMediaSubsession*
   createNew(UsageEnvironment& env, HimppVideoEncoder& encoder);
 
   // Used to implement "getAuxSDPLine()":
@@ -33,9 +34,9 @@ public:
   void afterPlayingDummy1();
 
 protected:
-  HimppServerMediaSubsession(UsageEnvironment& env, HimppVideoEncoder& encoder);
+  HimppVideoServerMediaSubsession(UsageEnvironment& env, HimppVideoEncoder& encoder);
       // called only by createNew();
-  virtual ~HimppServerMediaSubsession();
+  virtual ~HimppVideoServerMediaSubsession();
 
   void setDoneFlag() { fDoneFlag = ~0; }
 
@@ -54,6 +55,27 @@ private:
   char* fAuxSDPLine;
   char fDoneFlag; // used when setting up "fAuxSDPLine"
   RTPSink* fDummyRTPSink; // ditto
+};
+
+
+class HimppAudioServerMediaSubsession: public OnDemandServerMediaSubsession {
+public:
+  static HimppAudioServerMediaSubsession*
+  createNew(UsageEnvironment& env, HimppAudioEncoder& encoder);
+
+protected:
+  HimppAudioServerMediaSubsession(UsageEnvironment& env, HimppAudioEncoder& encoder);
+  virtual ~HimppAudioServerMediaSubsession();
+
+protected: // redefined virtual functions
+  virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+					      unsigned& estBitrate);
+  virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+                                    unsigned char rtpPayloadTypeIfDynamic,
+				    FramedSource* inputSource);
+
+private:
+  HimppAudioEncoder &fAudioEncoder;
 };
 
 #endif
