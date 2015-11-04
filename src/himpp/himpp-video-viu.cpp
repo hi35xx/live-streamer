@@ -23,9 +23,8 @@
 
 HimppViDev::HimppViDev(HimppVideoSensor *sensor, VI_DEV vi_dev)
     : HimppVideoObject(NULL), _video_sensor(sensor),
-      _devid(vi_dev), _video_isp(NULL)
+      _devid(vi_dev), _video_isp(sensor)
 {
-
     _brightness = 50;
     _contrast = 50;
     _chroma = 50;
@@ -41,25 +40,19 @@ int32_t HimppViDev::getBrightness()
     return _brightness;
 }
 
-bool HimppViDev::setBrightness(int32_t val)
+void HimppViDev::setBrightness(int32_t val)
 {
     _brightness = val;
 
     if (isEnabled()) {
-        HI_S32 s32Ret;
         VI_CSC_ATTR_S csc_attr;
-        csc_attr.enViCscType = VI_CSC_TYPE_709;
-        csc_attr.u32LumaVal = _brightness;
-        csc_attr.u32ContrVal = _contrast;
-        csc_attr.u32HueVal = _chroma;
-        csc_attr.u32SatuVal = _saturation;
-        if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
-            HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
-            return false;
-        }
-    }
+        if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("get CSC attr failed");
 
-    return true;
+        csc_attr.u32LumaVal = _brightness;
+        if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("set CSC attr failed");
+    }
 }
 
 int32_t HimppViDev::getContrast()
@@ -67,25 +60,19 @@ int32_t HimppViDev::getContrast()
     return _contrast;
 }
 
-bool HimppViDev::setContrast(int32_t val)
+void HimppViDev::setContrast(int32_t val)
 {
     _contrast = val;
 
     if (isEnabled()) {
-        HI_S32 s32Ret;
         VI_CSC_ATTR_S csc_attr;
-        csc_attr.enViCscType = VI_CSC_TYPE_709;
-        csc_attr.u32LumaVal = _brightness;
-        csc_attr.u32ContrVal = _contrast;
-        csc_attr.u32HueVal = _chroma;
-        csc_attr.u32SatuVal = _saturation;
-        if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
-            HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
-            return false;
-        }
-    }
+        if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("get CSC attr failed");
 
-    return true;
+        csc_attr.u32ContrVal = _contrast;
+        if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("set CSC attr failed");
+    }
 }
 
 int32_t HimppViDev::getChroma()
@@ -93,25 +80,19 @@ int32_t HimppViDev::getChroma()
     return _chroma;
 }
 
-bool HimppViDev::setChroma(int32_t val)
+void HimppViDev::setChroma(int32_t val)
 {
     _chroma = val;
 
     if (isEnabled()) {
-        HI_S32 s32Ret;
         VI_CSC_ATTR_S csc_attr;
-        csc_attr.enViCscType = VI_CSC_TYPE_709;
-        csc_attr.u32LumaVal = _brightness;
-        csc_attr.u32ContrVal = _contrast;
-        csc_attr.u32HueVal = _chroma;
-        csc_attr.u32SatuVal = _saturation;
-        if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
-            HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
-            return false;
-        }
-    }
+        if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("get CSC attr failed");
 
-    return true;
+        csc_attr.u32HueVal = _chroma;
+        if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("set CSC attr failed");
+    }
 }
 
 int32_t HimppViDev::getSaturation()
@@ -119,25 +100,19 @@ int32_t HimppViDev::getSaturation()
     return _saturation;
 }
 
-bool HimppViDev::setSaturation(int32_t val)
+void HimppViDev::setSaturation(int32_t val)
 {
     _saturation = val;
 
     if (isEnabled()) {
-        HI_S32 s32Ret;
         VI_CSC_ATTR_S csc_attr;
-        csc_attr.enViCscType = VI_CSC_TYPE_709;
-        csc_attr.u32LumaVal = _brightness;
-        csc_attr.u32ContrVal = _contrast;
-        csc_attr.u32HueVal = _chroma;
-        csc_attr.u32SatuVal = _saturation;
-        if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
-            HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
-            return false;
-        }
-    }
+        if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("get CSC attr failed");
 
-    return true;
+        csc_attr.u32SatuVal = _saturation;
+        if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
+            throw IpcamError("set CSC attr failed");
+    }
 }
 
 bool HimppViDev::enableObject()
@@ -145,11 +120,7 @@ bool HimppViDev::enableObject()
     HI_S32 s32Ret;
     VI_DEV_ATTR_S *dev_attr;
 
-    _video_isp = new HimppVideoISP(_video_sensor);
-    if (!_video_isp)
-        return false;
-
-    if (!_video_isp->enable())
+    if (!_video_isp.enable())
         goto err_free_isp;
 
     dev_attr = *_video_sensor;
@@ -176,21 +147,16 @@ bool HimppViDev::enableObject()
     return true;
 
 err_disable_isp:
-    _video_isp->disable();
+    _video_isp.disable();
 
 err_free_isp:
-    delete _video_isp;
-    _video_isp = NULL;
-
     return false;
 }
 
 bool HimppViDev::disableObject()
 {
     HI_MPI_VI_DisableDev(_devid);
-    _video_isp->disable();
-    delete _video_isp;
-    _video_isp = NULL;
+    _video_isp.disable();
 
     return true;
 }
@@ -224,7 +190,7 @@ HimppViDev::operator MPP_CHN_S* ()
 
 HimppViDev::operator HimppVideoISP* ()
 {
-    return _video_isp;
+    return &_video_isp;
 }
 
 //////////////////////////////////////////////////////////////////////////////

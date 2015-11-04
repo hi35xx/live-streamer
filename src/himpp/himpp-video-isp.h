@@ -40,6 +40,73 @@ struct HimppSensorModule
 class HimppVideoISP: public HimppVideoObject 
 {
 public:
+    typedef IVideoSource::Imaging::Exposure::ExposureMode ExposureMode;
+    typedef IVideoSource::Imaging::Exposure::ExposurePriority ExposurePriority;
+    typedef IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode WhiteBalanceMode;
+    // Exposure
+    class Exposure
+    {
+    public:
+        Exposure(HimppVideoISP &video_isp);
+
+        void setExposureMode(ExposureMode mode);
+        ExposureMode getExposureMode();
+        void setExposurePriority(ExposurePriority priority);
+        ExposurePriority getExposurePriority();
+        void setMinExposureTime(uint32_t value);
+        uint32_t getMinExposureTime();
+        void setMaxExposureTime(uint32_t value);
+        uint32_t getMaxExposureTime();
+        void setMinGain(uint32_t value);
+        uint32_t getMinGain();
+        void setMaxGain(uint32_t value);
+        uint32_t getMaxGain();
+        void setMinIris(uint32_t value);
+        uint32_t getMinIris();
+        void setMaxIris(uint32_t value);
+        uint32_t getMaxIris();
+        void setExposureTime(uint32_t value);
+        uint32_t getExposureTime();
+        void setGain(uint32_t value);
+        uint32_t getGain();
+        void setIris(uint32_t value);
+        uint32_t getIris();
+    private:
+        bool isEnabled() { return _video_isp.isEnabled(); }
+        HimppVideoISP &     _video_isp;
+        ExposureMode        _mode;
+        ExposurePriority    _priority;
+        uint32_t            _min_exp_time;
+        uint32_t            _max_exp_time;
+        uint32_t            _min_gain;
+        uint32_t            _max_gain;
+        uint32_t            _min_iris;
+        uint32_t            _max_iris;
+        uint32_t            _exp_time;
+        uint32_t            _gain;
+        uint32_t            _iris;
+    };
+    // WhiteBalance
+    class WhiteBalance
+    {
+    public:
+        WhiteBalance(HimppVideoISP &video_isp);
+
+        void setWBMode(WhiteBalanceMode value);
+        WhiteBalanceMode getWBMode();
+        void setCbGain(uint32_t value);
+        uint32_t getCbGain();
+        void setCrGain(uint32_t value);
+        uint32_t getCrGain();
+    private:
+        bool isEnabled() { return _video_isp.isEnabled(); }
+        HimppVideoISP &     _video_isp;
+        WhiteBalanceMode    _mode;
+        uint32_t            _cb_gain;
+        uint32_t            _cr_gain;
+    };
+
+public:
     HimppVideoISP(HimppVideoSensor *sensor);
     ~HimppVideoISP();
 
@@ -47,20 +114,10 @@ public:
     ImageResolution getResolution();
     bool setFramerate(uint32_t fps);
     uint32_t getFramerate();
-    bool setMinExpTime(uint32_t value);
-    uint32_t getMinExpTime(void);
-    bool setMaxExpTime(uint32_t value);
-    uint32_t getMaxExpTime(void);
-    bool setMinGain(uint32_t value);
-    uint32_t getMinGain(void);
-    bool setMaxGain(uint32_t value);
-    uint32_t getMaxGain(void);
-#if 0
-    bool setExpTime(uint32_t value);
-    uint32_t getExpTime(void);
-    bool setGain(uint32_t value);
-    uint32_t getGain(void);
-#endif
+
+    Exposure *getExposure() { return &_exposure; };
+    WhiteBalance *getWhiteBalance() { return &_whitebalance; };
+
 protected:
     bool enableObject();
     bool disableObject();
@@ -69,6 +126,9 @@ private:
     HimppVideoSensor  *video_sensor;
     HimppSensorModule sensor_module;
     pthread_t isp_thread;
+
+    Exposure        _exposure;
+    WhiteBalance    _whitebalance;
 
     bool loadSensorModule();
     bool unloadSensorModule();

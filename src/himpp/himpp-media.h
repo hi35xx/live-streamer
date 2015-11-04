@@ -46,24 +46,49 @@ public:
         class Exposure : public IVideoSource::Imaging::Exposure
         {
         public:
+            typedef IVideoSource::Imaging::Exposure::ExposureMode ExposureMode;
+            typedef IVideoSource::Imaging::Exposure::ExposurePriority ExposurePriority;
+        public:
             Exposure(HimppMedia &media);
 
-            IVideoSource::Imaging::Exposure::ExposureMode getMode();
-            bool        setMode(IVideoSource::Imaging::Exposure::ExposureMode value);
-            IVideoSource::Imaging::Exposure::ExposurePriority getPriority();
-            bool        setPriority(IVideoSource::Imaging::Exposure::ExposurePriority value);
+            ExposureMode getMode();
+            void        setMode(ExposureMode value);
+            ExposurePriority getPriority();
+            void        setPriority(ExposurePriority value);
             uint32_t    getMinExposureTime();
-            bool        setMinExposureTime(uint32_t value);
+            void        setMinExposureTime(uint32_t value);
             uint32_t    getMaxExposureTime();
-            bool        setMaxExposureTime(uint32_t value);
+            void        setMaxExposureTime(uint32_t value);
             uint32_t    getMinGain();
-            bool        setMinGain(uint32_t value);
+            void        setMinGain(uint32_t value);
             uint32_t    getMaxGain();
-            bool        setMaxGain(uint32_t value);
+            void        setMaxGain(uint32_t value);
+            uint32_t    getMinIris();
+            void        setMinIris(uint32_t value);
+            uint32_t    getMaxIris();
+            void        setMaxIris(uint32_t value);
             uint32_t    getExposureTime();
-            bool        setExposureTime(uint32_t value);
+            void        setExposureTime(uint32_t value);
             uint32_t    getGain();
-            bool        setGain(uint32_t value);
+            void        setGain(uint32_t value);
+            uint32_t    getIris();
+            void        setIris(uint32_t value);
+        private:
+            HimppMedia& _media;
+        };
+        class WhiteBalance : public IVideoSource::Imaging::WhiteBalance
+        {
+        public:
+            typedef IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode WhiteBalanceMode;
+        public:
+            WhiteBalance(HimppMedia &media);
+
+            WhiteBalanceMode getMode();
+            void        setMode(WhiteBalanceMode value);
+            uint32_t    getCbGain();
+            void        setCbGain(uint32_t value);
+            uint32_t    getCrGain();
+            void        setCrGain(uint32_t value);
         private:
             HimppMedia& _media;
         };
@@ -71,15 +96,16 @@ public:
         Imaging(HimppMedia &media);
 
         int32_t     getBrightness();
-        bool        setBrightness(int32_t value);
+        void        setBrightness(int32_t value);
         int32_t     getContrast();
-        bool        setContrast(int32_t value);
+        void        setContrast(int32_t value);
         int32_t     getChroma();
-        bool        setChroma(int32_t value);
+        void        setChroma(int32_t value);
         int32_t     getSaturation();
-        bool        setSaturation(int32_t value);
+        void        setSaturation(int32_t value);
         int32_t     getSharpness();
-        bool        setSharpness(int32_t value);
+        void        setSharpness(int32_t value);
+
         IVideoSource::Imaging::Backlight*        getBacklight();
         IVideoSource::Imaging::Focus*            getFocus();
         IVideoSource::Imaging::Exposure*         getExposure();
@@ -87,17 +113,18 @@ public:
         IVideoSource::Imaging::WideDynamicRange* getWideDynamicRange();
         IVideoSource::Imaging::LDC*              getLDC();
     private:
-        HimppMedia& _media;
-        Exposure    _exposure;
+        HimppMedia&     _media;
+        Exposure        _exposure;
+        WhiteBalance    _white_balance;
     };
 public:
     HimppVideoSource(HimppMedia &media);
     ~HimppVideoSource();
 
     // video source method
-    bool        setFramerate(uint32_t value);
+    void        setFramerate(uint32_t value);
     uint32_t    getFramerate();
-    bool        setResolution(ImageResolution &res);
+    void        setResolution(ImageResolution &res);
     ImageResolution getResolution();
     // imaging method
     IVideoSource::Imaging*    getImaging();
@@ -115,18 +142,18 @@ public:
     // video encoder method
     IVideoEncoder::EncodingType getEncoding();
     ImageResolution getResolution();
-    bool setResolution(ImageResolution &resolution);
+    void setResolution(ImageResolution &resolution);
     uint32_t  getFramerate();
-    bool setFramerate(uint32_t fps);
+    void setFramerate(uint32_t fps);
     // h264 method
     IVideoEncoder::RateCtrlMode getRcMode();
-    bool setRcMode(IVideoEncoder::RateCtrlMode mode);
+    void setRcMode(IVideoEncoder::RateCtrlMode mode);
     uint32_t  getBitrate();
-    bool setBitrate(uint32_t kbps);
+    void setBitrate(uint32_t kbps);
     IH264VideoEncoder::H264Profile getProfile();
-    bool setProfile(IH264VideoEncoder::H264Profile profile);
+    void setProfile(IH264VideoEncoder::H264Profile profile);
     uint32_t  getGovLength();
-    bool setGovLength(uint32_t gop);
+    void setGovLength(uint32_t gop);
     // local methods
     VENC_GRP groupId() { return _venc_chan.groupId(); }
     VENC_CHN channelId() { return _venc_chan.channelId(); }
@@ -160,11 +187,11 @@ public:
     int fileDescriptor();
 
     IAudioEncoder::EncodingType getEncoding();
-    bool                setEncoding(IAudioEncoder::EncodingType value);
+    void                setEncoding(IAudioEncoder::EncodingType value);
     uint32_t            getBitrate();
-    bool                setBitrate(uint32_t value);
+    void                setBitrate(uint32_t value);
     uint32_t            getSampleRate();
-    bool                setSampleRate(uint32_t value);
+    void                setSampleRate(uint32_t value);
 
     bool enable();
     bool disable();
@@ -225,4 +252,3 @@ private:
 };
 
 #endif // _HIMPP_MEDIA_H_
-

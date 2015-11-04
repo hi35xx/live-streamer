@@ -22,12 +22,14 @@
 
 #include <stdbool.h>
 #include <string>
+#include <dbus-c++/error.h>
 
 namespace Ipcam
 {
 namespace Interface
 {
 
+typedef DBus::ErrorFailed   IpcamError;
 
 class ImageResolution
 {
@@ -52,9 +54,9 @@ public:
             enum BacklightMode { BACKLIGHT_OFF, BACKLIGHT_ON };
         public:
             virtual BacklightMode   getMode() = 0;
-            virtual bool            setMode(BacklightMode value) = 0;
+            virtual void            setMode(BacklightMode value) = 0;
             virtual uint32_t        getLevel() = 0;
-            virtual bool            setLevel(uint32_t value) = 0;
+            virtual void            setLevel(uint32_t value) = 0;
         };
         class Focus                 // Focus Configuration
         {
@@ -62,13 +64,13 @@ public:
             enum AutoFocusMode { AUTO_FOCUS, MANUAL_FOCUS };
         public:
             virtual AutoFocusMode   getAutoFocusMode() = 0;
-            virtual bool            setAutoFocusMode(AutoFocusMode value) = 0;
+            virtual void            setAutoFocusMode(AutoFocusMode value) = 0;
             virtual uint32_t        getDefaultSpeed() = 0;
-            virtual bool            setDefaultSpeed(uint32_t value) = 0;
+            virtual void            setDefaultSpeed(uint32_t value) = 0;
             virtual uint32_t        getNearLimit() = 0;
-            virtual bool            setNearLimit(uint32_t value) = 0;
+            virtual void            setNearLimit(uint32_t value) = 0;
             virtual uint32_t        getFarLimit() = 0;
-            virtual bool            setFarLimit(uint32_t value) = 0;
+            virtual void            setFarLimit(uint32_t value) = 0;
         };
         class Exposure              // Exposure
         {
@@ -77,21 +79,27 @@ public:
             enum ExposurePriority { LOWNOISE_PRIORITY, FRAMERATE_PRIORITY };
         public:
             virtual ExposureMode    getMode() = 0;
-            virtual bool            setMode(ExposureMode value) = 0;
+            virtual void            setMode(ExposureMode value) = 0;
             virtual ExposurePriority getPriority() = 0;
-            virtual bool            setPriority(ExposurePriority value) = 0;
+            virtual void            setPriority(ExposurePriority value) = 0;
             virtual uint32_t        getMinExposureTime() = 0;
-            virtual bool            setMinExposureTime(uint32_t value) = 0;
+            virtual void            setMinExposureTime(uint32_t value) = 0;
             virtual uint32_t        getMaxExposureTime() = 0;
-            virtual bool            setMaxExposureTime(uint32_t value) = 0;
+            virtual void            setMaxExposureTime(uint32_t value) = 0;
             virtual uint32_t        getMinGain() = 0;
-            virtual bool            setMinGain(uint32_t value) = 0;
+            virtual void            setMinGain(uint32_t value) = 0;
             virtual uint32_t        getMaxGain() = 0;
-            virtual bool            setMaxGain(uint32_t value) = 0;
+            virtual void            setMaxGain(uint32_t value) = 0;
+            virtual uint32_t        getMinIris() = 0;
+            virtual void            setMinIris(uint32_t value) = 0;
+            virtual uint32_t        getMaxIris() = 0;
+            virtual void            setMaxIris(uint32_t value) = 0;
             virtual uint32_t        getExposureTime() = 0;
-            virtual bool            setExposureTime(uint32_t value) = 0;
+            virtual void            setExposureTime(uint32_t value) = 0;
             virtual uint32_t        getGain() = 0;
-            virtual bool            setGain(uint32_t value) = 0;
+            virtual void            setGain(uint32_t value) = 0;
+            virtual uint32_t        getIris() = 0;
+            virtual void            setIris(uint32_t value) = 0;
         };
         class WhiteBalance          // White Balance
         {
@@ -99,11 +107,11 @@ public:
             enum WhiteBalanceMode { AUTO_WB, MANUAL_WB };
         public:
             virtual WhiteBalanceMode getMode() = 0;
-            virtual bool            setMode(WhiteBalanceMode value) = 0;
+            virtual void            setMode(WhiteBalanceMode value) = 0;
             virtual uint32_t        getCrGain() = 0;
-            virtual bool            setCrGain(uint32_t value) = 0;
+            virtual void            setCrGain(uint32_t value) = 0;
             virtual uint32_t        getCbGain() = 0;
-            virtual bool            setCbGain(uint32_t value) = 0;
+            virtual void            setCbGain(uint32_t value) = 0;
         };
         class WideDynamicRange      // Wide Dynamic Range
         {
@@ -111,9 +119,9 @@ public:
             enum WDRMode { WDR_OFF, WDR_ON };
         public:
             virtual WDRMode         getMode() = 0;
-            virtual bool            setMode(WDRMode value) = 0;
+            virtual void            setMode(WDRMode value) = 0;
             virtual uint32_t        getLevel() = 0;
-            virtual bool            setLevel(uint32_t value) = 0;
+            virtual void            setLevel(uint32_t value) = 0;
         };
         class LDC                   // Lens Distortion Correction
         {
@@ -121,21 +129,21 @@ public:
             enum LDCMode { LDC_OFF, LDC_ON };
         public:
             virtual uint32_t        getMode() = 0;
-            virtual bool            setMode(uint32_t value) = 0;
+            virtual void            setMode(uint32_t value) = 0;
             virtual uint32_t        getRatio() = 0;
-            virtual bool            setRatio(uint32_t value) = 0;
+            virtual void            setRatio(uint32_t value) = 0;
         };
     public:
         virtual int32_t             getBrightness() = 0;
-        virtual bool                setBrightness(int32_t value) = 0;
+        virtual void                setBrightness(int32_t value) = 0;
         virtual int32_t             getContrast() = 0;
-        virtual bool                setContrast(int32_t value) = 0;
+        virtual void                setContrast(int32_t value) = 0;
         virtual int32_t             getChroma() = 0;
-        virtual bool                setChroma(int32_t value) = 0;
+        virtual void                setChroma(int32_t value) = 0;
         virtual int32_t             getSaturation() = 0;
-        virtual bool                setSaturation(int32_t value) = 0;
+        virtual void                setSaturation(int32_t value) = 0;
         virtual int32_t             getSharpness() = 0;
-        virtual bool                setSharpness(int32_t value) = 0;
+        virtual void                setSharpness(int32_t value) = 0;
 
         virtual Backlight*          getBacklight() = 0;
         virtual Focus*              getFocus() = 0;
@@ -146,9 +154,9 @@ public:
     };
 public:
     virtual uint32_t    getFramerate() = 0;
-    virtual bool        setFramerate(uint32_t value) = 0;
+    virtual void        setFramerate(uint32_t value) = 0;
     virtual ImageResolution getResolution() = 0;
-    virtual bool        setResolution(ImageResolution &value) = 0;
+    virtual void        setResolution(ImageResolution &value) = 0;
 
     virtual Imaging*    getImaging() = 0;
 };
@@ -162,13 +170,13 @@ public:
 public:
     virtual EncodingType getEncoding() = 0;
     virtual ImageResolution getResolution() = 0;
-    virtual bool setResolution(ImageResolution &resolution) = 0;
+    virtual void setResolution(ImageResolution &resolution) = 0;
     virtual RateCtrlMode getRcMode() = 0;
-    virtual bool setRcMode(RateCtrlMode mode) = 0;
+    virtual void setRcMode(RateCtrlMode mode) = 0;
     virtual uint32_t  getFramerate() = 0;
-    virtual bool setFramerate(uint32_t fps) = 0;
+    virtual void setFramerate(uint32_t fps) = 0;
     virtual uint32_t  getBitrate() = 0;
-    virtual bool setBitrate(uint32_t kbps) = 0;
+    virtual void setBitrate(uint32_t kbps) = 0;
 };
 
 class IH264VideoEncoder : public IVideoEncoder
@@ -177,9 +185,9 @@ public:
     enum H264Profile { BASELINE, MAIN, HIGH, SVC_T };
 public:
     virtual H264Profile getProfile() = 0;
-    virtual bool setProfile(H264Profile profile) = 0;
+    virtual void setProfile(H264Profile profile) = 0;
     virtual uint32_t  getGovLength() = 0;
-    virtual bool setGovLength(uint32_t gop) = 0;
+    virtual void setGovLength(uint32_t gop) = 0;
 };
 
 class IAudioSource
@@ -194,11 +202,11 @@ public:
     enum EncodingType { ADPCM, LPCM, G711A, G711U, G726 };
 public:
     virtual EncodingType    getEncoding() = 0;
-    virtual bool            setEncoding(EncodingType value) = 0;
+    virtual void            setEncoding(EncodingType value) = 0;
     virtual uint32_t        getBitrate() = 0;
-    virtual bool            setBitrate(uint32_t value) = 0;
+    virtual void            setBitrate(uint32_t value) = 0;
     virtual uint32_t        getSampleRate() = 0;
-    virtual bool            setSampleRate(uint32_t value) = 0;
+    virtual void            setSampleRate(uint32_t value) = 0;
 };
 
 

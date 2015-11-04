@@ -13,11 +13,11 @@
     <property name="IrCutFilter" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.Backlight">
-    <property name="Mode" type="b" access="readwrite"/>
+    <property name="Mode" type="u" access="readwrite"/>
     <property name="Level" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.Focus">
-    <property name="AutoFocusMode" type="b" access="readwrite"/>
+    <property name="AutoFocusMode" type="u" access="readwrite"/>
     <property name="DefaultSpeed" type="u" access="readwrite"/>
     <property name="NearLimit" type="u" access="readwrite"/>
     <property name="FarLimit" type="u" access="readwrite"/>
@@ -29,8 +29,11 @@
     <property name="MaxExposureTime" type="u" access="readwrite"/>
     <property name="MinGain" type="u" access="readwrite"/>
     <property name="MaxGain" type="u" access="readwrite"/>
+    <property name="MinIris" type="u" access="readwrite"/>
+    <property name="MaxIris" type="u" access="readwrite"/>
     <property name="ExposureTime" type="u" access="readwrite"/>
     <property name="Gain" type="u" access="readwrite"/>
+    <property name="Iris" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.WhiteBalance">
     <property name="Mode" type="u" access="readwrite"/>

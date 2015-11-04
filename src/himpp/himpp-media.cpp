@@ -24,6 +24,11 @@
 
 #include "himpp-media.h"
 
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource
+//////////////////////////////////////////////////////////////////////////////
+
 HimppVideoSource::HimppVideoSource(HimppMedia &media)
     : _media(media), _imaging(media)
 {
@@ -33,9 +38,9 @@ HimppVideoSource::~HimppVideoSource()
 {
 }
 
-bool HimppVideoSource::setFramerate(uint32_t value)
+void HimppVideoSource::setFramerate(uint32_t value)
 {
-    return false;
+    throw IpcamError("Readonly property");
 }
 
 uint32_t HimppVideoSource::getFramerate()
@@ -48,9 +53,9 @@ ImageResolution HimppVideoSource::getResolution()
     return _media._vpss_chan.getResolution();
 }
 
-bool HimppVideoSource::setResolution(ImageResolution &res)
+void HimppVideoSource::setResolution(ImageResolution &res)
 {
-    return false;
+    throw IpcamError("Readonly property");
 }
 
 IVideoSource::Imaging* HimppVideoSource::getImaging()
@@ -58,8 +63,13 @@ IVideoSource::Imaging* HimppVideoSource::getImaging()
     return dynamic_cast<IVideoSource::Imaging*>(&_imaging);
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging
+//////////////////////////////////////////////////////////////////////////////
+
 HimppVideoSource::Imaging::Imaging(HimppMedia &media)
-    : _media(media), _exposure(media)
+    : _media(media), _exposure(media), _white_balance(media)
 {
 }
 
@@ -68,9 +78,9 @@ int HimppVideoSource::Imaging::getBrightness()
     return _media._vi_dev.getBrightness();
 }
 
-bool HimppVideoSource::Imaging::setBrightness(int value)
+void HimppVideoSource::Imaging::setBrightness(int value)
 {
-    return _media._vi_dev.setBrightness(value);
+    _media._vi_dev.setBrightness(value);
 }
 
 int HimppVideoSource::Imaging::getContrast()
@@ -78,9 +88,9 @@ int HimppVideoSource::Imaging::getContrast()
     return _media._vi_dev.getContrast();
 }
 
-bool HimppVideoSource::Imaging::setContrast(int value)
+void HimppVideoSource::Imaging::setContrast(int value)
 {
-    return _media._vi_dev.setContrast(value);
+    _media._vi_dev.setContrast(value);
 }
 
 int HimppVideoSource::Imaging::getChroma()
@@ -88,9 +98,9 @@ int HimppVideoSource::Imaging::getChroma()
     return _media._vi_dev.getChroma();
 }
 
-bool HimppVideoSource::Imaging::setChroma(int value)
+void HimppVideoSource::Imaging::setChroma(int value)
 {
-    return _media._vi_dev.setChroma(value);
+    _media._vi_dev.setChroma(value);
 }
 
 int HimppVideoSource::Imaging::getSaturation()
@@ -98,9 +108,9 @@ int HimppVideoSource::Imaging::getSaturation()
     return _media._vi_dev.getSaturation();
 }
 
-bool HimppVideoSource::Imaging::setSaturation(int value)
+void HimppVideoSource::Imaging::setSaturation(int value)
 {
-    return _media._vi_dev.setSaturation(value);
+    _media._vi_dev.setSaturation(value);
 }
 
 int HimppVideoSource::Imaging::getSharpness()
@@ -108,9 +118,9 @@ int HimppVideoSource::Imaging::getSharpness()
     return 0;
 }
 
-bool HimppVideoSource::Imaging::setSharpness(int value)
+void HimppVideoSource::Imaging::setSharpness(int value)
 {
-    return false; //_media._vpss_group.setSharpness(value);
+    throw IpcamError("not implemented");
 }
 
 IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
@@ -130,7 +140,7 @@ IVideoSource::Imaging::Exposure* HimppVideoSource::Imaging::getExposure()
 
 IVideoSource::Imaging::WhiteBalance* HimppVideoSource::Imaging::getWhiteBalance()
 {
-    return NULL;
+    return dynamic_cast<IVideoSource::Imaging::WhiteBalance*>(&_white_balance);
 }
 
 IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynamicRange()
@@ -144,6 +154,9 @@ IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::Exposure
+//////////////////////////////////////////////////////////////////////////////
 
 HimppVideoSource::Imaging::Exposure::Exposure(HimppMedia &media)
     : _media(media)
@@ -153,119 +166,384 @@ HimppVideoSource::Imaging::Exposure::Exposure(HimppMedia &media)
 IVideoSource::Imaging::Exposure::ExposureMode
 HimppVideoSource::Imaging::Exposure::getMode()
 {
-    return IVideoSource::Imaging::Exposure::AUTO_EXPOSURE;
+    HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getExposureMode();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
-bool
+void
 HimppVideoSource::Imaging::Exposure::setMode(IVideoSource::Imaging::Exposure::ExposureMode value)
 {
-    return false;
+    HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setExposureMode(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
 IVideoSource::Imaging::Exposure::ExposurePriority
 HimppVideoSource::Imaging::Exposure::getPriority()
 {
-    return IVideoSource::Imaging::Exposure::LOWNOISE_PRIORITY;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getExposurePriority();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
-bool
+void
 HimppVideoSource::Imaging::Exposure::setPriority(IVideoSource::Imaging::Exposure::ExposurePriority value)
 {
-    return false;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setExposurePriority(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getMinExposureTime()
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->getMinExpTime();
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMinExposureTime();
+        }
+    }
 
-    return (uint32_t)-1;
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setMinExposureTime(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setMinExposureTime(uint32_t value)
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->setMinExpTime(value);
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMinExposureTime(value);
+        }
+    }
 
-    return false;
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getMaxExposureTime()
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->getMaxExpTime();
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMaxExposureTime();
+        }
+    }
 
-    return (uint32_t)-1;
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setMaxExposureTime(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setMaxExposureTime(uint32_t value)
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->setMaxExpTime(value);
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMaxExposureTime(value);
+        }
+    }
 
-    return false;
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getMinGain()
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->getMinGain();
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMinGain();
+        }
+    }
 
-    return (uint32_t)-1;
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setMinGain(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setMinGain(uint32_t value)
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->setMinGain(value);
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMinGain(value);
+        }
+    }
 
-    return false;
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getMaxGain()
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->getMaxGain();
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMaxGain();
+        }
+    }
 
-    return (uint32_t)-1;
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setMaxGain(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setMaxGain(uint32_t value)
 {
     HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
-    if (isp)
-        return isp->setMaxGain(value);
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMaxGain(value);
+        }
+    }
 
-    return false;
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::Exposure::getMinIris()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMinIris();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::Exposure::setMinIris(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMinIris(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::Exposure::getMaxIris()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getMaxIris();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::Exposure::setMaxIris(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setMaxIris(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getExposureTime()
 {
-    return (uint32_t)-1;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getExposureTime();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setExposureTime(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setExposureTime(uint32_t value)
 {
-    return false;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setExposureTime(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
 uint32_t HimppVideoSource::Imaging::Exposure::getGain()
 {
-    return (uint32_t)-1;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
-bool HimppVideoSource::Imaging::Exposure::setGain(uint32_t value)
+void HimppVideoSource::Imaging::Exposure::setGain(uint32_t value)
 {
-    return false;
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->setGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
 }
 
+uint32_t HimppVideoSource::Imaging::Exposure::getIris()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            return exposure->getIris();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::Exposure::setIris(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::Exposure *exposure = isp->getExposure();
+        if (exposure) {
+            exposure->setIris(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::WhiteBalance
+//////////////////////////////////////////////////////////////////////////////
+HimppVideoSource::Imaging::WhiteBalance::WhiteBalance(HimppMedia &media)
+    : _media(media)
+{
+}
+
+IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode
+HimppVideoSource::Imaging::WhiteBalance::getMode()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getWBMode();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setMode(IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            wb->setWBMode(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::WhiteBalance::getCbGain()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getCbGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setCbGain(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            wb->setCbGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::WhiteBalance::getCrGain()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getCrGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setCrGain(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            wb->setCrGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoEncoder
 //////////////////////////////////////////////////////////////////////////////
 
 HimppVideoEncoder::HimppVideoEncoder(HimppVencChan& venc_chan)
@@ -287,9 +565,10 @@ ImageResolution HimppVideoEncoder::getResolution()
     return _venc_chan.getResolution();
 }
 
-bool HimppVideoEncoder::setResolution(ImageResolution &resolution)
+void HimppVideoEncoder::setResolution(ImageResolution &resolution)
 {
-    return _venc_chan.setResolution(resolution);
+    if (!_venc_chan.setResolution(resolution))
+        throw IpcamError("set resolution failed");
 }
 
 uint32_t  HimppVideoEncoder::getFramerate()
@@ -297,9 +576,10 @@ uint32_t  HimppVideoEncoder::getFramerate()
     return _venc_chan.getFramerate();
 }
 
-bool HimppVideoEncoder::setFramerate(uint32_t fps)
+void HimppVideoEncoder::setFramerate(uint32_t fps)
 {
-    return _venc_chan.setFramerate(fps);
+    if (!_venc_chan.setFramerate(fps))
+        throw IpcamError("set framerate failed");
 }
 
 IVideoEncoder::RateCtrlMode HimppVideoEncoder::getRcMode()
@@ -307,9 +587,10 @@ IVideoEncoder::RateCtrlMode HimppVideoEncoder::getRcMode()
     return _venc_chan.getRcMode();
 }
 
-bool HimppVideoEncoder::setRcMode(IVideoEncoder::RateCtrlMode mode)
+void HimppVideoEncoder::setRcMode(IVideoEncoder::RateCtrlMode mode)
 {
-    return _venc_chan.setRcMode(mode);
+    if (!_venc_chan.setRcMode(mode))
+        throw IpcamError("set rate control mode failed");
 }
 
 uint32_t HimppVideoEncoder::getBitrate()
@@ -317,9 +598,10 @@ uint32_t HimppVideoEncoder::getBitrate()
     return _venc_chan.getBitrate();
 }
 
-bool HimppVideoEncoder::setBitrate(uint32_t kbps)
+void HimppVideoEncoder::setBitrate(uint32_t kbps)
 {
-    return _venc_chan.setBitrate(kbps);
+    if (!_venc_chan.setBitrate(kbps))
+        throw IpcamError("set bitrate failed");
 }
 
 IH264VideoEncoder::H264Profile HimppVideoEncoder::getProfile()
@@ -327,9 +609,10 @@ IH264VideoEncoder::H264Profile HimppVideoEncoder::getProfile()
     return _venc_chan.getProfile();
 }
 
-bool HimppVideoEncoder::setProfile(IH264VideoEncoder::H264Profile profile)
+void HimppVideoEncoder::setProfile(IH264VideoEncoder::H264Profile profile)
 {
-    return _venc_chan.setH264Profile(profile);
+    if (!_venc_chan.setH264Profile(profile))
+        throw IpcamError("set h264 profile failed");
 }
 
 uint32_t  HimppVideoEncoder::getGovLength()
@@ -337,9 +620,10 @@ uint32_t  HimppVideoEncoder::getGovLength()
     return _venc_chan.getGop();
 }
 
-bool HimppVideoEncoder::setGovLength(uint32_t gop)
+void HimppVideoEncoder::setGovLength(uint32_t gop)
 {
-    return _venc_chan.setGop(gop);
+    if (!_venc_chan.setGop(gop))
+        throw IpcamError("set gop failed");
 }
 
 int HimppVideoEncoder::fileDescriptor()
@@ -365,6 +649,8 @@ bool HimppVideoEncoder::disable()
 
 
 //////////////////////////////////////////////////////////////////////////////
+// HimppAudioSource
+//////////////////////////////////////////////////////////////////////////////
 
 HimppAudioSource::HimppAudioSource(HimppMedia &media)
     : _media(media)
@@ -381,6 +667,8 @@ uint32_t HimppAudioSource::getChannels()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// HimppAudioEncoder
 //////////////////////////////////////////////////////////////////////////////
 
 HimppAudioEncoder
@@ -404,10 +692,10 @@ HimppAudioEncoder::getEncoding()
     return _media._aenc_chan0.getEncoding();
 }
 
-bool
-HimppAudioEncoder::setEncoding(IAudioEncoder::EncodingType value)
+void HimppAudioEncoder::setEncoding(IAudioEncoder::EncodingType value)
 {
-    return _media._aenc_chan0.setEncoding(value);
+    if (!_media._aenc_chan0.setEncoding(value))
+        throw IpcamError("set audio encoding failed");
 }
 
 uint32_t HimppAudioEncoder::getBitrate()
@@ -415,9 +703,10 @@ uint32_t HimppAudioEncoder::getBitrate()
     return _media._aenc_chan0.getBitrate();
 }
 
-bool HimppAudioEncoder::setBitrate(uint32_t value)
+void HimppAudioEncoder::setBitrate(uint32_t value)
 {
-    return _media._aenc_chan0.setBitrate(value);
+    if (!_media._aenc_chan0.setBitrate(value))
+        throw IpcamError("set audio bitrate failed");
 }
 
 uint32_t HimppAudioEncoder::getSampleRate()
@@ -425,9 +714,10 @@ uint32_t HimppAudioEncoder::getSampleRate()
     return _media._ai_dev0.getSampleRate();
 }
 
-bool HimppAudioEncoder::setSampleRate(uint32_t value)
+void HimppAudioEncoder::setSampleRate(uint32_t value)
 {
-    return _media._ai_dev0.setSampleRate(value);
+    if (!_media._ai_dev0.setSampleRate(value))
+        throw IpcamError("set audio sample rate failed");
 }
 
 bool HimppAudioEncoder::enable()
@@ -447,6 +737,8 @@ bool HimppAudioEncoder::disable()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// HimppMedia
 //////////////////////////////////////////////////////////////////////////////
 
 HimppMedia::HimppMedia(UsageEnvironment *env, std::string sensor_name)
