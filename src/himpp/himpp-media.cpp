@@ -446,7 +446,7 @@ void HimppVideoSource::Imaging::Exposure::setIris(uint32_t value)
     if (isp) {
         HimppVideoISP::Exposure *exposure = isp->getExposure();
         if (exposure) {
-            exposure->setIris(value);
+            return exposure->setIris(value);
         }
     }
 
@@ -482,7 +482,7 @@ void HimppVideoSource::Imaging::WhiteBalance::setMode(IVideoSource::Imaging::Whi
     if (isp) {
         HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
         if (wb) {
-            wb->setWBMode(value);
+            return wb->setWBMode(value);
         }
     }
 
@@ -508,7 +508,7 @@ void HimppVideoSource::Imaging::WhiteBalance::setCbGain(uint32_t value)
     if (isp) {
         HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
         if (wb) {
-            wb->setCbGain(value);
+            return wb->setCbGain(value);
         }
     }
 
@@ -534,7 +534,7 @@ void HimppVideoSource::Imaging::WhiteBalance::setCrGain(uint32_t value)
     if (isp) {
         HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
         if (wb) {
-            wb->setCrGain(value);
+            return wb->setCrGain(value);
         }
     }
 
