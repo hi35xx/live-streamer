@@ -73,52 +73,52 @@ HimppVideoSource::Imaging::Imaging(HimppMedia &media)
 {
 }
 
-int HimppVideoSource::Imaging::getBrightness()
+uint32_t HimppVideoSource::Imaging::getBrightness()
 {
     return _media._vi_dev.getBrightness();
 }
 
-void HimppVideoSource::Imaging::setBrightness(int value)
+void HimppVideoSource::Imaging::setBrightness(uint32_t value)
 {
     _media._vi_dev.setBrightness(value);
 }
 
-int HimppVideoSource::Imaging::getContrast()
+uint32_t HimppVideoSource::Imaging::getContrast()
 {
     return _media._vi_dev.getContrast();
 }
 
-void HimppVideoSource::Imaging::setContrast(int value)
+void HimppVideoSource::Imaging::setContrast(uint32_t value)
 {
     _media._vi_dev.setContrast(value);
 }
 
-int HimppVideoSource::Imaging::getChroma()
+uint32_t HimppVideoSource::Imaging::getChroma()
 {
     return _media._vi_dev.getChroma();
 }
 
-void HimppVideoSource::Imaging::setChroma(int value)
+void HimppVideoSource::Imaging::setChroma(uint32_t value)
 {
     _media._vi_dev.setChroma(value);
 }
 
-int HimppVideoSource::Imaging::getSaturation()
+uint32_t HimppVideoSource::Imaging::getSaturation()
 {
     return _media._vi_dev.getSaturation();
 }
 
-void HimppVideoSource::Imaging::setSaturation(int value)
+void HimppVideoSource::Imaging::setSaturation(uint32_t value)
 {
     _media._vi_dev.setSaturation(value);
 }
 
-int HimppVideoSource::Imaging::getSharpness()
+uint32_t HimppVideoSource::Imaging::getSharpness()
 {
     return 0;
 }
 
-void HimppVideoSource::Imaging::setSharpness(int value)
+void HimppVideoSource::Imaging::setSharpness(uint32_t value)
 {
     throw IpcamError("not implemented");
 }

@@ -35,12 +35,12 @@ HimppViDev::~HimppViDev()
 {
 }
 
-int32_t HimppViDev::getBrightness()
+uint32_t HimppViDev::getBrightness()
 {
     return _brightness;
 }
 
-void HimppViDev::setBrightness(int32_t val)
+void HimppViDev::setBrightness(uint32_t val)
 {
     _brightness = val;
 
@@ -55,12 +55,12 @@ void HimppViDev::setBrightness(int32_t val)
     }
 }
 
-int32_t HimppViDev::getContrast()
+uint32_t HimppViDev::getContrast()
 {
     return _contrast;
 }
 
-void HimppViDev::setContrast(int32_t val)
+void HimppViDev::setContrast(uint32_t val)
 {
     _contrast = val;
 
@@ -75,12 +75,12 @@ void HimppViDev::setContrast(int32_t val)
     }
 }
 
-int32_t HimppViDev::getChroma()
+uint32_t HimppViDev::getChroma()
 {
     return _chroma;
 }
 
-void HimppViDev::setChroma(int32_t val)
+void HimppViDev::setChroma(uint32_t val)
 {
     _chroma = val;
 
@@ -95,12 +95,12 @@ void HimppViDev::setChroma(int32_t val)
     }
 }
 
-int32_t HimppViDev::getSaturation()
+uint32_t HimppViDev::getSaturation()
 {
     return _saturation;
 }
 
-void HimppViDev::setSaturation(int32_t val)
+void HimppViDev::setSaturation(uint32_t val)
 {
     _saturation = val;
 

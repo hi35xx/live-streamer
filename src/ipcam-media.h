@@ -134,16 +134,16 @@ public:
             virtual void            setRatio(uint32_t value) = 0;
         };
     public:
-        virtual int32_t             getBrightness() = 0;
-        virtual void                setBrightness(int32_t value) = 0;
-        virtual int32_t             getContrast() = 0;
-        virtual void                setContrast(int32_t value) = 0;
-        virtual int32_t             getChroma() = 0;
-        virtual void                setChroma(int32_t value) = 0;
-        virtual int32_t             getSaturation() = 0;
-        virtual void                setSaturation(int32_t value) = 0;
-        virtual int32_t             getSharpness() = 0;
-        virtual void                setSharpness(int32_t value) = 0;
+        virtual uint32_t            getBrightness() = 0;
+        virtual void                setBrightness(uint32_t value) = 0;
+        virtual uint32_t            getContrast() = 0;
+        virtual void                setContrast(uint32_t value) = 0;
+        virtual uint32_t            getChroma() = 0;
+        virtual void                setChroma(uint32_t value) = 0;
+        virtual uint32_t            getSaturation() = 0;
+        virtual void                setSaturation(uint32_t value) = 0;
+        virtual uint32_t            getSharpness() = 0;
+        virtual void                setSharpness(uint32_t value) = 0;
 
         virtual Backlight*          getBacklight() = 0;
         virtual Focus*              getFocus() = 0;

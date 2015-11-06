@@ -38,14 +38,14 @@ public:
     uint32_t getFramerate();
 
     VI_DEV getDeviceId() { return _devid; }
-    int32_t getBrightness();
-    void    setBrightness(int32_t);
-    int32_t getContrast();
-    void    setContrast(int32_t);
-    int32_t getChroma();
-    void    setChroma(int32_t);
-    int32_t getSaturation();
-    void    setSaturation(int32_t);
+    uint32_t getBrightness();
+    void     setBrightness(uint32_t);
+    uint32_t getContrast();
+    void     setContrast(uint32_t);
+    uint32_t getChroma();
+    void     setChroma(uint32_t);
+    uint32_t getSaturation();
+    void     setSaturation(uint32_t);
 protected:
     bool enableObject();
     bool disableObject();
@@ -53,11 +53,11 @@ private:
     HimppVideoSensor*   _video_sensor;
     HimppVideoISP       _video_isp;
     VI_DEV              _devid;
-    int32_t             _brightness;
-    int32_t             _contrast;
-    int32_t             _chroma;
-    int32_t             _saturation;
-    int32_t             _sharpness;
+    uint32_t            _brightness;
+    uint32_t            _contrast;
+    uint32_t            _chroma;
+    uint32_t            _saturation;
+    uint32_t            _sharpness;
 };
 
 class HimppViChan: public HimppVideoObject

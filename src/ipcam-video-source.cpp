@@ -188,19 +188,19 @@ void IpcamVideoSource::on_set_property
         if (!imaging) throw DBus::ErrorFailed("requested interface not support");
 
         if (property == "Brightness") {
-            imaging->setBrightness((int)value);
+            imaging->setBrightness((uint32_t)value);
         }
         else if (property == "Contrast") {
-            imaging->setContrast((int)value);
+            imaging->setContrast((uint32_t)value);
         }
         else if (property == "Chroma") {
-            imaging->setChroma((int)value);
+            imaging->setChroma((uint32_t)value);
         }
         else if (property == "Saturation") {
-            imaging->setSaturation((int)value);
+            imaging->setSaturation((uint32_t)value);
         }
         else if (property == "Sharpness") {
-            imaging->setSharpness((int)value);
+            imaging->setSharpness((uint32_t)value);
         }
     }
     else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Backlight") {

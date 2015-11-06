@@ -95,16 +95,16 @@ public:
     public:
         Imaging(HimppMedia &media);
 
-        int32_t     getBrightness();
-        void        setBrightness(int32_t value);
-        int32_t     getContrast();
-        void        setContrast(int32_t value);
-        int32_t     getChroma();
-        void        setChroma(int32_t value);
-        int32_t     getSaturation();
-        void        setSaturation(int32_t value);
-        int32_t     getSharpness();
-        void        setSharpness(int32_t value);
+        uint32_t    getBrightness();
+        void        setBrightness(uint32_t value);
+        uint32_t    getContrast();
+        void        setContrast(uint32_t value);
+        uint32_t    getChroma();
+        void        setChroma(uint32_t value);
+        uint32_t    getSaturation();
+        void        setSaturation(uint32_t value);
+        uint32_t    getSharpness();
+        void        setSharpness(uint32_t value);
 
         IVideoSource::Imaging::Backlight*        getBacklight();
         IVideoSource::Imaging::Focus*            getFocus();

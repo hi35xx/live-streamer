@@ -5,11 +5,11 @@
     <property name="Framerate" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging">
-    <property name="Brightness" type="i" access="readwrite"/>
-    <property name="Contrast" type="i" access="readwrite"/>
-    <property name="Chroma" type="i" access="readwrite"/>
-    <property name="Saturation" type="i" access="readwrite"/>
-    <property name="Sharpness" type="i" access="readwrite"/>
+    <property name="Brightness" type="u" access="readwrite"/>
+    <property name="Contrast" type="u" access="readwrite"/>
+    <property name="Chroma" type="u" access="readwrite"/>
+    <property name="Saturation" type="u" access="readwrite"/>
+    <property name="Sharpness" type="u" access="readwrite"/>
     <property name="IrCutFilter" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.Backlight">
