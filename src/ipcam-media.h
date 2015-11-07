@@ -29,6 +29,7 @@ namespace Ipcam
 namespace Interface
 {
 
+enum AutoOperatingMode { AUTO_OPMODE, MANUAL_OPMODE };
 typedef DBus::ErrorFailed   IpcamError;
 
 class ImageResolution
@@ -112,6 +113,12 @@ public:
             virtual void            setCrGain(uint32_t value) = 0;
             virtual uint32_t        getCbGain() = 0;
             virtual void            setCbGain(uint32_t value) = 0;
+            virtual uint32_t        getRGain() = 0;
+            virtual void            setRGain(uint32_t value) = 0;
+            virtual uint32_t        getGGain() = 0;
+            virtual void            setGGain(uint32_t value) = 0;
+            virtual uint32_t        getBGain() = 0;
+            virtual void            setBGain(uint32_t value) = 0;
         };
         class WideDynamicRange      // Wide Dynamic Range
         {

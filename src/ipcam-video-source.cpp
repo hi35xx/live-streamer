@@ -141,6 +141,15 @@ void IpcamVideoSource::on_get_property
         else if (property == "CbGain") {
             mi.append_uint32(wb->getCbGain());
         }
+		else if (property == "RGain") {
+			mi.append_uint32(wb->getRGain());
+		}
+		else if (property == "GGain") {
+			mi.append_uint32(wb->getGGain());
+		}
+		else if (property == "BGain") {
+			mi.append_uint32(wb->getBGain());
+		}
     }
     else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WideDynamicRange") {
         IVideoSource::Imaging *imaging = _video_source->getImaging();
@@ -280,6 +289,15 @@ void IpcamVideoSource::on_set_property
         }
         else if (property == "CbGain") {
             wb->setCbGain((uint32_t)value);
+        }
+        else if (property == "RGain") {
+            wb->setRGain((uint32_t)value);
+        }
+        else if (property == "GGain") {
+            wb->setGGain((uint32_t)value);
+        }
+        else if (property == "BGain") {
+            wb->setBGain((uint32_t)value);
         }
     }
     else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WideDynamicRange") {

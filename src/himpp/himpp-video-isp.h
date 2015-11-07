@@ -72,6 +72,8 @@ public:
         void setIris(uint32_t value);
         uint32_t getIris();
     private:
+        friend class HimppVideoISP;
+
         bool isEnabled() { return _video_isp.isEnabled(); }
         HimppVideoISP &     _video_isp;
         ExposureMode        _mode;
@@ -98,12 +100,23 @@ public:
         uint32_t getCbGain();
         void setCrGain(uint32_t value);
         uint32_t getCrGain();
+        void setRGain(uint32_t value);
+        uint32_t getRGain();
+        void setGGain(uint32_t value);
+        uint32_t getGGain();
+        void setBGain(uint32_t value);
+        uint32_t getBGain();
     private:
+        friend class HimppVideoISP;
+
         bool isEnabled() { return _video_isp.isEnabled(); }
         HimppVideoISP &     _video_isp;
         WhiteBalanceMode    _mode;
         uint32_t            _cb_gain;
         uint32_t            _cr_gain;
+        uint32_t            _r_gain;
+        uint32_t            _g_gain;
+        uint32_t            _b_gain;
     };
 
 public:

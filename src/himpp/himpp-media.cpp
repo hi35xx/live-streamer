@@ -541,6 +541,84 @@ void HimppVideoSource::Imaging::WhiteBalance::setCrGain(uint32_t value)
     throw IpcamError("Requested interface not supported");
 }
 
+uint32_t HimppVideoSource::Imaging::WhiteBalance::getRGain()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getRGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setRGain(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->setRGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::WhiteBalance::getGGain()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getGGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setGGain(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->setGGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::WhiteBalance::getBGain()
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->getBGain();
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WhiteBalance::setBGain(uint32_t value)
+{
+    HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev;
+    if (isp) {
+        HimppVideoISP::WhiteBalance *wb = isp->getWhiteBalance();
+        if (wb) {
+            return wb->setBGain(value);
+        }
+    }
+
+    throw IpcamError("Requested interface not supported");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // HimppVideoEncoder

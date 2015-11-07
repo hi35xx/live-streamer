@@ -39,6 +39,9 @@
     <property name="Mode" type="u" access="readwrite"/>
     <property name="CrGain" type="u" access="readwrite"/>
     <property name="CbGain" type="u" access="readwrite"/>
+    <property name="RGain" type="u" access="readwrite"/>
+    <property name="GGain" type="u" access="readwrite"/>
+    <property name="BGain" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.WideDynamicRange">
     <property name="Mode" type="u" access="readwrite"/>

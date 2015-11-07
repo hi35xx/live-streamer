@@ -89,6 +89,12 @@ public:
             void        setCbGain(uint32_t value);
             uint32_t    getCrGain();
             void        setCrGain(uint32_t value);
+            uint32_t    getRGain();
+            void        setRGain(uint32_t value);
+            uint32_t    getGGain();
+            void        setGGain(uint32_t value);
+            uint32_t    getBGain();
+            void        setBGain(uint32_t value);
         private:
             HimppMedia& _media;
         };
