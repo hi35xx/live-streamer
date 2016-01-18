@@ -1,0 +1,6 @@
+*~
+*.swp
+*.bak
+*.anjuta
+.anjuta*
+autom4te.cache/*
