@@ -36,23 +36,21 @@
 #include <dbus/dbus.h>
 #include <dbus-c++/dbus.h>
 #include "dbusxx-libev-integration.h"
+
+#include "ipcam-runtime.h"
+
 #include "ipcam-video-source.h"
 #include "ipcam-video-encoder.h"
 #include "ipcam-audio-source.h"
 #include "ipcam-audio-encoder.h"
 
-#ifdef HAVE_HIMPP_SUPPORT
-#include <himpp/himpp-media.h>
-#include "himpp/HimppStreamInput.hh"
+#if defined(HAVE_HI3518MPP_SUPPORT) || defined(HAVE_HI3520MPP_SUPPORT)
+#include "himpp-media.h"
 #endif
 
 ev::default_loop mainloop;
 
 static const char *IPCAM_SERVER_NAME = "ipcam.Media";
-static const char *VIDEO_SOURCE_SERVER_PATH = "/ipcam/Media/VideoSource";
-static const char *VIDEO_ENCODER_SERVER_PATH = "/ipcam/Media/VideoEncoder";
-static const char *AUDIO_SOURCE_SERVER_PATH = "/ipcam/Media/AudioSource";
-static const char *AUDIO_ENCODER_SERVER_PATH = "/ipcam/Media/AudioEncoder";
 
 static const char* sensor_type = "ov9712";
 static int rtsp_port = 554;
@@ -63,6 +61,7 @@ static void list_supported_sensors(void)
 {
 	std::cout << "RTSP/RTP stream server\n";
 	std::cout << "Supported sensor:\n";
+#ifdef HAVE_HI3518MPP_SUPPORT
 	for (auto s : himpp_video_sensor_map) {
 		HimppVideoSensor &sensor = s.second;
 		ISP_IMAGE_ATTR_S *attr = sensor;
@@ -76,6 +75,7 @@ static void list_supported_sensors(void)
 		       resolution.c_str(),
 		       sensor.getModulePath().c_str());
 	}
+#endif
 	std::cout << std::endl;
 }
 
@@ -128,10 +128,6 @@ std::vector<std::string> split(const std::string &s, char delim)
 }
 
 static DBus::Ev::BusDispatcher dispatcher;
-static std::list<IpcamVideoSource> dbus_vsrc_list;
-static std::list<IpcamH264VideoEncoder> dbus_venc_list;
-static std::list<IpcamAudioSource> dbus_asrc_list;
-static std::list<IpcamAudioEncoder> dbus_aenc_list;
 
 int main(int argc, char *argv[])
 {
@@ -222,6 +218,8 @@ int main(int argc, char *argv[])
 		DBus::Connection::SystemBus() : DBus::Connection::SessionBus();
 	conn.request_name(IPCAM_SERVER_NAME);
 
+	IpcamRuntime runtime(mainloop, rtspServer, &conn);
+
 	std::list<std::string>::const_iterator it;
 	for (it = stream_dirs.begin(); it != stream_dirs.end(); it++) {
 		std::vector<std::string> sv = split(*it, ':');
@@ -233,59 +231,15 @@ int main(int argc, char *argv[])
 		rtspServer->addStreamPath(sv[0], sv[1]);
 	}
 
-#ifdef HAVE_HIMPP_SUPPORT
-	HimppMedia media(env, sensor_type);
+#if defined(HAVE_HI3518MPP_SUPPORT)
+	Hi3518mppMedia hi3518media(&runtime, sensor_type);
+#endif
 
-	*env << "Play this using the URL:\n";
-	std::list <ServerMediaSession*> smslist = media.getServerMediaSessionList();
-	for (auto sms : smslist) {
-		rtspServer->addServerMediaSession(sms);
-		char *url = rtspServer->rtspURL(sms);
-		*env << "  " << url << "\n";
-	}
-
-	// register DBus object 'ipcam.Media.VideoSource'
-	std::list<HimppVideoSource*> vsl = media.getVideoSourceList();
-	for (auto vs : vsl) {
-		int i = dbus_vsrc_list.size();
-		std::string obj_path = std::string(VIDEO_SOURCE_SERVER_PATH) + std::to_string(i);
-		dbus_vsrc_list.emplace_back(conn, obj_path, (HimppVideoSource*)vs);
-	}
-	// register DBus object 'ipcam.Media.VideoEncoder'
-	std::list<HimppVideoEncoder*> vel = media.getVideoEncoderList();
-	for (auto ve : vel) {
-		int i = dbus_venc_list.size();
-		std::string obj_path = std::string(VIDEO_ENCODER_SERVER_PATH) + std::to_string(i);
-		dbus_venc_list.emplace_back(conn, obj_path, (HimppVideoEncoder*)ve);
-	}
-	// register DBus object 'ipcam.Media.AudioSource'
-	std::list<HimppAudioSource*> asl = media.getAudioSourceList();
-	for (auto as : asl) {
-		int i = dbus_asrc_list.size();
-		std::string obj_path = std::string(AUDIO_SOURCE_SERVER_PATH) + std::to_string(i);
-		dbus_asrc_list.emplace_back(conn, obj_path, (HimppAudioSource*)as);
-	}
-	// register DBus object 'ipcam.Media.AudioEncoder'
-	std::list<HimppAudioEncoder*> ael = media.getAudioEncoderList();
-	for (auto ae : ael) {
-		int i = dbus_aenc_list.size();
-		std::string obj_path = std::string(AUDIO_ENCODER_SERVER_PATH) + std::to_string(i);
-		dbus_aenc_list.emplace_back(conn, obj_path, (HimppAudioEncoder*)ae);
-	}
+#if defined(HAVE_HI3520MPP_SUPPORT)
+	Hi3520mppMedia hi3520media(&runtime, sensor_type);
 #endif
 
 	mainloop.run();
-
-#ifdef HAVE_HIMPP_SUPPORT
-	for (auto sms : smslist) {
-		rtspServer->removeServerMediaSession(sms);
-	}
-#endif
-
-	dbus_vsrc_list.clear();
-	dbus_venc_list.clear();
-	dbus_asrc_list.clear();
-	dbus_aenc_list.clear();
 
 	Medium::close(rtspServer);
 

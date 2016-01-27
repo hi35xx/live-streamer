@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(live-streamer, 0.8.0)
+AC_INIT(live-streamer, 0.9.0)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -32,127 +32,175 @@ PKG_CHECK_MODULES(DBUSXX, [dbus-c++-1])
 # --------------------- #
 
 dnl Utility to simplify finding libraries.
-dnl $1 = library to find
-dnl $2 = the shell variable to assign the result to
-dnl      If library is found we store $version here.
-dnl $3 = additional flags to add to CPPFLAGS
-dnl $4 = additional flags to add to LDFLAGS
-dnl $5 = program input
-
+dnl Usage:
+dnl AC_CHECK_LIBRARY(
+dnl     additional-cppflags,
+dnl     additional-ldflags,
+dnl     input,
+dnl     [action-if-found],
+dnl     [action-if-false]
+dnl )
 AC_DEFUN([AC_CHECK_LIBRARY],
 [
-  libname=$1
-  define([have_library_var],$2)
-  new_CPPFLAGS=$3
-  new_LDFLAGS=$4
-  define([prog_input],$5)
-  AC_MSG_CHECKING([for $libname library])
+  new_CPPFLAGS=$1
+  new_LDFLAGS=$2
+  define([prog_input],$3)
+  define([action_if_true],$4)
+  define([action_if_false],$5)
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   CPPFLAGS="$CPPFLAGS $new_CPPFLAGS"
   LDFLAGS="$LDFLAGS $new_LDFLAGS"
-  AC_LINK_IFELSE(prog_input,
-                 [have_library_var=yes],
-                 [have_library_var=no])
+  AC_LINK_IFELSE(prog_input, [action_if_true], [action_if_false])
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
-  AC_MSG_RESULT([$have_library_var])
 ])
 
+ac_sysroot=${lt_sysroot:-`$CC --print-sysroot 2>/dev/null`}
 
-live555inc=""
-live555lib="-lBasicUsageEnvironment -lUsageEnvironment -lgroupsock -lliveMedia"
 
+dnl check for live555 library
 AC_ARG_WITH(live555,
-[AS_HELP_STRING([--with-live555=PATH],
-		[specify prefix directory for live555 package.
-		 Equivalent to --with-live555-include=PATH/include
-		 plus --with-live555-lib=PATH/lib])])
-AC_ARG_WITH(live555-include,
-[AS_HELP_STRING([--with-live555-include=PATH],
-		[specify directory for installed live555 include files])])
-AC_ARG_WITH(live555-lib,
-[AS_HELP_STRING([--with-live555-lib=PATH],
-		[specify directory for the installed live555 library])])
+	[AS_HELP_STRING([--with-live555=PATH],
+		[specify prefix directory for live555 package.])])
 
-if test "x$with_live555" != x; then
-  live555inc="-I$with_live555/include/BasicUsageEnvironment $live555inc"
-  live555inc="-I$with_live555/include/UsageEnvironment $live555inc"
-  live555inc="-I$with_live555/include/groupsock $live555inc"
-  live555inc="-I$with_live555/include/liveMedia $live555inc"
-  live555lib="-L$with_live555/lib $live555lib"
-fi
-if test "x$with_live555_include" != x; then
-  live555inc="-I$with_live555_include/BasicUsageEnvironment $live555inc"
-  live555inc="-I$with_live555_include/UsageEnvironment $live555inc"
-  live555inc="-I$with_live555_include/groupsock $live555inc"
-  live555inc="-I$with_live555_include/liveMedia $live555inc"
-fi
-if test "x$with_live555_lib" != x; then
-  live555lib="-L$with_live555_lib $live555lib"
-fi
+AC_MSG_CHECKING([for live555 library])
+live555pfx=
+case ${with_live555} in
+ yes|'')
+   live555pfx="$ac_sysroot/usr"
+   ;;
+ /*)
+   live555pfx=`echo "$with_live555" | sed -e "$sed_quote_subst"`
+   ;;
+ no)
+   AC_MSG_RESULT([$with_live555])
+   AC_MSG_ERROR([live555 must be specified.])
+   ;;
+ *)
+   AC_MSG_RESULT([$with_live555])
+   AC_MSG_ERROR([live555 must be an absolute path."])
+   ;;
+esac
 
-AC_CHECK_LIBRARY(live555, have_live555,
-               ${live555inc}, ${live555lib},
-               [AC_LANG_PROGRAM([#include <BasicUsageEnvironment.hh>],
-                                [TaskScheduler* scheduler = BasicTaskScheduler::createNew();])])
+AC_MSG_RESULT([$live555pfx])
 
-if test "x$have_live555" = xyes; then
-  LIVE555_CPPFLAGS=$live555inc
-  LIVE555_LDFLAGS="$live555lib"
-  AC_SUBST(LIVE555_CPPFLAGS)
-  AC_SUBST(LIVE555_LDFLAGS)
+live555inc="-I$live555pfx/include/BasicUsageEnvironment \
+ -I$live555pfx/include/UsageEnvironment \
+ -I$live555pfx/include/groupsock \
+ -I$live555pfx/include/liveMedia"
+live555lib="-L$live555pfx/lib \
+ -lBasicUsageEnvironment -lUsageEnvironment \
+ -lgroupsock -lliveMedia"
+
+AC_CHECK_LIBRARY(
+  [${live555inc}], [${live555lib}],
+  [AC_LANG_PROGRAM(
+    [[#include <BasicUsageEnvironment.hh>]],
+    [[TaskScheduler* scheduler = BasicTaskScheduler::createNew();]])
+  ],
+  [
+    LIVE555_CPPFLAGS=${live555inc}
+    LIVE555_LDFLAGS=${live555lib}
+    AC_SUBST(LIVE555_CPPFLAGS)
+    AC_SUBST(LIVE555_LDFLAGS)
+  ],
+  [AC_MSG_ERROR([unable to find live555 library.])]
+)
+
+
+dnl check for hi3518 mpp library
+AC_ARG_WITH(hi3518mpp,
+	[AS_HELP_STRING([--with-hi3518mpp=PATH],
+		[specify prefix directory for himpp-hi3518 package.])],
+		[], [with_hi3518mpp=no])
+
+AC_MSG_CHECKING([for hi3518 mpp library])
+case $with_hi3518mpp in
+ yes)
+   hi3518mpppfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3518mpppfx=`echo "$with_hi3518mpp" | sed -e "$sed_quote_subst"` ;;
+ *)
+   AC_MSG_RESULT([$with_hi3518mpp])
+   AC_MSG_ERROR([hi3518mpp must be an absolute path."])
+   ;;
+esac
+if test "x$with_hi3518mpp" != xno; then
+  hi3518mppinc="-I$hi3518mpppfx/include/hi3518mpp"
+  hi3518mpplib="-L$hi3518mpppfx/lib \ 
+    -lmpi -lresampler -laec -lvqev2 -lanr -lVoiceEngine \
+    -lisp -l_hiae -l_hiawb -l_hiaf -lpthread"
+  AC_CHECK_LIBRARY([${hi3518mppinc}], $[{hi3518mpplib}],
+    [AC_LANG_PROGRAM(
+      [#include <hi_comm_sys.h>
+       #include <mpi_sys.h>],
+      [HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();])
+    ], [have_hi3518mpp=yes], [have_hi3518mpp=no]
+  )
+  if test x$have_hi3518mpp = xyes; then
+    HI3518MPP_CPPFLAGS=$hi3518mppinc
+    HI3518MPP_LDFLAGS=$hi3518mpplib
+    AC_DEFINE(HAVE_HI3518MPP_SUPPORT, 1, [support Hi3518 MPP])
+    AC_SUBST(HI3518MPP_CPPFLAGS)
+    AC_SUBST(HI3518MPP_LDFLAGS)
+  fi
 else
-  AC_MSG_ERROR([unable to find live555 library.])
+  have_hi3518mpp=no
 fi
+AC_MSG_RESULT([$have_hi3518mpp])
+AM_CONDITIONAL([ENABLE_HI3518MPP], [test x$have_hi3518mpp = xyes])
 
 
-himppinc=
-himpplib="-lmpi -lresampler -laec -lvqev2 -lanr -lVoiceEngine -lisp -l_hiae -l_hiawb -l_hiaf -lpthread"
+dnl check for hi3520 mpp library
+AC_ARG_WITH(hi3520mpp,
+	[AS_HELP_STRING([--with-hi3520mpp=PATH],
+		[specify prefix directory for himpp-hi3520 package.])],
+		[], [with_hi3520mpp=no])
 
-AC_ARG_WITH(himpp,
-[AS_HELP_STRING([--with-himpp=PATH],
-		[specify prefix directory for himpp package.
-		 Equivalent to --with-himpp-include=PATH/include
-		 plus --with-himpp-lib=PATH/lib])])
-AC_ARG_WITH(himpp-include,
-[AS_HELP_STRING([--with-himpp-include],
-		[specify directory for installed himpp include files])])
-AC_ARG_WITH(himpp-lib,
-[AS_HELP_STRING([--with-himpp-lib],
-		[specify directory for the installed himpp library])])
-
-
-if test "x$with_himpp" != x; then
-  himppinc="-I$with_himpp/include $himppinc"
-  himpplib="-L$with_himpp/lib $himpplib"
-fi
-if test "x$with_himpp_include" != x; then
-  himppinc="-I$with_himpp_include $himppinc"
-fi
-if test "x$with_himpp_lib" != x; then
-  himpplib="-L$with_himpp_lib $himpplib"
-fi
-
-AC_CHECK_LIBRARY(himpp, have_himpp,
-               ${himppinc}, ${himpplib},
-               [AC_LANG_PROGRAM([#include <hi_comm_sys.h>
-                                 #include <mpi_sys.h>],
-                                [HI_MPI_SYS_Init();
-                                 HI_MPI_SYS_Exit();])])
-
-if test "x$have_himpp" = xyes; then
-  HIMPP_CPPFLAGS=$himppinc
-  HIMPP_LDFLAGS=$himpplib
-  AM_CONDITIONAL(ENABLE_HIMPP, true)
-  AC_DEFINE(HAVE_HIMPP_SUPPORT, 1, [support hisi MPP])
-  AC_SUBST(HIMPP_CPPFLAGS)
-  AC_SUBST(HIMPP_LDFLAGS)
+AC_MSG_CHECKING([for hi3520 mpp library])
+case $with_hi3520mpp in
+ yes)
+   hi3520mpppfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3520mpppfx=`echo "$with_hi3520mpp" | sed -e "$sed_quote_subst"` ;;
+ *)
+   AC_MSG_RESULT([$with_hi3520mpp])
+   AC_MSG_ERROR([hi3520mpp must be an absolute path."])
+   ;;
+esac
+if test "x$with_hi3520mpp" != xno; then
+  hi3520mppinc="-I$hi3520mpppfx/include/hi3520mpp"
+  hi3520mpplib="-L$hi3520mpppfx/lib \ 
+    -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lpthread"
+  AC_CHECK_LIBRARY([${hi3520mppinc}], $[{hi3520mpplib}],
+    [AC_LANG_PROGRAM(
+      [#include <hi_comm_sys.h>
+       #include <mpi_sys.h>],
+      [HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();])
+    ], [have_hi3520mpp=yes], [have_hi3520mpp=no]
+  )
+  if test x$have_hi3520mpp = xyes; then
+    HI3520MPP_CPPFLAGS=$hi3520mppinc
+    HI3520MPP_LDFLAGS=$hi3520mpplib
+    AC_DEFINE(HAVE_HI3520MPP_SUPPORT, 1, [support Hi3520 MPP])
+    AC_SUBST(HI3520MPP_CPPFLAGS)
+    AC_SUBST(HI3520MPP_LDFLAGS)
+  fi
 else
-  AM_CONDITIONAL(ENABLE_HIMPP, false)
-  dnl AC_MSG_ERROR([unable to find himpp library.])
+  have_hi3520mpp=no
 fi
+AC_MSG_RESULT([$have_hi3520mpp])
+AM_CONDITIONAL([ENABLE_HI3520MPP], [test x$have_hi3520mpp = xyes])
 
+
+dnl check for libev library
 AC_CHECK_LIB([ev], ev_default_loop,
     [AC_CHECK_HEADERS(ev.h, have_libev=true, have_libev=false)],
     have_libev=false)
@@ -169,5 +217,9 @@ AM_CONDITIONAL(ENABLE_LIBEV, true)
 AC_OUTPUT([
 Makefile
 src/Makefile
-src/himpp/Makefile
+src/rtsp-server/Makefile
+src/dbus/Makefile
+src/platform/Makefile
+src/platform/hi3518mpp/Makefile
+src/platform/hi3520mpp/Makefile
 ])
