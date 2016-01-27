@@ -9,8 +9,11 @@
 /* Define to 1 if you have the <ev.h> header file. */
 #undef HAVE_EV_H
 
-/* support hisi MPP */
-#undef HAVE_HIMPP_SUPPORT
+/* support Hi3518 MPP */
+#undef HAVE_HI3518MPP_SUPPORT
+
+/* support Hi3520 MPP */
+#undef HAVE_HI3520MPP_SUPPORT
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
