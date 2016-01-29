@@ -47,7 +47,7 @@ void HimppViDev::setBrightness(uint32_t val)
         if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("get CSC attr failed");
 
-        csc_attr.u32LumaVal = _brightness;
+        csc_attr.u32LumaVal = val;
         if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("set CSC attr failed");
     }
@@ -67,7 +67,7 @@ void HimppViDev::setContrast(uint32_t val)
         if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("get CSC attr failed");
 
-        csc_attr.u32ContrVal = _contrast;
+        csc_attr.u32ContrVal = val;
         if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("set CSC attr failed");
     }
@@ -87,7 +87,7 @@ void HimppViDev::setChroma(uint32_t val)
         if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("get CSC attr failed");
 
-        csc_attr.u32HueVal = _chroma;
+        csc_attr.u32HueVal = val;
         if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("set CSC attr failed");
     }
@@ -107,7 +107,7 @@ void HimppViDev::setSaturation(uint32_t val)
         if (HI_MPI_VI_GetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("get CSC attr failed");
 
-        csc_attr.u32SatuVal = _saturation;
+        csc_attr.u32SatuVal = val;
         if (HI_MPI_VI_SetCSCAttr(_devid, &csc_attr) != HI_SUCCESS)
             throw IpcamError("set CSC attr failed");
     }
@@ -306,8 +306,14 @@ void HimppViChan::setRotate(ROTATE_E value)
         throw IpcamError("Invalid Value");
 
     if (isEnabled()) {
-        if (!disableObject() || !enableObject())
+        ROTATE_E old_val = _rotate;
+        _rotate = value;
+        if (!disableObject() || !enableObject()) {
+            _rotate = old_val;
+            disableObject();
+            enableObject();
             throw IpcamError("Failed to set property");
+        }
     }
 
     _rotate = value;
@@ -320,9 +326,17 @@ bool HimppViChan::getMirror()
 
 void HimppViChan::setMirror(bool value)
 {
+    HI_U32 s32Ret;
+    VI_CHN_ATTR_S   attr;
+
     if (isEnabled()) {
-        if (!disableObject() || !enableObject())
+        if ((s32Ret = HI_MPI_VI_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+            throw IpcamError("Failed to get property");
+        }
+        attr.bMirror = (HI_BOOL)value;
+        if ((s32Ret = HI_MPI_VI_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
             throw IpcamError("Failed to set property");
+        }
     }
 
     _mirror = value;
@@ -335,9 +349,17 @@ bool HimppViChan::getFlip()
 
 void HimppViChan::setFlip(bool value)
 {
+    HI_U32 s32Ret;
+    VI_CHN_ATTR_S   attr;
+
     if (isEnabled()) {
-        if (!disableObject() || !enableObject())
+        if ((s32Ret = HI_MPI_VI_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+            throw IpcamError("Failed to get property");
+        }
+        attr.bFlip = (HI_BOOL)value;
+        if ((s32Ret = HI_MPI_VI_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
             throw IpcamError("Failed to set property");
+        }
     }
 
     _flip = value;
