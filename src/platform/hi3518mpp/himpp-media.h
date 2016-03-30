@@ -277,6 +277,7 @@ private:
     HimppAiDev          _ai_dev0;
     HimppAiChan         _ai_chan0;
     HimppAencChan       _aenc_chan0;
+    HimppAencChan       _aenc_chan1;
 
     friend class HimppVideoSource;
     friend class HimppH264VideoEncoder;
@@ -286,6 +287,7 @@ private:
     HimppVideoStream        _video_stream0;
     HimppVideoStream        _video_stream1;
     HimppAudioStream        _audio_stream0;
+    HimppAudioStream        _audio_stream1;
 
     HimppVideoSource        _video_source0;
     HimppH264VideoEncoder   _video_encoder0;
@@ -293,6 +295,7 @@ private:
 
     HimppAudioSource        _audio_source0;
     HimppAudioEncoder       _audio_encoder0;
+    HimppAudioEncoder       _audio_encoder1;
 
     ServerMediaSession* addSMS(std::string stream_path,
                                HimppH264VideoEncoder* v_encoder,

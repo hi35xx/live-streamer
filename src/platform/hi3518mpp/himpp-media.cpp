@@ -962,7 +962,6 @@ unsigned int HimppAudioStream
 ::getStreamData(unsigned char* buf, unsigned int bufsiz,
                 unsigned int &truncated, struct timeval &tstamp)
 {
-
     AUDIO_STREAM_S stStream;
     unsigned int frame_size;
     HI_S32 s32Ret;
@@ -1046,25 +1045,27 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
       _vpss_chan0(&_vpss_group0, 0),
       _venc_chan0(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 0, 0),
       _venc_chan1(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 1, 1),
-      _acodec(), _ai_dev0(&_acodec, 0),
-      _ai_chan0(&_ai_dev0, 0), _aenc_chan0(&_ai_chan0, 0),
+      _acodec(), _ai_dev0(&_acodec, 0), _ai_chan0(&_ai_dev0, 0),
+      _aenc_chan0(&_ai_chan0, 0), _aenc_chan1(&_ai_chan0, 1),
       _video_stream0(runtime, _venc_chan0),
       _video_stream1(runtime, _venc_chan1),
       _audio_stream0(runtime, _ai_dev0, _aenc_chan0),
+      _audio_stream1(runtime, _ai_dev0, _aenc_chan1),
       _video_source0(*this),
       _video_encoder0(*this, _venc_chan0),
       _video_encoder1(*this, _venc_chan1),
       _audio_source0(*this),
-      _audio_encoder0(*this, _aenc_chan0)
+      _audio_encoder0(*this, _aenc_chan0),
+      _audio_encoder1(*this, _aenc_chan1)
 {
     ImageResolution ri = _vi_dev0.getResolution();
     ImageResolution r0 = _venc_chan0.getResolution();
     ImageResolution r1(640, 360);
     _venc_chan0.setEncoding(IVideoEncoder::H264);
-    _venc_chan0.setFramerate(20);
+    //_venc_chan0.setFramerate(20);
     _venc_chan1.setEncoding(IVideoEncoder::H264);
     _venc_chan1.setResolution(r1);
-    _venc_chan1.setFramerate(15);
+    //_venc_chan1.setFramerate(15);
     _sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 4);
     _sysctl.addVideoBuffer(r0.Width * r0.Height * 3 / 2, 2);
     _sysctl.addVideoBuffer(r1.Width * r1.Height * 3 / 2, 2);
@@ -1072,7 +1073,7 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
     _sysctl.enable();
 
     runtime->addRTSPStream(&_video_stream0, &_audio_stream0);
-    runtime->addRTSPStream(&_video_stream1, NULL);
+    runtime->addRTSPStream(&_video_stream1, &_audio_stream1);
 
     runtime->addVideoSourceInterface(&_video_source0);
 
@@ -1081,6 +1082,7 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
 
     runtime->addAudioSourceInterface(&_audio_source0);
     runtime->addAudioEncoderInterface(&_audio_encoder0);
+    runtime->addAudioEncoderInterface(&_audio_encoder1);
 }
 
 Hi3518mppMedia::~Hi3518mppMedia()
