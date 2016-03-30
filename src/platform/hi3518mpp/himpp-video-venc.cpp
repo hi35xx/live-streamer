@@ -180,6 +180,8 @@ bool HimppVencChan::setFramerate(uint32_t fps)
         disableObject();
         enableObject();
     }
+
+    return true;
 }
 
 uint32_t HimppVencChan::getFramerate()
