@@ -52,10 +52,10 @@ private:
 	DBus::Connection    *_dbus_connection;
 
 	typedef std::list<ServerMediaSession*> IpcamStreamList;
-	typedef std::list<IpcamAudioSource> IpcamAudioSourceList;
-	typedef std::list<IpcamAudioEncoder> IpcamAudioEncoderList;
-	typedef std::list<IpcamVideoSource> IpcamVideoSourceList;
-	typedef std::list<IpcamVideoEncoder> IpcamVideoEncoderList;
+	typedef std::list<std::unique_ptr<IpcamAudioSource>> IpcamAudioSourceList;
+	typedef std::list<std::unique_ptr<IpcamAudioEncoder>> IpcamAudioEncoderList;
+	typedef std::list<std::unique_ptr<IpcamVideoSource>> IpcamVideoSourceList;
+	typedef std::list<std::unique_ptr<IpcamVideoEncoder>> IpcamVideoEncoderList;
 	IpcamStreamList			_stream_list;
 	IpcamAudioSourceList	_audio_source_list;
 	IpcamAudioEncoderList   _audio_encoder_list;

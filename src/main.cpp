@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 	authDB->addUserRecord("username1", "password1");
 #endif
 
-	OutPacketBuffer::increaseMaxSizeTo(1 * 1024 * 1024);
+	OutPacketBuffer::increaseMaxSizeTo(256 * 1024);
 
 	// Create the RTSP server
 	DynamicRTSPServer *rtspServer;
