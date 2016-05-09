@@ -23,7 +23,7 @@
 #include <OnDemandServerMediaSubsession.hh>
 #include <ipcam-media-iface.h>
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
 class LiveVideoServerMediaSubsession: public OnDemandServerMediaSubsession {
 public:

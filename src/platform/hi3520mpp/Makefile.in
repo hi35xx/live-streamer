@@ -106,7 +106,7 @@ libhi3520mpp_la_DEPENDENCIES =  \
 	$(top_builddir)/src/dbus/libdbus-iface.la
 am_libhi3520mpp_la_OBJECTS = himpp-object.lo himpp-sysctl.lo \
 	himpp-video-codec.lo himpp-video-viu.lo himpp-video-vpss.lo \
-	himpp-video-venc.lo himpp-media.lo
+	himpp-video-venc.lo himpp-video-region.lo himpp-media.lo
 libhi3520mpp_la_OBJECTS = $(am_libhi3520mpp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -222,6 +222,10 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FONTCONFIG_CFLAGS = @FONTCONFIG_CFLAGS@
+FONTCONFIG_LIBS = @FONTCONFIG_LIBS@
+FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
+FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
 HI3518MPP_CPPFLAGS = @HI3518MPP_CPPFLAGS@
@@ -265,6 +269,8 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
+SDL_CFLAGS = @SDL_CFLAGS@
+SDL_LIBS = @SDL_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -353,6 +359,8 @@ libhi3520mpp_la_SOURCES = \
 	himpp-video-vpss.h \
 	himpp-video-venc.cpp \
 	himpp-video-venc.h \
+	himpp-video-region.cpp \
+	himpp-video-region.h \
 	himpp-media.cpp \
 	himpp-media.h
 
@@ -418,6 +426,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-object.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-sysctl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-codec.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-region.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-venc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-viu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-vpss.Plo@am__quote@

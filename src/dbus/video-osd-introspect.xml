@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<node>
+  <interface name="ipcam.Media.OSD">
+    <property name="Type" type="u" access="readwrite" />
+    <property name="Visiable" type="b" access="readwrite"/>
+    <property name="Size" type="(uu)" access="readwrite"/>
+    <property name="Position" type="(ii)" access="readwrite"/>
+    <property name="BackgroundColor" type="u" access="readwrite"/>
+    <property name="ForegroundAlpha" type="u" access="readwrite"/>
+    <property name="BackgroundAlpha" type="u" access="readwrite"/>
+    <property name="InvertColor" type="b" access="readwrite"/>
+	<!-- Text properties -->
+    <property name="Text" type="s" access="readwrite"/>
+    <property name="FontName" type="s" access="readwrite"/>
+    <property name="FontColor" type="u" access="readwrite"/>
+	<!-- Image properties -->
+    <property name="ImagePath" type="s" access="readwrite"/>
+  </interface>
+</node>

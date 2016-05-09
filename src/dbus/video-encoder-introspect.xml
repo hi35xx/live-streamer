@@ -14,4 +14,16 @@
     <property name="H264Profile" type="u" access="readwrite"/>
     <property name="GovLength" type="u" access="readwrite"/>
   </interface>
+  <interface name="ipcam.Media.VideoEncoder.OSD">
+    <method name="CreateOSD">
+      <arg name="index" type="u" direction="in"/>
+      <arg name="path" type="o" direction="out"/>
+    </method>
+    <method name="DeleteOSD">
+      <arg name="index" type="u" direction="in"/>
+    </method>
+    <method name="GetOSDs">
+      <arg name="osds" type="a{uo}" direction="out"/>
+    </method>
+  </interface>
 </node>

@@ -11,20 +11,23 @@ BUILT_SOURCES = \
 	audio-source-server-glue.h \
 	audio-encoder-server-glue.h \
 	video-source-server-glue.h \
-	video-encoder-server-glue.h
+	video-encoder-server-glue.h \
+	video-osd-server-glue.h
 
 libdbus_iface_la_SOURCES =  \
 	dbusxx-libev-integration.cpp \
 	dbusxx-libev-integration.h \
 	$(BUILT_SOURCES) \
-	ipcam-audio-encoder.cpp \
-	ipcam-audio-encoder.h \
-	ipcam-audio-source.cpp \
-	ipcam-audio-source.h \
-	ipcam-video-encoder.cpp \
-	ipcam-video-encoder.h \
-	ipcam-video-source.cpp \
-	ipcam-video-source.h
+	dbus-audio-source.cpp \
+	dbus-audio-source.h \
+	dbus-audio-encoder.cpp \
+	dbus-audio-encoder.h \
+	dbus-video-osd.cpp \
+	dbus-video-osd.h \
+	dbus-video-source.cpp \
+	dbus-video-source.h \
+	dbus-video-encoder.cpp \
+	dbus-video-encoder.h
 
 %-server-glue.h: %-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@

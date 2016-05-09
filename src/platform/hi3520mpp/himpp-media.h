@@ -26,9 +26,10 @@
 #include <himpp-video-vpss.h>
 #include <himpp-video-venc.h>
 
+#include <ipcam-media-iface.h>
 #include <ipcam-runtime.h>
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
 class Hi3520mppMedia;
 
@@ -140,6 +141,35 @@ private:
     Imaging         _imaging;
 };
 
+class HimppVideoOSD : public IVideoOSD
+{
+public:
+    HimppVideoOSD(HimppVencChan &venc_chan, uint32_t id);
+    ~HimppVideoOSD();
+
+    Position getPosition();
+    void setPosition(Position pos);
+    Size getSize();
+    void setSize(Size size);
+    uint32_t getForegroundColor();
+    void setForegroundColor(uint32_t val);
+    uint32_t getBackgroundColor();
+    void setBackgroundColor(uint32_t val);
+    uint32_t getForegroundAlpha();
+    void setForegroundAlpha(uint32_t val);
+    uint32_t getBackgroundAlpha();
+    void setBackgroundAlpha(uint32_t val);
+    bool getInvertColor();
+    void setInvertColor(bool val);
+
+    SDL_Surface *getSurface(uint16_t w, uint16_t h);
+    void putSurface(SDL_Surface *surf);
+private:
+    HimppVencChan &_venc_chan;
+    HimppVideoRegion _region;
+    SDL_Surface *_surface;
+};
+
 class HimppH264VideoEncoder : public IH264VideoEncoder
 {
 public:
@@ -161,16 +191,8 @@ public:
     void setProfile(IH264VideoEncoder::H264Profile profile);
     uint32_t  getGovLength();
     void setGovLength(uint32_t gop);
-    // local methods
-    VENC_GRP groupId() { return _venc_chan.groupId(); }
-    VENC_CHN channelId() { return _venc_chan.channelId(); }
 
-    int fileDescriptor();
-    unsigned int getStreamData(unsigned char* buf, unsigned int bufsiz,
-                               unsigned int &truncated, struct timeval &tstamp);
-
-    bool enable();
-    bool disable();
+    IVideoOSD *CreateOSD(uint32_t id);
 private:
     Hi3520mppMedia&     _media;
     HimppVencChan&      _venc_chan;

@@ -5,6 +5,9 @@ AM_CPPFLAGS = \
 	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS) \
+	$(FREETYPE_CFLAGS) \
+	$(FONTCONFIG_CFLAGS) \
+	$(SDL_CFLAGS) \
 	-I$(srcdir) -I$(srcdir)/rtsp-server \
 	-I$(srcdir)/dbus -I$(builddir)/dbus
 
@@ -24,10 +27,13 @@ live_streamer_SOURCES = \
 	ipcam-media-iface.cpp \
 	ipcam-media-iface.h \
 	ipcam-runtime.cpp \
-	ipcam-runtime.h
+	ipcam-runtime.h \
+	ipcam-video-osd.cpp \
+	ipcam-video-osd.h
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) \
 	$(DBUSXX_LIBS) \
+	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
 	$(LIBEV_LDFLAGS) -ldl
 
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS)

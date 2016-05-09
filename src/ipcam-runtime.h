@@ -22,16 +22,26 @@
 
 #include <list>
 #include <ev++.h>
-#include <RTSPServer.hh>
-#include <ServerMediaSession.hh>
-#include <ipcam-audio-source.h>
-#include <ipcam-audio-encoder.h>
-#include <ipcam-video-source.h>
-#include <ipcam-video-encoder.h>
 #include <ipcam-media-iface.h>
 
-typedef void* RTSPStream;
-typedef void* RTSPSubstream;
+using namespace Ipcam::Media;
+
+class RTSPServer;
+
+class ServerMediaSession;
+class ServerMediaSubsession;
+
+namespace DBus
+{
+class Connection;
+class AudioSource;
+class AudioEncoder;
+class VideoSource;
+class VideoEncoder;
+}
+
+typedef ServerMediaSession* RTSPStream;
+typedef ServerMediaSubsession* RTSPSubstream;
 
 class IpcamRuntime
 {
@@ -46,16 +56,20 @@ public:
 	void addVideoEncoderInterface(IVideoEncoder *video_encoder);
 
 	ev::default_loop &mainloop() { return _loop; }
+	DBus::Connection &dbus_conn() { return *_dbus_connection; }
 private:
+	class IpcamRuntimePriv;
+	IpcamRuntimePriv	*_priv;
+
 	ev::default_loop	&_loop;
 	RTSPServer          *_rtsp_server;
 	DBus::Connection    *_dbus_connection;
 
 	typedef std::list<ServerMediaSession*> IpcamStreamList;
-	typedef std::list<std::unique_ptr<IpcamAudioSource>> IpcamAudioSourceList;
-	typedef std::list<std::unique_ptr<IpcamAudioEncoder>> IpcamAudioEncoderList;
-	typedef std::list<std::unique_ptr<IpcamVideoSource>> IpcamVideoSourceList;
-	typedef std::list<std::unique_ptr<IpcamVideoEncoder>> IpcamVideoEncoderList;
+	typedef std::list<std::unique_ptr<DBus::AudioSource>> IpcamAudioSourceList;
+	typedef std::list<std::unique_ptr<DBus::AudioEncoder>> IpcamAudioEncoderList;
+	typedef std::list<std::unique_ptr<DBus::VideoSource>> IpcamVideoSourceList;
+	typedef std::list<std::unique_ptr<DBus::VideoEncoder>> IpcamVideoEncoderList;
 	IpcamStreamList			_stream_list;
 	IpcamAudioSourceList	_audio_source_list;
 	IpcamAudioEncoderList   _audio_encoder_list;

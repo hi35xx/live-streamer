@@ -25,10 +25,8 @@
 
 #include <ipcam-media-iface.h>
 
-namespace Ipcam
-{
-namespace Interface
-{
+namespace Ipcam {
+namespace Media {
 
 struct ImageResolutionEntry
 {
@@ -137,5 +135,5 @@ ImageResolution::operator std::string()
 }
 
 
-} // namespace Interface
+} // namespace Media
 } // namespace Ipcam

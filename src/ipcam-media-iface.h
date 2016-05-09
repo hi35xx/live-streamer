@@ -24,10 +24,10 @@
 #include <string>
 #include <dbus-c++/error.h>
 
-namespace Ipcam
-{
-namespace Interface
-{
+struct SDL_Surface;
+
+namespace Ipcam {
+namespace Media {
 
 enum AutoOperatingMode { AUTO_OPMODE, MANUAL_OPMODE };
 typedef DBus::ErrorFailed   IpcamError;
@@ -48,6 +48,7 @@ public:
 class IAudioSource
 {
 public:
+    virtual ~IAudioSource() {}
     virtual uint32_t        getChannels() = 0;
 };
 
@@ -58,12 +59,49 @@ class IAudioEncoder
 public:
     enum EncodingType { ADPCM, LPCM, G711A, G711U, G726 };
 public:
+    virtual ~IAudioEncoder() {}
     virtual EncodingType    getEncoding() = 0;
     virtual void            setEncoding(EncodingType value) = 0;
     virtual uint32_t        getBitrate() = 0;
     virtual void            setBitrate(uint32_t value) = 0;
     virtual uint32_t        getSampleRate() = 0;
     virtual void            setSampleRate(uint32_t value) = 0;
+};
+
+
+// control interface for OSD
+class IVideoOSD
+{
+public:
+    struct Position {
+        int             x;
+        int             y;
+        Position(int x, int y) : x(x), y(y) {}
+    };
+    struct Size {
+        uint32_t        w;
+        uint32_t        h;
+        Size(uint32_t w, uint32_t h) : w(w), h(h) {}
+    };
+public:
+    virtual ~IVideoOSD() {}
+    virtual Position    getPosition() = 0;
+    virtual void        setPosition(Position pos) = 0;
+    virtual Size        getSize() = 0;
+    virtual void        setSize(Size size) = 0;
+    virtual uint32_t    getForegroundColor() = 0;
+    virtual void        setForegroundColor(uint32_t val) = 0;
+    virtual uint32_t    getBackgroundColor() = 0;
+    virtual void        setBackgroundColor(uint32_t val) = 0;
+    virtual uint32_t    getForegroundAlpha() = 0;
+    virtual void        setForegroundAlpha(uint32_t val) = 0;
+    virtual uint32_t    getBackgroundAlpha() = 0;
+    virtual void        setBackgroundAlpha(uint32_t val) = 0;
+    virtual bool        getInvertColor() = 0;
+    virtual void        setInvertColor(bool val) = 0;
+
+    virtual SDL_Surface* getSurface(uint16_t w, uint16_t h) = 0;
+    virtual void         putSurface(SDL_Surface *surf) = 0;
 };
 
 
@@ -189,6 +227,7 @@ public:
         virtual LDC*                getLDC() = 0;
     };
 public:
+    virtual ~IVideoSource() {}
     virtual uint32_t    getFramerate() = 0;
     virtual void        setFramerate(uint32_t value) = 0;
     virtual ImageResolution getResolution() = 0;
@@ -205,6 +244,7 @@ public:
     enum EncodingType { H264, MJPEG, JPEG, MPEG4 };
     enum RateCtrlMode { CBR, VBR, FIXQP };
 public:
+    virtual ~IVideoEncoder() {}
     virtual EncodingType getEncoding() = 0;
     virtual ImageResolution getResolution() = 0;
     virtual void setResolution(ImageResolution &resolution) = 0;
@@ -214,6 +254,8 @@ public:
     virtual void setFramerate(uint32_t fps) = 0;
     virtual uint32_t  getBitrate() = 0;
     virtual void setBitrate(uint32_t kbps) = 0;
+
+    virtual IVideoOSD *CreateOSD(uint32_t id) = 0;
 };
 
 
@@ -223,6 +265,7 @@ class IH264VideoEncoder : public IVideoEncoder
 public:
     enum H264Profile { BASELINE, MAIN, HIGH, SVC_T };
 public:
+    virtual ~IH264VideoEncoder() {}
     virtual H264Profile getProfile() = 0;
     virtual void setProfile(H264Profile profile) = 0;
     virtual uint32_t  getGovLength() = 0;
@@ -242,6 +285,7 @@ public:
 class IAudioStream
 {
 public:
+    virtual ~IAudioStream() {}
     virtual IAudioEncoder::EncodingType getEncoding() = 0;
     virtual uint32_t getSampleRate() = 0;
     virtual unsigned int getStreamData(unsigned char *buf, unsigned int bufsiz,
@@ -256,6 +300,7 @@ public:
 class IVideoStream
 {
 public:
+    virtual ~IVideoStream() {}
     virtual IVideoEncoder::EncodingType getEncoding() = 0;
     virtual uint32_t getBitrate() = 0;
     virtual unsigned int getStreamData(unsigned char *buf, unsigned int bufsiz,
@@ -266,7 +311,7 @@ public:
 };
 
 
-} // namespace Interface
+} // namespace Media
 } // namespace Ipcam
 
 #endif // _IPCAM_MEDIA_INTERFACE_H_

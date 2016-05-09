@@ -17,9 +17,17 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <RTSPServer.hh>
+#include <ServerMediaSession.hh>
 #include <LiveStreamInput.hh>
 #include <LiveStreamInput.hh>
-#include "ipcam-runtime.h"
+
+#include <ipcam-runtime.h>
+
+#include <dbus-audio-source.h>
+#include <dbus-audio-encoder.h>
+#include <dbus-video-source.h>
+#include <dbus-video-encoder.h>
 
 const char *VIDEO_SOURCE_SERVER_PATH = "/ipcam/Media/VideoSource";
 const char *VIDEO_ENCODER_SERVER_PATH = "/ipcam/Media/VideoEncoder";
@@ -73,7 +81,7 @@ void IpcamRuntime::addAudioSourceInterface(IAudioSource *audio_source)
 	int index = _audio_source_list.size();
 	std::string obj_path = std::string(AUDIO_SOURCE_SERVER_PATH)
 		+ std::to_string(index);
-    _audio_source_list.emplace_back(new IpcamAudioSource(*_dbus_connection, obj_path, audio_source));
+    _audio_source_list.emplace_back(new DBus::AudioSource(*this, obj_path, audio_source));
 }
 
 void IpcamRuntime::addAudioEncoderInterface(IAudioEncoder *audio_encoder)
@@ -81,7 +89,7 @@ void IpcamRuntime::addAudioEncoderInterface(IAudioEncoder *audio_encoder)
 	int index = _audio_encoder_list.size();
 	std::string obj_path = std::string(AUDIO_ENCODER_SERVER_PATH)
 		+ std::to_string(index);
-    _audio_encoder_list.emplace_back(new IpcamAudioEncoder(*_dbus_connection, obj_path, audio_encoder));
+    _audio_encoder_list.emplace_back(new DBus::AudioEncoder(*this, obj_path, audio_encoder));
 }
 
 void IpcamRuntime::addVideoSourceInterface(IVideoSource *video_source)
@@ -89,7 +97,7 @@ void IpcamRuntime::addVideoSourceInterface(IVideoSource *video_source)
 	int index = _video_source_list.size();
 	std::string obj_path = std::string(VIDEO_SOURCE_SERVER_PATH)
 		+ std::to_string(index);
-    _video_source_list.emplace_back(new IpcamVideoSource(*_dbus_connection, obj_path, video_source));
+    _video_source_list.emplace_back(new DBus::VideoSource(*this, obj_path, video_source));
 }
 
 void IpcamRuntime::addVideoEncoderInterface(IVideoEncoder *video_encoder)
@@ -100,10 +108,10 @@ void IpcamRuntime::addVideoEncoderInterface(IVideoEncoder *video_encoder)
 
 	switch (video_encoder->getEncoding()) {
 	case IVideoEncoder::H264:
-	    _video_encoder_list.emplace_back(new IpcamH264VideoEncoder(*_dbus_connection, obj_path, dynamic_cast<IH264VideoEncoder*>(video_encoder)));
+	    _video_encoder_list.emplace_back(new DBus::H264VideoEncoder(*this, obj_path, dynamic_cast<IH264VideoEncoder*>(video_encoder)));
 		break;
 	default:
-	    _video_encoder_list.emplace_back(new IpcamVideoEncoder(*_dbus_connection, obj_path, video_encoder));
+	    _video_encoder_list.emplace_back(new DBus::VideoEncoder(*this, obj_path, video_encoder));
 		break;
 	}
 }

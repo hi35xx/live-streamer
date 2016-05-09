@@ -24,7 +24,7 @@
 #include "ipcam-media-iface.h"
 #include <mpi_sys.h>
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
 class HimppObject
 {

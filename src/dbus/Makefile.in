@@ -106,8 +106,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libdbus_iface_la_LIBADD =
 am__objects_1 =
 am_libdbus_iface_la_OBJECTS = dbusxx-libev-integration.lo \
-	$(am__objects_1) ipcam-audio-encoder.lo ipcam-audio-source.lo \
-	ipcam-video-encoder.lo ipcam-video-source.lo
+	$(am__objects_1) dbus-audio-source.lo dbus-audio-encoder.lo \
+	dbus-video-osd.lo dbus-video-source.lo dbus-video-encoder.lo
 libdbus_iface_la_OBJECTS = $(am_libdbus_iface_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -252,6 +252,10 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FONTCONFIG_CFLAGS = @FONTCONFIG_CFLAGS@
+FONTCONFIG_LIBS = @FONTCONFIG_LIBS@
+FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
+FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
 HI3518MPP_CPPFLAGS = @HI3518MPP_CPPFLAGS@
@@ -295,6 +299,8 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
+SDL_CFLAGS = @SDL_CFLAGS@
+SDL_LIBS = @SDL_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -364,20 +370,23 @@ BUILT_SOURCES = \
 	audio-source-server-glue.h \
 	audio-encoder-server-glue.h \
 	video-source-server-glue.h \
-	video-encoder-server-glue.h
+	video-encoder-server-glue.h \
+	video-osd-server-glue.h
 
 libdbus_iface_la_SOURCES = \
 	dbusxx-libev-integration.cpp \
 	dbusxx-libev-integration.h \
 	$(BUILT_SOURCES) \
-	ipcam-audio-encoder.cpp \
-	ipcam-audio-encoder.h \
-	ipcam-audio-source.cpp \
-	ipcam-audio-source.h \
-	ipcam-video-encoder.cpp \
-	ipcam-video-encoder.h \
-	ipcam-video-source.cpp \
-	ipcam-video-source.h
+	dbus-audio-source.cpp \
+	dbus-audio-source.h \
+	dbus-audio-encoder.cpp \
+	dbus-audio-encoder.h \
+	dbus-video-osd.cpp \
+	dbus-video-osd.h \
+	dbus-video-source.cpp \
+	dbus-video-source.h \
+	dbus-video-encoder.cpp \
+	dbus-video-encoder.h
 
 CLEANFILES = $(BUILT_SOURCES)
 dbuspolicydir = $(sysconfdir)/dbus-1/system.d
@@ -446,11 +455,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-encoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-source.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-encoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-osd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-source.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbusxx-libev-integration.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-audio-encoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-audio-source.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-video-encoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipcam-video-source.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

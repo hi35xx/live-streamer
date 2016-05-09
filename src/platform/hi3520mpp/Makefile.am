@@ -31,6 +31,8 @@ libhi3520mpp_la_SOURCES =  \
 	himpp-video-vpss.h \
 	himpp-video-venc.cpp \
 	himpp-video-venc.h \
+	himpp-video-region.cpp \
+	himpp-video-region.h \
 	himpp-media.cpp \
 	himpp-media.h
 

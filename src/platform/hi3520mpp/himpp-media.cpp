@@ -17,6 +17,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL/SDL.h>
+#include <himpp-video-region.h>
 #include "himpp-media.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -364,6 +366,141 @@ void HimppVideoSource::Imaging::WhiteBalance::setBGain(uint32_t value)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// HimppVideoOSD
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVideoOSD::HimppVideoOSD(HimppVencChan &venc_chan, uint32_t id)
+  : _venc_chan(venc_chan), _region(&venc_chan, id)
+{
+	Uint32 Rmask = 0x1F << 10;
+	Uint32 Gmask = 0x1F << 5;
+	Uint32 Bmask = 0x1F << 0;
+	Uint32 Amask = 0x01 << 15;
+	_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 0, 0, 16,
+	                                Rmask, Gmask, Bmask, Amask);
+
+	_venc_chan.addVideoRegion(&_region);
+}
+
+HimppVideoOSD::~HimppVideoOSD()
+{
+	_venc_chan.delVideoRegion(&_region);
+
+	if (_surface)
+		SDL_FreeSurface(_surface);
+}
+
+IVideoOSD::Position HimppVideoOSD::getPosition()
+{
+	POINT_S pt = _region.getPosition();
+
+	return Position(pt.s32X, pt.s32Y);
+}
+
+void HimppVideoOSD::setPosition(IVideoOSD::Position pos)
+{
+	POINT_S pt;
+	pt.s32X = pos.x;
+	pt.s32Y = pos.y;
+	_region.setPosition(pt);
+}
+
+IVideoOSD::Size HimppVideoOSD::getSize()
+{
+	SIZE_S sz = _region.getSize();
+
+	return Size(sz.u32Width, sz.u32Height);
+}
+
+void HimppVideoOSD::setSize(IVideoOSD::Size size)
+{
+	SIZE_S sz;
+	sz.u32Width = size.w;
+	sz.u32Height = size.h;
+	_region.setSize(sz);
+}
+
+uint32_t HimppVideoOSD::getForegroundColor()
+{
+	return _region.getBgColor();
+}
+
+void HimppVideoOSD::setForegroundColor(uint32_t val)
+{
+	_region.setFgColor(val);
+}
+
+uint32_t HimppVideoOSD::getBackgroundColor()
+{
+	return _region.getBgColor();
+}
+
+void HimppVideoOSD::setBackgroundColor(uint32_t val)
+{
+	_region.setBgColor(val);
+}
+
+uint32_t HimppVideoOSD::getForegroundAlpha()
+{
+	return _region.getFgAlpha();
+}
+
+void HimppVideoOSD::setForegroundAlpha(uint32_t val)
+{
+	_region.setFgAlpha(val);
+}
+
+uint32_t HimppVideoOSD::getBackgroundAlpha()
+{
+	return _region.getBgAlpha();
+}
+
+void HimppVideoOSD::setBackgroundAlpha(uint32_t val)
+{
+	_region.setBgAlpha(val);
+}
+
+bool HimppVideoOSD::getInvertColor()
+{
+	return (bool)_region.getInvertColor();
+}
+
+void HimppVideoOSD::setInvertColor(bool val)
+{
+	_region.setInvertColor((HI_BOOL)val);
+}
+
+SDL_Surface *HimppVideoOSD::getSurface(uint16_t w, uint16_t h)
+{
+	BITMAP_S *bmp = _region.getBitmap(w, h);
+	int pitch = bmp->u32Width * 2;
+
+	if (_surface) {
+		_surface->flags |= SDL_PREALLOC;
+		_surface->pixels = bmp->pData;
+		_surface->w = bmp->u32Width;
+		_surface->h = bmp->u32Height;
+		_surface->pitch = bmp->u32Width * 2;
+		SDL_SetClipRect(_surface, NULL);
+	}
+
+	return _surface;
+}
+
+void HimppVideoOSD::putSurface(SDL_Surface *surf)
+{
+	BITMAP_S bmp = {
+		.enPixelFormat = PIXEL_FORMAT_RGB_1555,
+		.u32Width = (HI_U32)surf->w,
+		.u32Height = (HI_U32)surf->h,
+		.pData = surf->pixels
+	};
+
+	_region.setBitmap(&bmp);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // HimppH264VideoEncoder
 //////////////////////////////////////////////////////////////////////////////
 
@@ -448,9 +585,10 @@ void HimppH264VideoEncoder::setGovLength(uint32_t gop)
         throw IpcamError("set gop failed");
 }
 
-int HimppH264VideoEncoder::fileDescriptor()
+
+IVideoOSD *HimppH264VideoEncoder::CreateOSD(uint32_t id)
 {
-    return HI_MPI_VENC_GetFd(_venc_chan.channelId());
+    return new HimppVideoOSD(_venc_chan, id);
 }
 
 

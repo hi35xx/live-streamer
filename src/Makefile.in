@@ -112,7 +112,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_live_streamer_OBJECTS = live_streamer-main.$(OBJEXT) \
 	live_streamer-ipcam-media-iface.$(OBJEXT) \
-	live_streamer-ipcam-runtime.$(OBJEXT)
+	live_streamer-ipcam-runtime.$(OBJEXT) \
+	live_streamer-ipcam-video-osd.$(OBJEXT)
 live_streamer_OBJECTS = $(am_live_streamer_OBJECTS)
 live_streamer_DEPENDENCIES = $(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
@@ -277,6 +278,10 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FONTCONFIG_CFLAGS = @FONTCONFIG_CFLAGS@
+FONTCONFIG_LIBS = @FONTCONFIG_LIBS@
+FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
+FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
 HI3518MPP_CPPFLAGS = @HI3518MPP_CPPFLAGS@
@@ -320,6 +325,8 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
+SDL_CFLAGS = @SDL_CFLAGS@
+SDL_LIBS = @SDL_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -383,6 +390,9 @@ AM_CPPFLAGS = \
 	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS) \
+	$(FREETYPE_CFLAGS) \
+	$(FONTCONFIG_CFLAGS) \
+	$(SDL_CFLAGS) \
 	-I$(srcdir) -I$(srcdir)/rtsp-server \
 	-I$(srcdir)/dbus -I$(builddir)/dbus
 
@@ -400,9 +410,12 @@ live_streamer_SOURCES = \
 	ipcam-media-iface.cpp \
 	ipcam-media-iface.h \
 	ipcam-runtime.cpp \
-	ipcam-runtime.h
+	ipcam-runtime.h \
+	ipcam-video-osd.cpp \
+	ipcam-video-osd.h
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
+	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
 	$(LIBEV_LDFLAGS) -ldl $(am__append_2) $(am__append_5)
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS) $(am__append_1) \
 	$(am__append_4)
@@ -504,6 +517,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-media-iface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-runtime.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-video-osd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-main.Po@am__quote@
 
 .cpp.o:
@@ -568,6 +582,20 @@ live_streamer-ipcam-runtime.obj: ipcam-runtime.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-runtime.cpp' object='live_streamer-ipcam-runtime.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-runtime.obj `if test -f 'ipcam-runtime.cpp'; then $(CYGPATH_W) 'ipcam-runtime.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-runtime.cpp'; fi`
+
+live_streamer-ipcam-video-osd.o: ipcam-video-osd.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-video-osd.o -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo -c -o live_streamer-ipcam-video-osd.o `test -f 'ipcam-video-osd.cpp' || echo '$(srcdir)/'`ipcam-video-osd.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo $(DEPDIR)/live_streamer-ipcam-video-osd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-video-osd.cpp' object='live_streamer-ipcam-video-osd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-video-osd.o `test -f 'ipcam-video-osd.cpp' || echo '$(srcdir)/'`ipcam-video-osd.cpp
+
+live_streamer-ipcam-video-osd.obj: ipcam-video-osd.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-video-osd.obj -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo -c -o live_streamer-ipcam-video-osd.obj `if test -f 'ipcam-video-osd.cpp'; then $(CYGPATH_W) 'ipcam-video-osd.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-video-osd.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo $(DEPDIR)/live_streamer-ipcam-video-osd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-video-osd.cpp' object='live_streamer-ipcam-video-osd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-video-osd.obj `if test -f 'ipcam-video-osd.cpp'; then $(CYGPATH_W) 'ipcam-video-osd.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-video-osd.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

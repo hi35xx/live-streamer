@@ -27,7 +27,7 @@
 
 #include <ipcam-media-iface.h>
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
 class HimppAudioCodec : public HimppObject 
 {

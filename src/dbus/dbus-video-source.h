@@ -1,6 +1,6 @@
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * ipcam-video-source.h
+ * dbus-video-source.h
  * Copyright (C) 2015 Watson Xu <xuhuashan@gmail.com>
  *
  * live-streamer is free software: you can redistribute it and/or modify it
@@ -17,17 +17,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _IPCAM_VIDEO_SOURCE_H_
-#define _IPCAM_VIDEO_SOURCE_H_
+#ifndef _DBUS_VIDEO_SOURCE_H_
+#define _DBUS_VIDEO_SOURCE_H_
 
-#include <dbus-c++/dbus.h>
-
-#include "ipcam-media-iface.h"
 #include "video-source-server-glue.h"
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
-class IpcamVideoSource :
+namespace DBus {
+
+class VideoSource :
   public ipcam::Media::VideoSource_adaptor,
   public ipcam::Media::VideoSource::Imaging_adaptor,
   public ipcam::Media::VideoSource::Imaging::Backlight_adaptor,
@@ -41,15 +40,18 @@ class IpcamVideoSource :
   public DBus::ObjectAdaptor
 {
 public:
-	IpcamVideoSource(DBus::Connection &connection, std::string obj_path, IVideoSource *video_source);
+	VideoSource(IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source);
 
 	void on_get_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
+    IpcamRuntime& _runtime;
     IVideoSource *_video_source;
 };
 
-#endif // _IPCAM_VIDEO_SOURCE_H_
+} // namespace DBus
+
+#endif // _DBUS_VIDEO_SOURCE_H_
 

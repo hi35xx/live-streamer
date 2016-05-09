@@ -8,6 +8,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/dbus -I$(top_builddir)/src/dbus \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS) \
+	$(SDL_CFLAGS) \
 	$(HI3518MPP_CPPFLAGS)
 
 AM_CFLAGS =\
@@ -23,6 +24,8 @@ libhi3518mpp_la_SOURCES =  \
 	himpp-object.h \
 	himpp-sysctl.cpp \
 	himpp-sysctl.h \
+	himpp-audio.cpp \
+	himpp-audio.h \
 	himpp-video-sensor.cpp \
 	himpp-video-sensor.h \
 	himpp-video-isp.cpp \
@@ -33,10 +36,10 @@ libhi3518mpp_la_SOURCES =  \
 	himpp-video-vpss.h \
 	himpp-video-venc.cpp \
 	himpp-video-venc.h \
+	himpp-video-region.cpp \
+	himpp-video-region.h \
 	himpp-media.cpp \
-	himpp-media.h \
-	himpp-audio.cpp \
-	himpp-audio.h
+	himpp-media.h
 
 libhi3518mpp_la_LIBADD = \
 	$(top_builddir)/src/dbus/libdbus-iface.la

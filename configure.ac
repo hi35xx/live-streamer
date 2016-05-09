@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(live-streamer, 0.9.0)
+AC_INIT(live-streamer, 1.0.0)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -25,6 +25,12 @@ LT_INIT
 
 
 PKG_CHECK_MODULES(DBUSXX, [dbus-c++-1])
+
+PKG_CHECK_MODULES(FREETYPE, [freetype2])
+
+PKG_CHECK_MODULES(FONTCONFIG, [fontconfig])
+
+PKG_CHECK_MODULES(SDL, [sdl SDL_ttf SDL_image])
 
 
 # --------------------- #

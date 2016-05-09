@@ -20,12 +20,14 @@
 #ifndef _HIMPP_VIDEO_VENC_H_
 #define _HIMPP_VIDEO_VENC_H_
 
+#include <list>
 #include <himpp-object.h>
 #include <mpi_venc.h>
 
 #include <ipcam-media-iface.h>
+#include "himpp-video-region.h"
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
 class HimppVencChan: public HimppVideoObject 
 {
@@ -51,6 +53,9 @@ public:
     bool setFramerate(uint32_t fps);
     uint32_t getFramerate();
 
+    void addVideoRegion(HimppVideoRegion *region);
+    void delVideoRegion(HimppVideoRegion *region);
+
     // local functions
     VENC_GRP groupId() { return _grpid; }
     VENC_CHN channelId() { return _chnid; }
@@ -69,6 +74,8 @@ private:
     uint32_t                    _bitrate;
     uint32_t                    _gop;
     GROUP_CROP_CFG_S            _crop_cfg;
+
+    std::list<HimppVideoRegion*> _regions;
 
     bool prepareVencChnAttr(VENC_CHN_ATTR_S &attr);
 };

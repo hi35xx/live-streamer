@@ -17,7 +17,9 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
 #include <himpp-common.h>
+#include <himpp-video-region.h>
 #include "himpp-video-venc.h"
 
 
@@ -30,7 +32,10 @@ HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN ch
 {
     _bitrate = 2048;
     _gop = 30;
-    //_crop_cfg.bEnable = HI_FALSE;
+
+    _mpp_chn.enModId = HI_ID_GROUP;
+    _mpp_chn.s32DevId = chn;
+    _mpp_chn.s32ChnId = 0;
 }
 
 HimppVencChan::~HimppVencChan()
@@ -127,7 +132,7 @@ uint32_t HimppVencChan::getGop()
 
 HimppVencChan::operator MPP_CHN_S* ()
 {
-    return NULL;
+    return &_mpp_chn;
 }
 
 bool HimppVencChan::setResolution(ImageResolution &res)
@@ -187,6 +192,18 @@ bool HimppVencChan::setFramerate(uint32_t fps)
 uint32_t HimppVencChan::getFramerate()
 {
     return _framerate;
+}
+
+void HimppVencChan::addVideoRegion(HimppVideoRegion *region)
+{
+    _regions.push_back(region);
+    if (isEnabled())
+        region->enable();
+}
+
+void HimppVencChan::delVideoRegion(HimppVideoRegion *region)
+{
+    _regions.remove(region);
 }
 
 bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
@@ -358,6 +375,10 @@ bool HimppVencChan::enableObject()
         goto err_stop_recv_pic;
     }
 
+    for (auto it : _regions) {
+        it->enable();
+    }
+
     return true;
 
 err_stop_recv_pic:
@@ -378,9 +399,9 @@ bool HimppVencChan::disableObject()
 {
     HI_S32 s32Ret;
 
-#if 0
-    GROUP_CROP_CFG_S dis_crop = { .bEnable = HI_FALSE };
-#endif
+    for (auto it : _regions) {
+        it->disable();
+    }
 
     MPP_CHN_S dst_chn = {
         .enModId = HI_ID_GROUP,

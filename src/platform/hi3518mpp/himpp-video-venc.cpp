@@ -20,7 +20,6 @@
 #include <himpp-common.h>
 #include "himpp-video-venc.h"
 
-
 HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN chn)
     : HimppVideoObject(source), _grpid(grp), _chnid(chn),
       _encoding(IVideoEncoder::H264), _rcmode(IVideoEncoder::VBR),
@@ -31,6 +30,10 @@ HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN ch
     _bitrate = 2048;
     _gop = 30;
     _crop_cfg.bEnable = HI_FALSE;
+
+    _mpp_chn.enModId = HI_ID_GROUP;
+    _mpp_chn.s32DevId = chn;
+    _mpp_chn.s32ChnId = 0;
 }
 
 HimppVencChan::~HimppVencChan()
@@ -127,7 +130,7 @@ uint32_t HimppVencChan::getGop()
 
 HimppVencChan::operator MPP_CHN_S* ()
 {
-    return NULL;
+    return &_mpp_chn;
 }
 
 bool HimppVencChan::setResolution(ImageResolution &res)
@@ -187,6 +190,18 @@ bool HimppVencChan::setFramerate(uint32_t fps)
 uint32_t HimppVencChan::getFramerate()
 {
     return _framerate;
+}
+
+void HimppVencChan::addVideoRegion(HimppVideoRegion *region)
+{
+    _regions.push_back(region);
+    if (isEnabled())
+        region->enable();
+}
+
+void HimppVencChan::delVideoRegion(HimppVideoRegion *region)
+{
+    _regions.remove(region);
 }
 
 bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
@@ -325,6 +340,17 @@ bool HimppVencChan::enableObject()
                     _chnid, s32Ret);
     }
 
+    VENC_PARAM_H264_VUI_S stVui;
+    if ((s32Ret = HI_MPI_VENC_GetH264Vui(_chnid, &stVui)) == HI_SUCCESS) {
+        stVui.timing_info_present_flag = 1;
+        stVui.num_units_in_tick = 1;
+        stVui.time_scale = _framerate * 2;
+        if ((s32Ret = HI_MPI_VENC_SetH264Vui(_chnid, &stVui)) != HI_SUCCESS) {
+            HIMPP_PRINT("HI_MPI_VENC_SetH264Vui(%d) failed [%#x]\n",
+                        _chnid, s32Ret);
+        }
+    }
+
     if ((s32Ret = HI_MPI_VENC_RegisterChn(_grpid, _chnid)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VENC_RegisterChn %d-%d failed [%#x]\n",
                     _grpid, _chnid, s32Ret);
@@ -353,6 +379,10 @@ bool HimppVencChan::enableObject()
         goto err_stop_recv_pic;
     }
 
+    for (auto it : _regions) {
+        it->enable();
+    }
+
     return true;
 
 err_stop_recv_pic:
@@ -373,6 +403,10 @@ bool HimppVencChan::disableObject()
 {
     HI_S32 s32Ret;
     GROUP_CROP_CFG_S dis_crop = { .bEnable = HI_FALSE };
+
+    for (auto it : _regions) {
+        it->disable();
+    }
 
     MPP_CHN_S dst_chn = {
         .enModId = HI_ID_GROUP,

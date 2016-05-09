@@ -1,6 +1,6 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * ipcam-audio-encoder.h
+ * dbus-audio-source.h
  * Copyright (C) 2015 Watson Xu <xuhuashan@gmail.com>
  *
  * live-streamer is free software: you can redistribute it and/or modify it
@@ -17,30 +17,33 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _IPCAM_AUDIO_ENCODER_H_
-#define _IPCAM_AUDIO_ENCODER_H_
+#ifndef _DBUS_AUDIO_SOURCE_H_
+#define _DBUS_AUDIO_SOURCE_H_
 
-#include <dbus-c++/dbus.h>
-#include "ipcam-media-iface.h"
-#include "audio-encoder-server-glue.h"
+#include "audio-source-server-glue.h"
 
-using namespace Ipcam::Interface;
+using namespace Ipcam::Media;
 
-class IpcamAudioEncoder :
-  public ipcam::Media::AudioEncoder_adaptor,
+namespace DBus {
+
+class AudioSource :
+  public ipcam::Media::AudioSource_adaptor,
   public DBus::IntrospectableAdaptor,
   public DBus::PropertiesAdaptor,
   public DBus::ObjectAdaptor
 {
 public:
-	IpcamAudioEncoder(DBus::Connection &connection, std::string obj_path, IAudioEncoder *encoder);
+	AudioSource(IpcamRuntime &runtime, std::string obj_path, IAudioSource *source);
 	void on_get_property
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-	IAudioEncoder* _audio_encoder;
+	IpcamRuntime& _runtime;
+	IAudioSource* _audio_source;
 };
 
-#endif // _IPCAM_AUDIO_ENCODER_H_
+} // namespace DBus
+
+#endif // _DBUS_AUDIO_SOURCE_H_
 

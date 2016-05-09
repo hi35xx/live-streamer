@@ -31,21 +31,19 @@
 #include <liveMedia.hh>
 #include <DynamicRTSPServer.hh>
 
-#include "EvUsageEnvironment.h"
+#include <EvUsageEnvironment.h>
+
+#include <ft2build.h>
+#include <freetype/freetype.h>
 
 #include <dbus/dbus.h>
 #include <dbus-c++/dbus.h>
 #include "dbusxx-libev-integration.h"
 
-#include "ipcam-runtime.h"
-
-#include "ipcam-video-source.h"
-#include "ipcam-video-encoder.h"
-#include "ipcam-audio-source.h"
-#include "ipcam-audio-encoder.h"
+#include <ipcam-runtime.h>
 
 #if defined(HAVE_HI3518MPP_SUPPORT) || defined(HAVE_HI3520MPP_SUPPORT)
-#include "himpp-media.h"
+#include <himpp-media.h>
 #endif
 
 ev::default_loop mainloop;
@@ -218,7 +216,13 @@ int main(int argc, char *argv[])
 		DBus::Connection::SystemBus() : DBus::Connection::SessionBus();
 	conn.request_name(IPCAM_SERVER_NAME);
 
-	IpcamRuntime runtime(mainloop, rtspServer, &conn);
+	FT_Library freetype;
+	if (FT_Init_FreeType(&freetype)) {
+		fprintf(stderr, "FT_Init_FreeType failed\n");
+		return 1;
+	}
+
+	IpcamRuntime *runtime = new IpcamRuntime(mainloop, rtspServer, &conn);
 
 	std::list<std::string>::const_iterator it;
 	for (it = stream_dirs.begin(); it != stream_dirs.end(); it++) {
@@ -232,14 +236,18 @@ int main(int argc, char *argv[])
 	}
 
 #if defined(HAVE_HI3518MPP_SUPPORT)
-	Hi3518mppMedia hi3518media(&runtime, sensor_type);
+	Hi3518mppMedia hi3518media(runtime, sensor_type);
 #endif
 
 #if defined(HAVE_HI3520MPP_SUPPORT)
-	Hi3520mppMedia hi3520media(&runtime, sensor_type);
+	Hi3520mppMedia hi3520media(runtime, sensor_type);
 #endif
 
 	mainloop.run();
+
+	delete runtime;
+
+	FT_Done_FreeType(freetype);
 
 	Medium::close(rtspServer);
 
