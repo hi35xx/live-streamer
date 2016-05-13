@@ -21,6 +21,7 @@
 #include <config.h>
 #endif
 
+#include <locale.h>
 #include <string>
 #include <sstream>
 #include <getopt.h>
@@ -131,6 +132,8 @@ int main(int argc, char *argv[])
 {
 	int opt = 0;
 	int longIndex;
+
+	setlocale(LC_ALL, "");
 
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	while (opt != -1) {
