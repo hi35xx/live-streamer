@@ -736,7 +736,15 @@ static VI_DEV_ATTR_S aptina_ar0330_dev_attr = {
 
 static HIMPP_SENSOR_CONFIG aptina_ar0330_sensor_config = {
     .name               = "ar0330",
-    .module_path        = "libsns_ar0330.so",
+    .module_path        = "libsns_ar0330_1080p.so",
+    .isp_image_attr     = &aptina_ar0330_image_attr,
+    .isp_input_timing   = &aptina_ar0330_input_timing,
+    .vi_dev_attr        = &aptina_ar0330_dev_attr
+};
+
+static HIMPP_SENSOR_CONFIG aptina_ar0331_sensor_config = {
+    .name               = "ar0331",
+    .module_path        = "libsns_ar0331_1080p.so",
     .isp_image_attr     = &aptina_ar0330_image_attr,
     .isp_input_timing   = &aptina_ar0330_input_timing,
     .vi_dev_attr        = &aptina_ar0330_dev_attr
