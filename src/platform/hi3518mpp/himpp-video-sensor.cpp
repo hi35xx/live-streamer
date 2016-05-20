@@ -820,6 +820,7 @@ public:
         addSensor(soi_h22_sensor_config);
         addSensor(himax_1375_sensor_config);
         addSensor(aptina_ar0330_sensor_config);
+        addSensor(aptina_ar0331_sensor_config);
         addSensor(pixelplus_3100k_sensor_config);
 #undef addSensor
     }
