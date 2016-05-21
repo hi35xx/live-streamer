@@ -299,7 +299,6 @@ private:
     HimppViChan         _vi_chan0;
     HimppVpssGroup      _vpss_group0;
     HimppVpssChan       _vpss_chan0;
-    HimppVpssChan       _vpss_chan1;
     HimppVencChan       _venc_chan0;
     HimppVencChan       _venc_chan1;
 
