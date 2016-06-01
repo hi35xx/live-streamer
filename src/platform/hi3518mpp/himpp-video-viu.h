@@ -27,7 +27,7 @@
 class HimppViDev: public HimppVideoObject 
 {
 public:
-    HimppViDev(HimppVideoSensor *, VI_DEV);
+    HimppViDev(HimppObject *, HimppVideoSensor *, VI_DEV);
     ~HimppViDev();
 
     operator MPP_CHN_S* ();

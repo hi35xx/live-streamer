@@ -150,8 +150,8 @@ bool HimppAudioCodec::disableObject()
 // HimppAiDev
 //////////////////////////////////////////////////////////////////////////////
 
-HimppAiDev::HimppAiDev(HimppAudioCodec *acodec, AUDIO_DEV devid)
-    : HimppObject(acodec), _devid(devid),
+HimppAiDev::HimppAiDev(HimppObject *source, HimppAudioCodec *acodec, AUDIO_DEV devid)
+    : HimppObject(source), _audio_codec(acodec), _devid(devid),
       _sample_rate(AUDIO_SAMPLE_RATE_8000)
 {
 }
@@ -189,8 +189,7 @@ bool HimppAiDev::setSampleRate(uint32_t sample_rate)
     }
 
     // set audio codec's sample rate first
-    HimppAudioCodec *acodec = dynamic_cast<HimppAudioCodec*>(source());
-    if (!acodec || !acodec->setSampleRate(sample_rate)) {
+    if (!_audio_codec || !_audio_codec->setSampleRate(sample_rate)) {
         fprintf(stderr, "Cannot set samplerate for audio codec\n");
         return false;
     }
@@ -204,6 +203,9 @@ bool HimppAiDev::enableObject()
 {
     HI_S32 s32Ret;
     AIO_ATTR_S  aio_attr;
+
+    if (!_audio_codec->enable())
+        return false;
 
     aio_attr.enSamplerate = (AUDIO_SAMPLE_RATE_E)_sample_rate;
     aio_attr.enBitwidth = AUDIO_BIT_WIDTH_16;
@@ -238,7 +240,7 @@ bool HimppAiDev::disableObject()
         return false;
     }
 
-    return true;
+    return _audio_codec->disable();
 }
 
 //////////////////////////////////////////////////////////////////////////////

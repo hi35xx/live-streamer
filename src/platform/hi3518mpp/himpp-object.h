@@ -49,7 +49,7 @@ private:
 class HimppVideoObject : public HimppObject
 {
 public:
-    HimppVideoObject(HimppVideoObject *base) : HimppObject(base) {}
+    HimppVideoObject(HimppObject *base) : HimppObject(base) {}
     HimppVideoObject* videoSource() { return dynamic_cast<HimppVideoObject*>(source()); }
     virtual bool setResolution(ImageResolution &res) = 0;
     virtual ImageResolution getResolution() = 0;

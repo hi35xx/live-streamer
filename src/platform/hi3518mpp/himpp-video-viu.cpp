@@ -21,8 +21,8 @@
 #include "himpp-video-viu.h"
 
 
-HimppViDev::HimppViDev(HimppVideoSensor *sensor, VI_DEV vi_dev)
-    : HimppVideoObject(NULL), _video_sensor(sensor),
+HimppViDev::HimppViDev(HimppObject *source, HimppVideoSensor *sensor, VI_DEV vi_dev)
+    : HimppVideoObject(source), _video_sensor(sensor),
       _devid(vi_dev), _video_isp(sensor)
 {
     _brightness = 50;

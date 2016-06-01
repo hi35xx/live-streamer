@@ -30,6 +30,10 @@ HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN ch
     _bitrate = 2048;
     _gop = 30;
     _crop_cfg.bEnable = HI_FALSE;
+    _crop_cfg.stRect.u32Width = 0;
+    _crop_cfg.stRect.u32Height = 0;
+    _crop_cfg.stRect.s32X = 0;
+    _crop_cfg.stRect.s32Y = 0;
 
     _mpp_chn.enModId = HI_ID_GROUP;
     _mpp_chn.s32DevId = chn;
@@ -160,6 +164,10 @@ bool HimppVencChan::setResolution(ImageResolution &res)
     else {
         // crop is not necessary
         _crop_cfg.bEnable = HI_FALSE;
+        rect.u32Width = 0;
+        rect.u32Height = 0;
+        rect.s32X = 0;
+        rect.s32Y = 0;
     }
 
     if (isEnabled()) {
@@ -372,7 +380,7 @@ bool HimppVencChan::enableObject()
     MPP_CHN_S dst_chn;
     dst_chn.enModId = HI_ID_GROUP;
     dst_chn.s32DevId = _grpid;
-    dst_chn.s32ChnId = 0;
+    dst_chn.s32ChnId = _chnid;
     if ((s32Ret = HI_MPI_SYS_Bind(*source(), &dst_chn)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_SYS_Bind %d failed [%#x]\n",
                     _chnid, s32Ret);
@@ -411,7 +419,7 @@ bool HimppVencChan::disableObject()
     MPP_CHN_S dst_chn = {
         .enModId = HI_ID_GROUP,
         .s32DevId = _grpid,
-        .s32ChnId = 0
+        .s32ChnId = _chnid
     };
     if ((s32Ret = HI_MPI_SYS_UnBind(*source(), &dst_chn)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_SYS_UnBind %d failed [%#x]\n",

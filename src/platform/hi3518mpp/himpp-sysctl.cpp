@@ -50,10 +50,6 @@ bool HimppSysctl::enableObject()
 {
     HI_S32 s32Ret = HI_FAILURE;
 
-    HI_MPI_SYS_Exit();
-    HI_MPI_VB_Exit();
-
-
     VB_CONF_S vbconf;
     memset(&vbconf, 0, sizeof(vbconf));
     vbconf.u32MaxPoolCnt = maxPoolCount;
@@ -98,8 +94,17 @@ err_vb_cleanup:
 
 bool HimppSysctl::disableObject()
 {
-    HI_MPI_SYS_Exit();
-    HI_MPI_VB_Exit();
+    HI_S32 s32Ret;
+
+    if ((s32Ret = HI_MPI_SYS_Exit()) != HI_SUCCESS) {
+        HIMPP_PRINT("HI_MPI_SYS_Exit failed [%#x]\n", s32Ret);
+    }
+    if ((s32Ret = HI_MPI_VB_Exit()) != HI_SUCCESS) {
+        HIMPP_PRINT("HI_MPI_VB_Exit failed [%#x]\n", s32Ret);
+    }
+    if ((s32Ret = HI_MPI_SYS_CloseFd()) != HI_SUCCESS) {
+        HIMPP_PRINT("HI_MPI_SYS_CloseFd failed [%#x]\n", s32Ret);
+    }
 
     return true;
 }

@@ -49,7 +49,7 @@ private:
 class HimppAiDev : public HimppObject
 {
 public:
-    HimppAiDev(HimppAudioCodec*, AUDIO_DEV);
+    HimppAiDev(HimppObject*, HimppAudioCodec*, AUDIO_DEV);
     ~HimppAiDev();
 
     operator MPP_CHN_S* ();
@@ -62,8 +62,9 @@ protected:
     virtual bool enableObject();
     virtual bool disableObject();
 private:
-    AUDIO_DEV   _devid;
-    uint32_t    _sample_rate;
+    HimppAudioCodec *_audio_codec;
+    AUDIO_DEV       _devid;
+    uint32_t        _sample_rate;
 };
 
 class HimppAiChan : public HimppObject

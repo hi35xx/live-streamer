@@ -1182,12 +1182,15 @@ void HimppAudioStream::watch_handler(ev::io &w, int revents)
 Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
   : _runtime(runtime),
     _sensor(himpp_video_sensor_map.at(sensor_name)),
-    _vi_dev0(&_sensor, 0), _vi_chan0(&_vi_dev0, 0),
+    _sysctl(HIMPP_SYS_ALIGN_WIDTH, HIMPP_PIXEL_FORMAT),
+    _vi_dev0(dynamic_cast<HimppObject*>(&_sysctl), &_sensor, 0),
+    _vi_chan0(&_vi_dev0, 0),
     _vpss_group0(&_vi_chan0, 0),
     _vpss_chan0(&_vpss_group0, 0),
     _venc_chan0(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 0, 0),
     _venc_chan1(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 1, 1),
-    _acodec(), _ai_dev0(&_acodec, 0), _ai_chan0(&_ai_dev0, 0),
+    _acodec(AUDIO_SAMPLE_RATE_8000),
+    _ai_dev0(&_sysctl, &_acodec, 0), _ai_chan0(&_ai_dev0, 0),
     _aenc_chan0(&_ai_chan0, 0), _aenc_chan1(&_ai_chan0, 1),
     _video_stream0(runtime, _venc_chan0),
     _video_stream1(runtime, _venc_chan1),
@@ -1202,16 +1205,18 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
 {
 	ImageResolution ri = _vi_dev0.getResolution();
 	ImageResolution r0 = _venc_chan0.getResolution();
-	ImageResolution r1(640, 360);
+	ImageResolution r1("D1");
 	_venc_chan0.setEncoding(IVideoEncoder::H264);
-	//_venc_chan0.setFramerate(20);
+	// hi3518e only support 25fps
+	_venc_chan0.setFramerate(25);
 	_venc_chan1.setEncoding(IVideoEncoder::H264);
 	_venc_chan1.setResolution(r1);
 	//_venc_chan1.setFramerate(15);
 	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 4);
-	_sysctl.addVideoBuffer(r0.Width * r0.Height * 3 / 2, 2);
+	_sysctl.addVideoBuffer(r0.Width * r0.Height * 3 / 2, 4);
 	_sysctl.addVideoBuffer(r1.Width * r1.Height * 3 / 2, 2);
-	_sysctl.addVideoBuffer(196 * 4, 4);
+	_sysctl.addVideoBuffer(196 * 4, 2);
+
 	_sysctl.enable();
 
 	runtime->addRTSPStream(&_video_stream0, &_audio_stream0);
@@ -1233,5 +1238,6 @@ Hi3518mppMedia::~Hi3518mppMedia()
 		_venc_chan0.disable();
 	if (_venc_chan1.isEnabled())
 		_venc_chan1.disable();
+
 	_sysctl.disable();
 }
