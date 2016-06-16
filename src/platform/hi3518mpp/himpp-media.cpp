@@ -1207,11 +1207,11 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
 	ImageResolution r0 = _venc_chan0.getResolution();
 	ImageResolution r1("D1");
 	_venc_chan0.setEncoding(IVideoEncoder::H264);
-	// hi3518e only support 25fps
-	_venc_chan0.setFramerate(25);
+	// hi3518e support only 20fps with 2 video streaming
+	_venc_chan0.setFramerate(20);
 	_venc_chan1.setEncoding(IVideoEncoder::H264);
 	_venc_chan1.setResolution(r1);
-	//_venc_chan1.setFramerate(15);
+	_venc_chan1.setFramerate(15);
 	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 4);
 	_sysctl.addVideoBuffer(r0.Width * r0.Height * 3 / 2, 4);
 	_sysctl.addVideoBuffer(r1.Width * r1.Height * 3 / 2, 2);
