@@ -47,7 +47,7 @@ static ImageResolutionEntry image_resolution_table[] = {
     { .name =  "SXGA", .width = 1400, .height = 1050 },
     { .name =  "UXGA", .width = 1600, .height = 1200 },
     { .name =  "QXGA", .width = 2048, .height = 1536 },
-    { .name =  "WVGA", .width = 854,  .height = 480  },
+    { .name =  "WVGA", .width = 800,  .height = 480  },
     { .name = "WSXGA", .width = 1680, .height = 1050 },
     { .name = "720P",  .width = 1280, .height = 720  },
     { .name = "1080P", .width = 1920, .height = 1080 },
