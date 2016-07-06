@@ -136,9 +136,9 @@ public:
     IVideoSource::Imaging*    getImaging();
 private:
     Hi3520mppMedia& _media;
+    Imaging         _imaging;
     HimppViDev&     _vi_dev;
     HimppViChan&    _vi_chan;
-    Imaging         _imaging;
 };
 
 class HimppVideoOSD : public IVideoOSD

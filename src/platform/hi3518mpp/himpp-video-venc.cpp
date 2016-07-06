@@ -22,10 +22,11 @@
 
 HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN chn)
     : HimppVideoObject(source), _grpid(grp), _chnid(chn),
-      _encoding(IVideoEncoder::H264), _rcmode(IVideoEncoder::VBR),
+      _encoding(IVideoEncoder::H264),
+      _h264profile(IH264VideoEncoder::HIGH),
+      _rcmode(IVideoEncoder::VBR),
       _resolution(source->getResolution()),
-      _framerate(source->getFramerate()),
-      _h264profile(IH264VideoEncoder::HIGH)
+      _framerate(source->getFramerate())
 {
     _bitrate = 2048;
     _gop = 30;

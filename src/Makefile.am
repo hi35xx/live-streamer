@@ -11,14 +11,13 @@ AM_CPPFLAGS = \
 	-I$(srcdir) -I$(srcdir)/rtsp-server \
 	-I$(srcdir)/dbus -I$(builddir)/dbus
 
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
+
 SUBDIRS = \
 	rtsp-server \
 	dbus \
 	platform
-
-AM_CFLAGS =\
-	 -Wall\
-	 -g
 
 bin_PROGRAMS = live-streamer
 

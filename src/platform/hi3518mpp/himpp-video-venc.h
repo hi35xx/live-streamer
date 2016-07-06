@@ -68,9 +68,9 @@ private:
     VENC_CHN                    _chnid;
     IVideoEncoder::EncodingType _encoding;
     IH264VideoEncoder::H264Profile _h264profile;
+    IVideoEncoder::RateCtrlMode _rcmode;
     ImageResolution             _resolution;
     uint32_t                    _framerate;
-    IVideoEncoder::RateCtrlMode _rcmode;
     uint32_t                    _bitrate;
     uint32_t                    _gop;
     GROUP_CROP_CFG_S            _crop_cfg;

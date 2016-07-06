@@ -745,7 +745,6 @@ void HimppVideoOSD::setInvertColor(bool val)
 SDL_Surface *HimppVideoOSD::getSurface(uint16_t w, uint16_t h)
 {
 	BITMAP_S *bmp = _region.getBitmap(w, h);
-	int pitch = bmp->u32Width * 2;
 
 	if (_surface) {
 		_surface->flags |= SDL_PREALLOC;
@@ -918,8 +917,8 @@ unsigned int HimppVideoStream::getStreamData
 	gettimeofday(&tstamp, NULL);
 
 	frame_size = 0;
-	for (int i = 0; i < stStream.u32PackCount; i++) {
-		for (int j = 0; j < ARRAY_SIZE(stStream.pstPack[i].pu8Addr); j++) {
+	for (int i = 0; i < (int)stStream.u32PackCount; i++) {
+		for (int j = 0; j < (int)ARRAY_SIZE(stStream.pstPack[i].pu8Addr); j++) {
 			HI_U8 *p = stStream.pstPack[i].pu8Addr[j];
 			HI_U32 len = stStream.pstPack[i].u32Len[j];
 
@@ -1181,8 +1180,8 @@ void HimppAudioStream::watch_handler(ev::io &w, int revents)
 
 Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
   : _runtime(runtime),
-    _sensor(himpp_video_sensor_map.at(sensor_name)),
     _sysctl(HIMPP_SYS_ALIGN_WIDTH, HIMPP_PIXEL_FORMAT),
+    _sensor(himpp_video_sensor_map.at(sensor_name)),
     _vi_dev0(dynamic_cast<HimppObject*>(&_sysctl), &_sensor, 0),
     _vi_chan0(&_vi_dev0, 0),
     _vpss_group0(&_vi_chan0, 0),

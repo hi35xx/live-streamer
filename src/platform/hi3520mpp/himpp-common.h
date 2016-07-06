@@ -23,6 +23,8 @@
 #define HIMPP_SYS_ALIGN_WIDTH      16
 #define HIMPP_PIXEL_FORMAT         PIXEL_FORMAT_YUV_SEMIPLANAR_420
 
+#define ARRAY_SIZE(x)		(sizeof(x)/sizeof(x[0]))
+
 #define HIMPP_PRINT(fmt, ...)      \
     printf("[%s:%d]:" fmt, __FILE__, __LINE__, ##__VA_ARGS__)
 

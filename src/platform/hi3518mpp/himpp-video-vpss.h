@@ -65,10 +65,10 @@ private:
         VPSS_CHN_TYPE_BYPASS,
         VPSS_CHN_TYPE_EXT
     };
+    HimppVpssGroup*     _vpss_group;
     VPSS_CHN            _chnid;
     VPSS_CHN_TYPE       _type;
     MPP_CHN_S           _mpp_chn;
-    HimppVpssGroup*     _vpss_group;
     ImageResolution     _resolution;
     uint32_t            _framerate;
 };

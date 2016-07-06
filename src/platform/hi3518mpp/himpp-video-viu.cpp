@@ -22,8 +22,8 @@
 
 
 HimppViDev::HimppViDev(HimppObject *source, HimppVideoSensor *sensor, VI_DEV vi_dev)
-    : HimppVideoObject(source), _video_sensor(sensor),
-      _devid(vi_dev), _video_isp(sensor)
+    : HimppVideoObject(source), _video_sensor(sensor)
+      , _video_isp(sensor), _devid(vi_dev)
 {
     _brightness = 50;
     _contrast = 50;

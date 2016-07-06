@@ -56,8 +56,8 @@ public:
 	void setBitmap(BITMAP_S *bitmap);
 private:
 	HimppVideoObject *_source;
-	bool		_enabled;
 	RGN_HANDLE	_rgn_handle;
+	bool		_enabled;
 
 	SIZE_S		_size;
 	HI_U32		_fgcolor;

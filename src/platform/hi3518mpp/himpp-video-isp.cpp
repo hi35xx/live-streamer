@@ -252,12 +252,13 @@ bool HimppVideoISP::enableObject()
 	}
 	else {
 		ISP_MWB_ATTR_S mwb_attr;
-		if (HI_MPI_ISP_GetMWBAttr(&mwb_attr) == HI_SUCCESS)
+		if (HI_MPI_ISP_GetMWBAttr(&mwb_attr) == HI_SUCCESS) {
 			mwb_attr.u16Rgain = (HI_U16)_whitebalance._r_gain;
 			mwb_attr.u16Ggain = (HI_U16)_whitebalance._g_gain;
 			mwb_attr.u16Bgain = (HI_U16)_whitebalance._b_gain;
 			if (HI_MPI_ISP_SetMWBAttr(&mwb_attr) != HI_SUCCESS)
 				throw IpcamError("Cannot set MWB attr");
+        }
 	}
 
 	return true;
@@ -589,7 +590,7 @@ uint32_t HimppVideoISP::Exposure::getIris(void)
 HimppVideoISP::WhiteBalance::WhiteBalance(HimppVideoISP &video_isp)
 	: _video_isp(video_isp),
 	  _mode(IVideoSource::Imaging::WhiteBalance::AUTO_WB),
-	  _cr_gain(128), _cb_gain(128),
+	  _cb_gain(128), _cr_gain(128),
 	  _r_gain(256), _g_gain(256), _b_gain(256)
 {
 }

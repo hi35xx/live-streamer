@@ -4,6 +4,9 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src -I$(srcdir) -I$(builddir) \
 	$(DBUSXX_CFLAGS)
 
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
+
 noinst_LTLIBRARIES =  \
 	libdbus-iface.la
 

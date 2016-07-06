@@ -42,8 +42,8 @@ protected:
     virtual bool enableObject() = 0;
     virtual bool disableObject() = 0;
 private:
-    std::atomic<int> enableCount;
     HimppObject *_source;
+    std::atomic<int> enableCount;
 };
 
 class HimppVideoObject : public HimppObject

@@ -335,6 +335,8 @@ AM_CPPFLAGS = \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS)
 
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
 noinst_LTLIBRARIES = \
 	librtsp-server.la
 

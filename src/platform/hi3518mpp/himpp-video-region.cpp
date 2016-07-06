@@ -34,7 +34,7 @@ static inline HI_S32 argb1555_to_lum(HI_U32 color)
 
 HimppVideoRegion::HimppVideoRegion(HimppVideoObject *source, RGN_HANDLE handle)
 	:_source(source), _rgn_handle(handle), _enabled(false),
-	 _bgcolor(0), _fgalpha(128), _bgalpha(0),
+	 _fgcolor(0xffffff), _bgcolor(0), _fgalpha(128), _bgalpha(0),
 	 _layer(0), _invert_color(HI_FALSE)
 {
 	_size.u32Width = 4;
@@ -97,7 +97,6 @@ bool HimppVideoRegion::enable()
 		(argb1555_to_lum(_fgcolor) > 128) ? MORETHAN_LUM_THRESH : LESSTHAN_LUM_THRESH;
 	chn_attr.unChnAttr.stOverlayChn.stInvertColor.bInvColEn = _invert_color;
 
-	MPP_CHN_S *chn = (MPP_CHN_S*)*_source;
 	s32Ret = HI_MPI_RGN_AttachToChn(_rgn_handle, (MPP_CHN_S *)*_source, &chn_attr);
 	if (s32Ret != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_RGN_AttachToChn(%d) failed [%#x]\n",

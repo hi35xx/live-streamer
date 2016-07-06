@@ -131,6 +131,8 @@ std::string IpcamVideoOSD::getPlainText(std::string text)
 			text = "%c";
 		if (tmp && (strftime(ostr, sizeof(ostr), text.c_str(), tmp) > 0))
 			return std::string(ostr);
+	default:
+		break;
 	}
 
 	return std::string();

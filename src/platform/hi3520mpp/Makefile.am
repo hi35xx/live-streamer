@@ -10,9 +10,8 @@ AM_CPPFLAGS = \
 	$(DBUSXX_CFLAGS) \
 	$(HI3520MPP_CPPFLAGS)
 
-AM_CFLAGS =\
-	 -Wall\
-	 -g
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
 
 noinst_LTLIBRARIES =  \
 	libhi3520mpp.la

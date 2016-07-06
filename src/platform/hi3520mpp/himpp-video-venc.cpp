@@ -25,10 +25,11 @@
 
 HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN chn)
     : HimppVideoObject(source), _grpid(grp), _chnid(chn),
-      _encoding(IVideoEncoder::H264), _rcmode(IVideoEncoder::VBR),
+      _encoding(IVideoEncoder::H264),
+      _h264profile(IH264VideoEncoder::MAIN),
+      _rcmode(IVideoEncoder::VBR),
       _resolution(source->getResolution()),
-      _framerate(source->getFramerate()),
-      _h264profile(IH264VideoEncoder::MAIN)
+      _framerate(source->getFramerate())
 {
     _bitrate = 2048;
     _gop = 30;
@@ -139,33 +140,6 @@ bool HimppVencChan::setResolution(ImageResolution &res)
 {
     _resolution = res;
 
-    // Calculate the crop configuration
-    ImageResolution &out = res;
-    ImageResolution in = videoSource()->getResolution();
-#if 0
-    RECT_S &rect = _crop_cfg.stRect;
-    if (in.Width * out.Height > out.Width * in.Height) {
-        // crop width
-        _crop_cfg.bEnable = HI_TRUE;
-        rect.u32Height = in.Height;
-        rect.u32Width = out.Width * in.Height / out.Height;
-        rect.s32X = ((in.Width - rect.u32Width) / 2) & 0xFFFFFFF0;
-        rect.s32Y = 0;
-    }
-    else if (in.Width * out.Height < out.Width * in.Height) {
-        // crop height
-        _crop_cfg.bEnable = HI_TRUE;
-        rect.u32Width = in.Width;
-        rect.u32Height = out.Height * in.Width / out.Width;
-        rect.s32X = 0;
-        rect.s32Y = (in.Height - rect.u32Height) / 2;
-    }
-    else {
-        // crop is not necessary
-        _crop_cfg.bEnable = HI_FALSE;
-    }
-#endif
-
     if (isEnabled()) {
         disableObject();
         enableObject();
@@ -187,6 +161,8 @@ bool HimppVencChan::setFramerate(uint32_t fps)
         disableObject();
         enableObject();
     }
+
+    return true;
 }
 
 uint32_t HimppVencChan::getFramerate()
@@ -351,18 +327,10 @@ bool HimppVencChan::enableObject()
         goto err_destroy_chn;
     }
 
-#if 0
-    if ((s32Ret = HI_MPI_VENC_SetGrpCrop(_grpid, &_crop_cfg)) != HI_SUCCESS) {
-        HIMPP_PRINT("HI_MPI_VENC_SetGrpCrop [%d] faild [%#x]!\n",
-                     _grpid, s32Ret);
-        goto err_unregister_chn;
-    }
-#endif
-
     if ((s32Ret = HI_MPI_VENC_StartRecvPic(_chnid)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VENC_StartRecvPic %d failed [%#x]\n",
                     _chnid, s32Ret);
-        goto err_disable_crop;
+        goto err_unregister_chn;
     }
 
     MPP_CHN_S dst_chn;
@@ -383,8 +351,6 @@ bool HimppVencChan::enableObject()
 
 err_stop_recv_pic:
     HI_MPI_VENC_StopRecvPic(_chnid);
-err_disable_crop:
-    //HI_MPI_VENC_SetGrpCrop(_grpid, &dis_crop);
 err_unregister_chn:
     HI_MPI_VENC_UnRegisterChn(_chnid);
 err_destroy_chn:
@@ -417,13 +383,6 @@ bool HimppVencChan::disableObject()
         HIMPP_PRINT("HI_MPI_VENC_StopRecvPic %d failed [%#x]\n",
                     _chnid, s32Ret);
     }
-
-#if 0
-    if ((s32Ret = HI_MPI_VENC_SetGrpCrop(_grpid, &dis_crop)) != HI_SUCCESS) {
-        HIMPP_PRINT("HI_MPI_VENC_SetGrpCrop [%d] failed [%#x]!\n",
-                     _grpid, s32Ret);
-    }
-#endif
 
     if ((s32Ret = HI_MPI_VENC_UnRegisterChn(_chnid)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VENC_UnRegisterChn %d failed [%#x]\n",

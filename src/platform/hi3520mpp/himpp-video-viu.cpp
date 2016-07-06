@@ -99,8 +99,7 @@ HimppViDev::operator MPP_CHN_S* ()
 
 HimppViChan::HimppViChan(HimppViDev *vi_dev, HimppVideoObject *codec, VI_CHN vi_chn)
     : HimppVideoObject(vi_dev),
-      _codec(codec),
-      _vi_dev(vi_dev), _chnid(vi_chn)//, _rotate(ROTATE_NONE)
+      _vi_dev(vi_dev), _codec(codec), _chnid(vi_chn)
 {
     ImageResolution in_res = _vi_dev->getResolution();
 

@@ -332,10 +332,14 @@ bool HimppAencChan::setEncoding(IAudioEncoder::EncodingType encoding)
 
 uint32_t HimppAencChan::getBitrate()
 {
+    return _bps;
 }
 
 bool HimppAencChan::setBitrate(uint32_t bps)
 {
+    _bps = bps;
+
+    return true;
 }
 
 bool HimppAencChan::enableObject()

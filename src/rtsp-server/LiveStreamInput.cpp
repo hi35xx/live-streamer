@@ -31,9 +31,6 @@ class LiveVideoStreamSource: public FramedSource, public LiveStreamDataPump
 public:
     static LiveVideoStreamSource* createNew(UsageEnvironment& env, IVideoStream& stream);
 
-public:
-    EventTriggerId eventTriggerId;
-
     void pushData();
 protected:
     LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream);
@@ -50,6 +47,7 @@ private:
 
 private:
     IVideoStream &fVideoStream;
+    EventTriggerId eventTriggerId;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,8 +63,6 @@ LiveVideoStreamSource::createNew(UsageEnvironment& env, IVideoStream& stream)
 LiveVideoStreamSource::LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream)
 : FramedSource(env), fVideoStream(stream), eventTriggerId(0)
 {
-    TaskScheduler &scheduler = envir().taskScheduler();
-
     eventTriggerId = envir().taskScheduler().createEventTrigger(deliverFrame0);
 
     fVideoStream.startStreaming(this);
@@ -160,8 +156,8 @@ LiveVideoServerMediaSubsession::createNew(UsageEnvironment& env, IVideoStream& s
 LiveVideoServerMediaSubsession
 ::LiveVideoServerMediaSubsession(UsageEnvironment& env, IVideoStream& stream)
     : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
-      fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL),
-      fVideoStream(stream)
+      fVideoStream(stream), fAuxSDPLine(NULL),
+      fDoneFlag(0), fDummyRTPSink(NULL)
 {
 }
 
@@ -264,9 +260,6 @@ class LiveAudioStreamSource: public FramedSource, public LiveStreamDataPump
 public:
     static LiveAudioStreamSource* createNew(UsageEnvironment& env, IAudioStream& stream);
 
-public:
-    EventTriggerId eventTriggerId; 
-
     void pushData();
 protected:
     LiveAudioStreamSource(UsageEnvironment& env, IAudioStream& stream);
@@ -283,6 +276,7 @@ private:
 
 private:
     IAudioStream &fAudioStream;
+    EventTriggerId eventTriggerId; 
 };
 
 LiveAudioStreamSource*

@@ -11,9 +11,8 @@ AM_CPPFLAGS = \
 	$(SDL_CFLAGS) \
 	$(HI3518MPP_CPPFLAGS)
 
-AM_CFLAGS =\
-	 -Wall\
-	 -g
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
 
 noinst_LTLIBRARIES =  \
 	libhi3518mpp.la

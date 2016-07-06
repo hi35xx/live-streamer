@@ -473,7 +473,6 @@ void HimppVideoOSD::setInvertColor(bool val)
 SDL_Surface *HimppVideoOSD::getSurface(uint16_t w, uint16_t h)
 {
 	BITMAP_S *bmp = _region.getBitmap(w, h);
-	int pitch = bmp->u32Width * 2;
 
 	if (_surface) {
 		_surface->flags |= SDL_PREALLOC;
@@ -647,9 +646,8 @@ unsigned int HimppH264VideoStream
     gettimeofday(&tstamp, NULL);
 
     frame_size = 0;
-#define ARRAY_SIZE(x)		(sizeof(x)/sizeof(x[0]))
-    for (int i = 0; i < stStream.u32PackCount; i++) {
-        for (int j = 0; j < ARRAY_SIZE(stStream.pstPack[i].pu8Addr); j++) {
+    for (int i = 0; i < (int)stStream.u32PackCount; i++) {
+        for (int j = 0; j < (int)ARRAY_SIZE(stStream.pstPack[i].pu8Addr); j++) {
             HI_U8 *p = stStream.pstPack[i].pu8Addr[j];
             HI_U32 len = stStream.pstPack[i].u32Len[j];
 
@@ -734,14 +732,14 @@ Hi3520mppMedia
       _vpss_group2(&_vi_chan1, 2), _vpss_group3(&_vi_chan3, 3),
       _vpss_chan0(&_vpss_group0, 0), _vpss_chan1(&_vpss_group1, 1),
       _vpss_chan2(&_vpss_group2, 2), _vpss_chan3(&_vpss_group3, 3),
-      _video_stream0(runtime, _venc_chan0),
-      _video_stream1(runtime, _venc_chan1),
-      _video_stream2(runtime, _venc_chan2),
-      _video_stream3(runtime, _venc_chan3),
       _venc_chan0(&_vpss_chan0, 0, 0),
       _venc_chan1(&_vpss_chan1, 1, 1),
       _venc_chan2(&_vpss_chan2, 2, 2),
       _venc_chan3(&_vpss_chan3, 3, 3),
+      _video_stream0(runtime, _venc_chan0),
+      _video_stream1(runtime, _venc_chan1),
+      _video_stream2(runtime, _venc_chan2),
+      _video_stream3(runtime, _venc_chan3),
       _video_source0(*this, _vi_dev0, _vi_chan0),
       _video_source1(*this, _vi_dev0, _vi_chan1),
       _video_source2(*this, _vi_dev0, _vi_chan2),
