@@ -273,11 +273,20 @@ public:
 };
 
 
-// Used to request the RTSP server to get stream data
-class LiveStreamDataPump
+// Used to stream Audio/Video to RTSP stack
+class StreamDataConsumer
 {
 public:
-    virtual void pushData() = 0;
+    struct StreamData
+    {
+        struct timeval  tstamp;
+        uint32_t        pack_count;
+        struct Pack {
+            uint8_t     *addr;
+            uint32_t    len;
+        } *pack;
+    };
+    virtual void streamData(StreamData &data) = 0;
 };
 
 
@@ -288,11 +297,10 @@ public:
     virtual ~IAudioStream() {}
     virtual IAudioEncoder::EncodingType getEncoding() = 0;
     virtual uint32_t getSampleRate() = 0;
-    virtual unsigned int getStreamData(unsigned char *buf, unsigned int bufsiz,
-                                       unsigned int &truncated,
-                                       struct timeval &tstamp) = 0;
-    virtual bool startStreaming(LiveStreamDataPump *pump) = 0;
-    virtual bool stopStreaming() = 0;
+    virtual bool registerConsumer(StreamDataConsumer *consumer) = 0;
+    virtual bool unregisterConsumer(StreamDataConsumer *consumer) = 0;
+    virtual void enableStreaming() = 0;
+    virtual void disableStreaming() = 0;
 };
 
 
@@ -303,11 +311,10 @@ public:
     virtual ~IVideoStream() {}
     virtual IVideoEncoder::EncodingType getEncoding() = 0;
     virtual uint32_t getBitrate() = 0;
-    virtual unsigned int getStreamData(unsigned char *buf, unsigned int bufsiz,
-                                       unsigned int &truncated,
-                                       struct timeval &tstamp) = 0;
-    virtual bool startStreaming(LiveStreamDataPump *notifier) = 0;
-    virtual bool stopStreaming() = 0;
+    virtual bool registerConsumer(StreamDataConsumer *consumer) = 0;
+    virtual bool unregisterConsumer(StreamDataConsumer *consumer) = 0;
+    virtual void enableStreaming() = 0;
+    virtual void disableStreaming() = 0;
 };
 
 

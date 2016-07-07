@@ -866,10 +866,9 @@ IVideoOSD *HimppH264VideoEncoder::CreateOSD(uint32_t id)
 // HimppVideoStream
 //////////////////////////////////////////////////////////////////////////////
 
-HimppVideoStream::HimppVideoStream
-(IpcamRuntime *runtime, HimppVencChan &venc_chan)
+HimppVideoStream::HimppVideoStream(IpcamRuntime *runtime, HimppVencChan &venc_chan)
   : _runtime(runtime), _venc_chan(venc_chan),
-    _io(runtime->mainloop())
+    _io(runtime->mainloop()), _consumer(NULL)
 {
 }
 
@@ -887,105 +886,79 @@ uint32_t HimppVideoStream::getBitrate()
 	return _venc_chan.getBitrate();
 }
 
-unsigned int HimppVideoStream::getStreamData
-(unsigned char* buf, unsigned int bufsiz,
- unsigned int &truncated, struct timeval &tstamp)
+bool HimppVideoStream::registerConsumer(StreamDataConsumer *consumer)
 {
-	VENC_CHN_STAT_S stStat;
-	VENC_STREAM_S stStream;
-	unsigned int frame_size;
-	HI_S32 s32Ret;
+	_consumer = consumer;
 
-	int chnid = _venc_chan.channelId();
-
-	s32Ret = HI_MPI_VENC_Query(chnid, &stStat);
-	if (HI_SUCCESS != s32Ret || !stStat.u32CurPacks) {
-		return 0;
-	}
-
-	stStream.pstPack = (VENC_PACK_S*)alloca(sizeof(VENC_PACK_S) * stStat.u32CurPacks);
-	stStream.u32PackCount = stStat.u32CurPacks;
-	stStream.u32Seq = 0;
-	memset(&stStream.stH264Info, 0, sizeof(VENC_STREAM_INFO_H264_S));
-	s32Ret = HI_MPI_VENC_GetStream(chnid, &stStream, HI_FALSE);
-	if (HI_SUCCESS != s32Ret) {
-		fprintf(stderr, "HI_MPI_VENC_GetStream %d failed [%#x]\n",
-		        chnid, s32Ret);
-		return 0;
-	}
-
-	gettimeofday(&tstamp, NULL);
-
-	frame_size = 0;
-	for (int i = 0; i < (int)stStream.u32PackCount; i++) {
-		for (int j = 0; j < (int)ARRAY_SIZE(stStream.pstPack[i].pu8Addr); j++) {
-			HI_U8 *p = stStream.pstPack[i].pu8Addr[j];
-			HI_U32 len = stStream.pstPack[i].u32Len[j];
-
-			if (len == 0)
-				continue;
-
-			if (len >= 3 && p[0] == 0x00 && p[1] == 0x00 && p[2] == 0x01) {
-				p += 3;
-				len -= 3;
-			}
-			if (len >= 4 && p[0] == 0x00 && p[1] == 0x00 && p[2] == 0x00 && p[3] == 0x01) {
-				p += 4;
-				len -= 4;
-			}
-
-			if (frame_size + len < bufsiz) {
-				memmove(&buf[frame_size], p, len);
-				frame_size += len;
-			}
-			else {
-				truncated += len;
-			}
-		}
-	}
-
-	s32Ret = HI_MPI_VENC_ReleaseStream(chnid, &stStream);
-	if (HI_SUCCESS != s32Ret) {
-		fprintf(stderr, "HI_MPI_VENC_ReleaseStream failed [%#x]\n",
-		        s32Ret);
-	}
-
-	return frame_size;
+	return _venc_chan.enable();
 }
 
-bool HimppVideoStream::startStreaming(LiveStreamDataPump *pump)
+bool HimppVideoStream::unregisterConsumer(StreamDataConsumer *consumer)
 {
-	_pump = pump;
-
-	if (_venc_chan.isEnabled())
-		return true;
-
-	if (_venc_chan.enable()) {
-		_io.set<HimppVideoStream, &HimppVideoStream::watch_handler>(this);
-		_io.set(HI_MPI_VENC_GetFd(_venc_chan.channelId()), ev::READ);
-		_io.start();
-
-		return true;
-	}
-	return false;
-}
-
-bool HimppVideoStream::stopStreaming()
-{
-	_pump = NULL;
-
-	_io.stop();
-
-	if (!_venc_chan.isEnabled())
-		return true;
+	_consumer = NULL;
 
 	return _venc_chan.disable();
 }
 
+void HimppVideoStream::enableStreaming()
+{
+	_io.set<HimppVideoStream, &HimppVideoStream::watch_handler>(this);
+	_io.set(HI_MPI_VENC_GetFd(_venc_chan.channelId()), ev::READ);
+	_io.start();
+}
+
+void HimppVideoStream::disableStreaming()
+{
+	_io.stop();
+}
+
 void HimppVideoStream::watch_handler(ev::io &w, int revents)
 {
-	if (revents & ev::READ && _pump) {
-		_pump->pushData();
+	if (!(revents & ev::READ))
+		return;
+
+	int chnid = _venc_chan.channelId();
+
+	VENC_PACK_S stPack;
+	VENC_STREAM_S stStream = {
+		.pstPack = &stPack,
+		.u32PackCount = 1,
+		.u32Seq = 0
+	};
+
+	HI_S32 s32Ret = HI_MPI_VENC_GetStream(chnid, &stStream, HI_FALSE);
+	if (s32Ret != HI_SUCCESS) {
+		HIMPP_PRINT("Get video stream %d failed [%#x]\n", chnid, s32Ret);
+		return;
+	}
+
+#define PACK_SIZE   ARRAY_SIZE(stStream.pstPack[0].pu8Addr)
+	StreamDataConsumer::StreamData::Pack stream_data_pack[PACK_SIZE];
+	memset(&stream_data_pack, 0, sizeof(stream_data_pack));
+	StreamDataConsumer::StreamData stream_data;
+	stream_data.pack_count = 0;
+	stream_data.pack = stream_data_pack;
+	gettimeofday(&stream_data.tstamp, NULL);
+
+	for (int i = 0; i < (int)PACK_SIZE; i++) {
+		HI_U8 *ptr = stStream.pstPack[0].pu8Addr[i];
+		HI_U32 len = stStream.pstPack[0].u32Len[i];
+
+		if ((ptr == NULL) || (len == 0))
+			break;
+
+		stream_data.pack[i].addr = ptr;
+		stream_data.pack[i].len = len;
+		stream_data.pack_count++;
+	}
+
+	if (_consumer) {
+		_consumer->streamData(stream_data);
+	}
+
+	s32Ret = HI_MPI_VENC_ReleaseStream(chnid, &stStream);
+	if (s32Ret != HI_SUCCESS) {
+		HIMPP_PRINT("Release video stream %d failed [%#x]\n", chnid, s32Ret);
 	}
 }
 
@@ -1081,7 +1054,7 @@ bool HimppAudioEncoder::disable()
 HimppAudioStream::HimppAudioStream
 (IpcamRuntime *runtime, HimppAiDev &ai_dev, HimppAencChan &aenc_chan)
   : _runtime(runtime), _ai_dev(ai_dev), _aenc_chan(aenc_chan),
-    _io(runtime->mainloop())
+    _io(runtime->mainloop()), _consumer(NULL)
 {
 }
 
@@ -1099,77 +1072,65 @@ uint32_t HimppAudioStream::getSampleRate()
 	return _ai_dev.getSampleRate();
 }
 
-unsigned int HimppAudioStream
-::getStreamData(unsigned char* buf, unsigned int bufsiz,
-                unsigned int &truncated, struct timeval &tstamp)
+bool HimppAudioStream::registerConsumer(StreamDataConsumer *consumer)
 {
-	AUDIO_STREAM_S stStream;
-	unsigned int frame_size;
-	HI_S32 s32Ret;
+	_consumer = consumer;
 
-	int chnid = _aenc_chan.channelId();
-
-	s32Ret = HI_MPI_AENC_GetStream(chnid, &stStream, HI_FALSE);
-	if (HI_SUCCESS != s32Ret) {
-		fprintf(stderr, "HI_MPI_AENC_GetStream %d failed [%#x]\n",
-		        chnid, s32Ret);
-		return 0;
-	}
-
-	gettimeofday(&tstamp, NULL);
-
-	frame_size = 0;
-	if (stStream.u32Len <= bufsiz + 4) {
-		frame_size = stStream.u32Len - 4;
-		truncated = 0;
-	}
-	else {
-		frame_size = bufsiz;
-		truncated = stStream.u32Len - 4 - bufsiz;
-	}
-	memmove(&buf[0], stStream.pStream + 4, frame_size);
-
-	s32Ret = HI_MPI_AENC_ReleaseStream(chnid, &stStream);
-	if (HI_SUCCESS != s32Ret) {
-		fprintf(stderr, "HI_MPI_AENC_ReleaseStream failed [%#x]\n", s32Ret);
-	}
-
-	return frame_size;
+	return _aenc_chan.enable();
 }
 
-bool HimppAudioStream::startStreaming(LiveStreamDataPump *pump)
+bool HimppAudioStream::unregisterConsumer(StreamDataConsumer *consumer)
 {
-	_pump = pump;
-
-	if (_aenc_chan.isEnabled())
-		return true;
-
-	if (_aenc_chan.enable()) {
-		_io.set<HimppAudioStream, &HimppAudioStream::watch_handler>(this);
-		_io.set(HI_MPI_AENC_GetFd(_aenc_chan.channelId()), ev::READ);
-		_io.start();
-
-		return true;
-	}
-	return false;
-}
-
-bool HimppAudioStream::stopStreaming()
-{
-	_pump = NULL;
-
-	_io.stop();
-
-	if (!_aenc_chan.isEnabled())
-		return true;
+	_consumer = NULL;
 
 	return _aenc_chan.disable();
 }
 
+void HimppAudioStream::enableStreaming()
+{
+	_io.set<HimppAudioStream, &HimppAudioStream::watch_handler>(this);
+	_io.set(HI_MPI_AENC_GetFd(_aenc_chan.channelId()), ev::READ);
+	_io.start();
+}
+
+void HimppAudioStream::disableStreaming()
+{
+	_io.stop();
+}
+
 void HimppAudioStream::watch_handler(ev::io &w, int revents)
 {
-	if (revents & ev::READ && _pump) {
-		_pump->pushData();
+	if (!(revents & ev::READ))
+		return;
+
+	int chnid = _aenc_chan.channelId();
+
+	AUDIO_STREAM_S stStream;
+	HI_S32 s32Ret = HI_MPI_AENC_GetStream(chnid, &stStream, HI_FALSE);
+	if (HI_SUCCESS != s32Ret) {
+		HIMPP_PRINT("Get audio stream %d failed [%#x]\n", chnid, s32Ret);
+		return;
+	}
+
+	if (stStream.u32Len > 4) {
+		StreamDataConsumer::StreamData::Pack stream_data_pack;
+		memset(&stream_data_pack, 0, sizeof(stream_data_pack));
+
+		StreamDataConsumer::StreamData stream_data;
+		stream_data.pack_count = 1;
+		stream_data.pack = &stream_data_pack;
+		gettimeofday(&stream_data.tstamp, NULL);
+
+		stream_data.pack[0].addr = stStream.pStream + 4;
+		stream_data.pack[0].len = stStream.u32Len - 4;
+
+		if (_consumer)
+			_consumer->streamData(stream_data);
+	}
+
+	s32Ret = HI_MPI_AENC_ReleaseStream(chnid, &stStream);
+	if (HI_SUCCESS != s32Ret) {
+		HIMPP_PRINT("Release audio stream %d failed [%#x]\n", chnid, s32Ret);
 	}
 }
 

@@ -26,12 +26,14 @@
 #include "LiveStreamInput.hh"
 
 
-class LiveVideoStreamSource: public FramedSource, public LiveStreamDataPump
+class LiveVideoStreamSource: public FramedSource, public StreamDataConsumer
 {
 public:
     static LiveVideoStreamSource* createNew(UsageEnvironment& env, IVideoStream& stream);
 
-    void pushData();
+    int &referenceCount() { return fReferenceCount; }
+
+    void streamData(StreamData &data);
 protected:
     LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream);
     // called only by createNew(), or by subclass constructors
@@ -40,14 +42,11 @@ protected:
 private:
     // redefined virtual functions:
     virtual void doGetNextFrame();
-    //virtual void doStopGettingFrames(); // optional
-    static void backgroundHandler(void *clientData, int mask);
-    static void deliverFrame0(void* clientData);
-    void deliverFrame();
+    virtual void doStopGettingFrames();
 
 private:
     IVideoStream &fVideoStream;
-    EventTriggerId eventTriggerId;
+    int fReferenceCount;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,85 +60,63 @@ LiveVideoStreamSource::createNew(UsageEnvironment& env, IVideoStream& stream)
 }
 
 LiveVideoStreamSource::LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream)
-: FramedSource(env), fVideoStream(stream), eventTriggerId(0)
+: FramedSource(env), fVideoStream(stream), fReferenceCount(1)
 {
-    eventTriggerId = envir().taskScheduler().createEventTrigger(deliverFrame0);
-
-    fVideoStream.startStreaming(this);
+    fVideoStream.registerConsumer(this);
 }
 
 LiveVideoStreamSource::~LiveVideoStreamSource()
 {
-    fVideoStream.stopStreaming();
-    // Reclaim our 'event trigger'
-    envir().taskScheduler().deleteEventTrigger(eventTriggerId);
+    fVideoStream.unregisterConsumer(this);
 }
 
-void LiveVideoStreamSource::pushData()
+void LiveVideoStreamSource::streamData(StreamData &data)
 {
-    //envir().taskScheduler().triggerEvent(eventTriggerId, this);
-    deliverFrame();
+    // check if we're ready for the data
+    if (!isCurrentlyAwaitingData()) {
+        envir() << "WARN: LiveVideoStreamSource is not ready for data yet\n";
+        return;
+    }
+
+    fPresentationTime = data.tstamp;
+    fFrameSize = 0;
+    for (int i = 0; i < (int)data.pack_count; i++) {
+        uint8_t *ptr = data.pack[i].addr;
+        uint32_t len = data.pack[i].len;
+
+        if ((ptr == NULL) || (len == 0))
+            break;
+
+        if (len >= 4 && ptr[0] == 0x00 && ptr[1] == 0x00
+            && ptr[2] == 0x00 && ptr[3] == 0x01)
+        {
+            ptr += 4;
+            len -= 4;
+        }
+
+        if (fFrameSize + len < fMaxSize) {
+            memmove(&fTo[fFrameSize], ptr, len);
+            fFrameSize += len;
+        }
+        else {
+            fNumTruncatedBytes += len;
+        }
+    }
+
+    fVideoStream.disableStreaming();
+
+    // After delivering the data, inform the reader that it is now available:
+    FramedSource::afterGetting(this);
 }
 
 void LiveVideoStreamSource::doGetNextFrame()
 {
-    // This function is called (by our 'downstream' object) when it asks for new data.
-
-    // Note: If, for some reason, the source device stops being readable (e.g., it gets closed), then you do the following:
-    if (0 /* the source stops being readable */ /*%%% TO BE WRITTEN %%%*/) {
-        handleClosure(this);
-        return;
-    }
-
-    // If a new frame of data is immediately available to be delivered, then do this now:
-    if (0 /* a new frame of data is immediately available to be delivered*/ /*%%% TO BE WRITTEN %%%*/) {
-        deliverFrame();
-    }
-
-    // No new data is immediately available to be delivered.  We don't do anything more here.
-    // Instead, our event trigger must be called (e.g., from a separate thread) when new data becomes available.
+    fVideoStream.enableStreaming();
 }
 
-void LiveVideoStreamSource::deliverFrame0(void* clientData)
+void LiveVideoStreamSource::doStopGettingFrames()
 {
-    if (clientData)
-        ((LiveVideoStreamSource*)clientData)->deliverFrame();
-}
-
-void LiveVideoStreamSource::deliverFrame()
-{
-    // This function is called when new frame data is available from the device.
-    // We deliver this data by copying it to the 'downstream' object, using the following parameters (class members):
-    // 'in' parameters (these should *not* be modified by this function):
-    //     fTo: The frame data is copied to this address.
-    //         (Note that the variable "fTo" is *not* modified.  Instead,
-    //          the frame data is copied to the address pointed to by "fTo".)
-    //     fMaxSize: This is the maximum number of bytes that can be copied
-    //         (If the actual frame is larger than this, then it should
-    //          be truncated, and "fNumTruncatedBytes" set accordingly.)
-    // 'out' parameters (these are modified by this function):
-    //     fFrameSize: Should be set to the delivered frame size (<= fMaxSize).
-    //     fNumTruncatedBytes: Should be set iff the delivered frame would have been
-    //         bigger than "fMaxSize", in which case it's set to the number of bytes
-    //         that have been omitted.
-    //     fPresentationTime: Should be set to the frame's presentation time
-    //         (seconds, microseconds).  This time must be aligned with 'wall-clock time' - i.e., the time that you would get
-    //         by calling "gettimeofday()".
-    //     fDurationInMicroseconds: Should be set to the frame's duration, if known.
-    //         If, however, the device is a 'live source' (e.g., encoded from a camera or microphone), then we probably don't need
-    //         to set this variable, because - in this case - data will never arrive 'early'.
-    // Note the code below.
-
-    if (!isCurrentlyAwaitingData()) return; // we're not ready for the data yet
-
-    fFrameSize = fVideoStream.getStreamData(fTo, fMaxSize,
-                                            fNumTruncatedBytes,
-                                            fPresentationTime);
-
-    if (fFrameSize == 0) return;
-
-    // After delivering the data, inform the reader that it is now available:
-    FramedSource::afterGetting(this);
+    fVideoStream.disableStreaming();
 }
 
 
@@ -156,8 +133,8 @@ LiveVideoServerMediaSubsession::createNew(UsageEnvironment& env, IVideoStream& s
 LiveVideoServerMediaSubsession
 ::LiveVideoServerMediaSubsession(UsageEnvironment& env, IVideoStream& stream)
     : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
-      fVideoStream(stream), fAuxSDPLine(NULL),
-      fDoneFlag(0), fDummyRTPSink(NULL)
+      fVideoStream(stream), fStreamSource(NULL),
+      fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
 {
 }
 
@@ -234,9 +211,34 @@ FramedSource* LiveVideoServerMediaSubsession
 {
     estBitrate = fVideoStream.getBitrate(); // kbps, estimate
 
+    // StreamSource has been already created
+    if (fStreamSource) {
+        LiveVideoStreamSource *liveSource =
+            dynamic_cast<LiveVideoStreamSource*>(fStreamSource->inputSource());
+        liveSource->referenceCount()++;
+        return fStreamSource;
+    }
+
     // Create the video source:
     LiveVideoStreamSource *source = LiveVideoStreamSource::createNew(envir(), fVideoStream);
-    return H264VideoStreamDiscreteFramer::createNew(envir(), source);
+    fStreamSource = H264VideoStreamDiscreteFramer::createNew(envir(), source);
+    return fStreamSource;
+}
+
+void LiveVideoServerMediaSubsession::closeStreamSource(FramedSource *inputSource)
+{
+    // Sanity check, should not happend
+    if (fStreamSource != inputSource) {
+        Medium::close(inputSource);
+        return;
+    }
+
+    LiveVideoStreamSource *liveSource =
+        dynamic_cast<LiveVideoStreamSource*>(fStreamSource->inputSource());
+    if (--liveSource->referenceCount() == 0) {
+        Medium::close(fStreamSource);
+        fStreamSource = NULL;
+    }
 }
 
 RTPSink* LiveVideoServerMediaSubsession
@@ -255,12 +257,12 @@ RTPSink* LiveVideoServerMediaSubsession
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class LiveAudioStreamSource: public FramedSource, public LiveStreamDataPump
+class LiveAudioStreamSource: public FramedSource, public StreamDataConsumer
 {
 public:
     static LiveAudioStreamSource* createNew(UsageEnvironment& env, IAudioStream& stream);
 
-    void pushData();
+    void streamData(StreamData &data);
 protected:
     LiveAudioStreamSource(UsageEnvironment& env, IAudioStream& stream);
     // called only by createNew(), or by subclass constructors
@@ -269,14 +271,10 @@ protected:
 private:
     // redefined virtual functions:
     virtual void doGetNextFrame();
-    //virtual void doStopGettingFrames(); // optional
-    static void backgroundHandler(void *clientData, int mask);
-    static void deliverFrame0(void* clientData);
-    void deliverFrame();
+    virtual void doStopGettingFrames();
 
 private:
     IAudioStream &fAudioStream;
-    EventTriggerId eventTriggerId; 
 };
 
 LiveAudioStreamSource*
@@ -287,61 +285,54 @@ LiveAudioStreamSource::createNew(UsageEnvironment& env, IAudioStream& stream)
 
 LiveAudioStreamSource
 ::LiveAudioStreamSource(UsageEnvironment& env, IAudioStream& stream)
-    : FramedSource(env), fAudioStream(stream), eventTriggerId(0)
+    : FramedSource(env), fAudioStream(stream)
 {
-    eventTriggerId = envir().taskScheduler().createEventTrigger(deliverFrame0);
-
-    fAudioStream.startStreaming(this);
+    fAudioStream.registerConsumer(this);
 }
 
 LiveAudioStreamSource::~LiveAudioStreamSource()
 {
-    fAudioStream.stopStreaming();
-    // Reclaim our 'event trigger'
-    envir().taskScheduler().deleteEventTrigger(eventTriggerId);
+    fAudioStream.unregisterConsumer(this);
 }
 
-void LiveAudioStreamSource::pushData()
+void LiveAudioStreamSource::streamData(StreamData &data)
 {
-    //envir().taskScheduler().triggerEvent(eventTriggerId, this);
-    deliverFrame();
-}
-
-void LiveAudioStreamSource::doGetNextFrame() {
-    // This function is called (by our 'downstream' object) when it asks for new data.
-
-    // Note: If, for some reason, the source device stops being readable (e.g., it gets closed), then you do the following:
-    if (0 /* the source stops being readable */ /*%%% TO BE WRITTEN %%%*/) {
-        handleClosure(this);
+    // check if we're ready for data
+    if (!isCurrentlyAwaitingData()) {
+        envir() << "WARN: LiveAudioStreamSource is not ready for data yet\n";
         return;
     }
 
-    // If a new frame of data is immediately available to be delivered, then do this now:
-    if (0 /* a new frame of data is immediately available to be delivered*/ /*%%% TO BE WRITTEN %%%*/) {
-        deliverFrame();
+    fPresentationTime = data.tstamp;
+    fFrameSize = 0;
+    for (int i = 0; i < (int)data.pack_count; i++) {
+        uint8_t *ptr = data.pack[i].addr;
+        uint32_t len = data.pack[i].len;
+
+        if ((ptr == NULL) || (len == 0))
+            break;
+
+        if (fFrameSize + len < fMaxSize) {
+            memmove(&fTo[fFrameSize], ptr, len);
+            fFrameSize += len;
+        }
+        else {
+            fNumTruncatedBytes += len;
+        }
     }
-
-    // No new data is immediately available to be delivered.  We don't do anything more here.
-    // Instead, our event trigger must be called (e.g., from a separate thread) when new data becomes available.
-}
-
-void LiveAudioStreamSource::deliverFrame0(void* clientData)
-{
-    if (clientData)
-        ((LiveAudioStreamSource*)clientData)->deliverFrame();
-}
-
-void LiveAudioStreamSource::deliverFrame()
-{
-    if (!isCurrentlyAwaitingData()) return; // we're not ready for the data yet
-
-    fFrameSize = fAudioStream.getStreamData(fTo, fMaxSize,
-                                            fNumTruncatedBytes,
-                                            fPresentationTime);
-    if (fFrameSize == 0) return;
 
     // After delivering the data, inform the reader that it is now available:
     FramedSource::afterGetting(this);
+}
+
+void LiveAudioStreamSource::doGetNextFrame()
+{
+    fAudioStream.enableStreaming();
+}
+
+void LiveAudioStreamSource::doStopGettingFrames()
+{
+    fAudioStream.disableStreaming();
 }
 
 

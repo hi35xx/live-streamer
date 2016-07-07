@@ -25,7 +25,8 @@
 
 using namespace Ipcam::Media;
 
-class LiveVideoServerMediaSubsession: public OnDemandServerMediaSubsession {
+class LiveVideoServerMediaSubsession: public OnDemandServerMediaSubsession
+{
 public:
   static LiveVideoServerMediaSubsession*
   createNew(UsageEnvironment& env, IVideoStream& stream);
@@ -46,20 +47,23 @@ protected: // redefined virtual functions
 				    FramedSource* inputSource);
 
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
-					      unsigned& estBitrate);
+                                              unsigned& estBitrate);
+  virtual void closeStreamSource(FramedSource *inputSource);
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
                                     unsigned char rtpPayloadTypeIfDynamic,
-				    FramedSource* inputSource);
+                                    FramedSource* inputSource);
 
 private:
   IVideoStream &fVideoStream;
+  FramedFilter *fStreamSource;
   char* fAuxSDPLine;
   char fDoneFlag; // used when setting up "fAuxSDPLine"
   RTPSink* fDummyRTPSink; // ditto
 };
 
 
-class LiveAudioServerMediaSubsession: public OnDemandServerMediaSubsession {
+class LiveAudioServerMediaSubsession: public OnDemandServerMediaSubsession
+{
 public:
   static LiveAudioServerMediaSubsession*
   createNew(UsageEnvironment& env, IAudioStream& stream);
@@ -70,10 +74,10 @@ protected:
 
 protected: // redefined virtual functions
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
-					      unsigned& estBitrate);
+                                              unsigned& estBitrate);
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
                                     unsigned char rtpPayloadTypeIfDynamic,
-				    FramedSource* inputSource);
+                                    FramedSource* inputSource);
 
 private:
   IAudioStream &fAudioStream;

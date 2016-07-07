@@ -19,6 +19,7 @@
 
 #include <RTSPServer.hh>
 #include <ServerMediaSession.hh>
+#include <FramedFilter.hh>
 #include <LiveStreamInput.hh>
 #include <LiveStreamInput.hh>
 

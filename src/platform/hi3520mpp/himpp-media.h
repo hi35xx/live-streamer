@@ -207,16 +207,15 @@ public:
 
     IVideoEncoder::EncodingType getEncoding();
     uint32_t getBitrate();
-    unsigned int getStreamData(unsigned char *buf, unsigned int bufsiz,
-                               unsigned int &truncated,
-                               struct timeval &tstamp);
-    bool startStreaming(LiveStreamDataPump *pump);
-    bool stopStreaming();
+    bool registerConsumer(StreamDataConsumer *consumer);
+    bool unregisterConsumer(StreamDataConsumer *consumer);
+    void enableStreaming();
+    void disableStreaming();
 private:
     IpcamRuntime*       _runtime;
     HimppVencChan&      _venc_chan;
-    LiveStreamDataPump* _pump;
     ev::io              _io;
+    StreamDataConsumer* _consumer;
 
     void watch_handler(ev::io &w, int revents);
 };
