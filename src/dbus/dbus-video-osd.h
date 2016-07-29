@@ -20,6 +20,9 @@
 #ifndef _DBUS_VIDEO_OSD_H_
 #define _DBUS_VIDEO_OSD_H_
 
+#include <functional>
+#include <unordered_map>
+
 #include <dbus-c++/dbus.h>
 #include <video-osd-server-glue.h>
 
@@ -45,6 +48,10 @@ public:
 protected:
 	IpcamRuntime &_runtime;
 	IpcamVideoOSD _video_osd;
+    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
+    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
+    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
+    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
 };
 
 } // namespace DBus

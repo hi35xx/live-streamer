@@ -23,12 +23,54 @@
 
 namespace DBus {
 
+#define AUDIOENCODER_INTERFACE	  "ipcam.Media.AudioEncoder"
+
 AudioEncoder::AudioEncoder
 (IpcamRuntime &runtime, std::string obj_path, IAudioEncoder *encoder)
   : DBus::ObjectAdaptor(runtime.dbus_conn(), obj_path),
 	_runtime(runtime), _audio_encoder(encoder)
 {
 	assert(encoder != NULL);
+
+    // Get handler of ipcam.Media.AudioEncoder
+    _prop_get_handler[AUDIOENCODER_INTERFACE ".Encoding"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32((uint32_t)aenc.getEncoding());
+        };
+    _prop_get_handler[AUDIOENCODER_INTERFACE ".Bitrate"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32((uint32_t)aenc.getBitrate());
+        };
+    _prop_get_handler[AUDIOENCODER_INTERFACE ".SampleRate"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32((uint32_t)aenc.getSampleRate());
+        };
+
+    // Set handler of ipcam.Media.AudioEncoder
+    _prop_set_handler[AUDIOENCODER_INTERFACE ".Encoding"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            aenc.setEncoding((IAudioEncoder::EncodingType)(uint32_t)value);
+        };
+    _prop_set_handler[AUDIOENCODER_INTERFACE ".Bitrate"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            aenc.setBitrate((uint32_t)value);
+        };
+    _prop_set_handler[AUDIOENCODER_INTERFACE ".SampleRate"] = 
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            aenc.setSampleRate((uint32_t)value);
+        };
 }
 
 void AudioEncoder::on_get_property

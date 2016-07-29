@@ -47,6 +47,7 @@ dbuspolicy_DATA = \
 EXTRA_DIST = \
 	video-source-introspect.xml \
 	video-encoder-introspect.xml \
+	video-osd-introspect.xml \
 	audio-source-introspect.xml \
 	audio-encoder-introspect.xml \
 	live-streamer.conf

@@ -20,6 +20,9 @@
 #ifndef _DBUS_VIDEO_SOURCE_H_
 #define _DBUS_VIDEO_SOURCE_H_
 
+#include <functional>
+#include <unordered_map>
+
 #include "video-source-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -29,7 +32,7 @@ namespace DBus {
 class VideoSource :
   public ipcam::Media::VideoSource_adaptor,
   public ipcam::Media::VideoSource::Imaging_adaptor,
-  public ipcam::Media::VideoSource::Imaging::Backlight_adaptor,
+  public ipcam::Media::VideoSource::Imaging::BacklightCompensation_adaptor,
   public ipcam::Media::VideoSource::Imaging::Focus_adaptor,
   public ipcam::Media::VideoSource::Imaging::Exposure_adaptor,
   public ipcam::Media::VideoSource::Imaging::WhiteBalance_adaptor,
@@ -49,6 +52,10 @@ public:
 protected:
     IpcamRuntime& _runtime;
     IVideoSource *_video_source;
+    typedef std::function<void(IVideoSource&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
+    typedef std::function<void(IVideoSource&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
+    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
+    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
 };
 
 } // namespace DBus

@@ -111,6 +111,8 @@ public:
         void        setSaturation(uint32_t value);
         uint32_t    getSharpness();
         void        setSharpness(uint32_t value);
+        IVideoSource::Imaging::IrCutFilterMode getIrCutFilterMode();
+        void        setIrCutFilterMode(IVideoSource::Imaging::IrCutFilterMode value);
 
         IVideoSource::Imaging::Backlight*        getBacklight();
         IVideoSource::Imaging::Focus*            getFocus();

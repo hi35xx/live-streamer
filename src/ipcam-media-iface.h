@@ -204,6 +204,7 @@ public:
             virtual void            setRatio(uint32_t value) = 0;
         };
     public:
+        enum IrCutFilterMode { IRCUT_ON, IRCUT_OFF, IRCUT_AUTO };
         virtual bool                getMirror() = 0;
         virtual void                setMirror(bool value) = 0;
         virtual bool                getFlip() = 0;
@@ -218,6 +219,8 @@ public:
         virtual void                setSaturation(uint32_t value) = 0;
         virtual uint32_t            getSharpness() = 0;
         virtual void                setSharpness(uint32_t value) = 0;
+        virtual IrCutFilterMode     getIrCutFilterMode() = 0;
+        virtual void                setIrCutFilterMode(IrCutFilterMode value) = 0;
 
         virtual Backlight*          getBacklight() = 0;
         virtual Focus*              getFocus() = 0;

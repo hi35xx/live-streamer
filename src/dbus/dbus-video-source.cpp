@@ -23,324 +23,506 @@
 
 namespace DBus {
 
+#define VIDEOSOURCE_INTERFACE   "ipcam.Media.VideoSource"
+#define IMAGING_INTERFACE       "ipcam.Media.VideoSource.Imaging"
+#define BLC_INTERFACE           "ipcam.Media.VideoSource.Imaging.BacklightCompensation"
+#define FOCUS_INTERFACE         "ipcam.Media.VideoSource.Imaging.Focus"
+#define EXPOSURE_INTERFACE      "ipcam.Media.VideoSource.Imaging.Exposure"
+#define WB_INTERFACE            "ipcam.Media.VideoSource.Imaging.WhiteBalance"
+#define WDR_INTERFACE           "ipcam.Media.VideoSource.Imaging.WideDynamicRange"
+#define LDC_INTERFACE           "ipcam.Media.VideoSource.Imaging.LDC"
+
 VideoSource::VideoSource
 (IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source)
   : DBus::ObjectAdaptor(runtime.dbus_conn(), obj_path),
     _runtime(runtime), _video_source(video_source)
 {
     assert(video_source != NULL);
+
+    // Get handler of ipcam.Media.VideoSource
+    _prop_get_handler[VIDEOSOURCE_INTERFACE ".Resolution"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_string(((std::string)vsrc.getResolution()).c_str());
+        };
+    _prop_get_handler[VIDEOSOURCE_INTERFACE ".Framerate"] =  
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getFramerate());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging
+    _prop_get_handler[IMAGING_INTERFACE ".Mirror"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_bool(vsrc.getImaging()->getMirror());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Flip"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_bool(vsrc.getImaging()->getFlip());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Brightness"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getBrightness());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Contrast"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getContrast());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Chroma"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getChroma());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Saturation"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getSaturation());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".Sharpness"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getSharpness());
+        };
+    _prop_get_handler[IMAGING_INTERFACE ".IrCutFilterMode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getIrCutFilterMode());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.Backlight
+    _prop_get_handler[BLC_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getBacklight()->getMode());
+        };
+    _prop_get_handler[BLC_INTERFACE ".Level"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getBacklight()->getLevel());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.Focus
+    _prop_get_handler[FOCUS_INTERFACE ".AutoFocusMode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getFocus()->getAutoFocusMode());
+        };
+    _prop_get_handler[FOCUS_INTERFACE ".DefaultSpeed"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getFocus()->getDefaultSpeed());
+        };
+    _prop_get_handler[FOCUS_INTERFACE ".NearLimit"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getFocus()->getNearLimit());
+        };
+    _prop_get_handler[FOCUS_INTERFACE ".FarLimit"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getFocus()->getFarLimit());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.Exposure
+    _prop_get_handler[EXPOSURE_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMode());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".Priority"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getPriority());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MinExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMinExposureTime());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MaxExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMaxExposureTime());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MinGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMinGain());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MaxGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMaxGain());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MinIris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMinIris());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".MaxIris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getMaxIris());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".ExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getExposureTime());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".Gain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getGain());
+        };
+    _prop_get_handler[EXPOSURE_INTERFACE ".Iris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getExposure()->getIris());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.WhiteBalance
+    _prop_get_handler[WB_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getMode());
+        };
+    _prop_get_handler[WB_INTERFACE ".CrGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getCrGain());
+        };
+    _prop_get_handler[WB_INTERFACE ".CbGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getCbGain());
+        };
+    _prop_get_handler[WB_INTERFACE ".RGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getRGain());
+        };
+    _prop_get_handler[WB_INTERFACE ".GGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getGGain());
+        };
+    _prop_get_handler[WB_INTERFACE ".BGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWhiteBalance()->getBGain());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.WideDynamicRange
+    _prop_get_handler[WDR_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWideDynamicRange()->getMode());
+        };
+    _prop_get_handler[WDR_INTERFACE ".Level"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getWideDynamicRange()->getLevel());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.LDC
+    _prop_get_handler[WDR_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getLDC()->getMode());
+        };
+    _prop_get_handler[WDR_INTERFACE ".Ratio"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getLDC()->getRatio());
+        };
+
+
+    // Set handler of ipcam.Media.VideoSource
+    _prop_set_handler[VIDEOSOURCE_INTERFACE ".Resolution"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            std::string s = value;
+            ImageResolution r(s);
+            vsrc.setResolution(r);
+        };
+    _prop_set_handler[VIDEOSOURCE_INTERFACE ".Framerate"] =  
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.setFramerate((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging
+    _prop_set_handler[IMAGING_INTERFACE ".Mirror"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setMirror((bool)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Flip"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setFlip((bool)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Brightness"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setBrightness((uint32_t)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Contrast"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setContrast((uint32_t)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Chroma"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setChroma((uint32_t)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Saturation"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setSaturation((uint32_t)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".Sharpness"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setSharpness((uint32_t)value);
+        };
+    _prop_set_handler[IMAGING_INTERFACE ".IrCutFilterMode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->setIrCutFilterMode((IVideoSource::Imaging::IrCutFilterMode)(uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.BacklightCompensation
+    _prop_set_handler[BLC_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getBacklight()->setMode((IVideoSource::Imaging::Backlight::BacklightMode)(uint32_t)value);
+        };
+    _prop_set_handler[BLC_INTERFACE ".Level"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getBacklight()->setLevel((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.Focus
+    _prop_set_handler[FOCUS_INTERFACE ".AutoFocusMode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getFocus()->setAutoFocusMode((IVideoSource::Imaging::Focus::AutoFocusMode)(uint32_t)value);
+        };
+    _prop_set_handler[FOCUS_INTERFACE ".DefaultSpeed"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getFocus()->setDefaultSpeed((uint32_t)value);
+        };
+    _prop_set_handler[FOCUS_INTERFACE ".NearLimit"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getFocus()->setNearLimit((uint32_t)value);
+        };
+    _prop_set_handler[FOCUS_INTERFACE ".FarLimit"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getFocus()->setFarLimit((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.Exposure
+    _prop_set_handler[EXPOSURE_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMode((IVideoSource::Imaging::Exposure::ExposureMode)(uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".Priority"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setPriority((IVideoSource::Imaging::Exposure::ExposurePriority)(uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MinExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMinExposureTime((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MaxExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMaxExposureTime((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MinGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMinGain((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MaxGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMaxGain((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MinIris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMinIris((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".MaxIris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setMaxIris((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".ExposureTime"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setExposureTime((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".Gain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setGain((uint32_t)value);
+        };
+    _prop_set_handler[EXPOSURE_INTERFACE ".Iris"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getExposure()->setIris((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.WhiteBalance
+    _prop_set_handler[WB_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setMode((IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode)(uint32_t)value);
+        };
+    _prop_set_handler[WB_INTERFACE ".CrGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setCrGain((uint32_t)value);
+        };
+    _prop_set_handler[WB_INTERFACE ".CbGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setCbGain((uint32_t)value);
+        };
+    _prop_set_handler[WB_INTERFACE ".RGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setRGain((uint32_t)value);
+        };
+    _prop_set_handler[WB_INTERFACE ".GGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setGGain((uint32_t)value);
+        };
+    _prop_set_handler[WB_INTERFACE ".BGain"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWhiteBalance()->setBGain((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.WideDynamicRange
+    _prop_set_handler[WDR_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWideDynamicRange()->setMode((IVideoSource::Imaging::WideDynamicRange::WDRMode)(uint32_t)value);
+        };
+    _prop_set_handler[WDR_INTERFACE ".Level"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getWideDynamicRange()->setLevel((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.LDC
+    _prop_set_handler[WDR_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getLDC()->setMode((uint32_t)value);
+        };
+    _prop_set_handler[WDR_INTERFACE ".Ratio"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getLDC()->setRatio((uint32_t)value);
+        };
 }
 
 void VideoSource::on_get_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
     value.clear();
-    DBus::MessageIter mi = value.writer();
 
-    if (interface.name() == "ipcam.Media.VideoSource") {
-        if (property == "Resolution") {
-            std::string s = (std::string)_video_source->getResolution();
-            mi.append_string(s.c_str());
-        }
-        else if (property == "Framerate") {
-            mi.append_uint32(_video_source->getFramerate());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mirror") {
-            mi.append_bool(imaging->getMirror());
-        }
-        else if (property == "Flip") {
-            mi.append_bool(imaging->getFlip());
-        }
-        else if (property == "Brightness") {
-            mi.append_uint32(imaging->getBrightness());
-        }
-        else if (property == "Contrast") {
-            mi.append_uint32(imaging->getContrast());
-        }
-        else if (property == "Chroma") {
-            mi.append_uint32(imaging->getChroma());
-        }
-        else if (property == "Saturation") {
-            mi.append_uint32(imaging->getSaturation());
-        }
-        else if (property == "Sharpness") {
-            mi.append_uint32(imaging->getSharpness());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Backlight") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Backlight *blc = imaging->getBacklight();
-        if (!blc) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            mi.append_uint32((uint32_t)blc->getMode());
-        }
-        else if (property == "Level") {
-            mi.append_uint32(blc->getLevel());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Focus") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Focus *focus = imaging->getFocus();
-        if (!focus) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "AutoFocusMode") {
-            mi.append_uint32((uint32_t)focus->getAutoFocusMode());
-        }
-        else if (property == "DefaultSpeed") {
-            mi.append_uint32(focus->getDefaultSpeed());
-        }
-        else if (property == "NearLimit") {
-            mi.append_uint32(focus->getNearLimit());
-        }
-        else if (property == "FarLimit") {
-            mi.append_uint32(focus->getFarLimit());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Exposure") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Exposure *exposure = imaging->getExposure();
-        if (!exposure) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            mi.append_uint32((uint32_t)exposure->getMode());
-        }
-        else if (property == "Priority") {
-            mi.append_uint32(exposure->getPriority());
-        }
-        else if (property == "MinExposureTime") {
-            mi.append_uint32(exposure->getMinExposureTime());
-        }
-        else if (property == "MaxExposureTime") {
-            mi.append_uint32(exposure->getMaxExposureTime());
-        }
-        else if (property == "MinGain") {
-            mi.append_uint32(exposure->getMinGain());
-        }
-        else if (property == "MaxGain") {
-            mi.append_uint32(exposure->getMaxGain());
-        }
-        else if (property == "ExposureTime") {
-            mi.append_uint32(exposure->getExposureTime());
-        }
-        else if (property == "Gain") {
-            mi.append_uint32(exposure->getGain());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WhiteBalance") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::WhiteBalance *wb = imaging->getWhiteBalance();
-        if (!wb) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            mi.append_uint32((uint32_t)wb->getMode());
-        }
-        else if (property == "CrGain") {
-            mi.append_uint32(wb->getCrGain());
-        }
-        else if (property == "CbGain") {
-            mi.append_uint32(wb->getCbGain());
-        }
-		else if (property == "RGain") {
-			mi.append_uint32(wb->getRGain());
-		}
-		else if (property == "GGain") {
-			mi.append_uint32(wb->getGGain());
-		}
-		else if (property == "BGain") {
-			mi.append_uint32(wb->getBGain());
-		}
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WideDynamicRange") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::WideDynamicRange *wdr = imaging->getWideDynamicRange();
-        if (!wdr) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            mi.append_uint32((uint32_t)wdr->getMode());
-        }
-        else if (property == "Level") {
-            mi.append_uint32(wdr->getLevel());
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.LDC") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::LDC *ldc = imaging->getLDC();
-        if (!ldc) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            mi.append_uint32(ldc->getMode());
-        }
-        else if (property == "Ratio") {
-            mi.append_uint32(ldc->getRatio());
-        }
-    }
+    auto iter = _prop_get_handler.find(interface.name() + "." + property);
+    if (iter == _prop_get_handler.end())
+        throw DBus::ErrorFailed("Requested interface or property not found");
+    iter->second(*_video_source, interface, property, value);
 }
 
 void VideoSource::on_set_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
-    if (interface.name() == "ipcam.Media.VideoSource") {
-        if (property == "Resolution") {
-            std::string s = value;
-            ImageResolution r(s);
-            _video_source->setResolution(r);
-        }
-        else if (property == "Framerate") {
-            _video_source->setFramerate((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mirror") {
-            imaging->setMirror((bool)value);
-        }
-        else if (property == "Flip") {
-            imaging->setFlip((bool)value);
-        }
-        else if (property == "Brightness") {
-            imaging->setBrightness((uint32_t)value);
-        }
-        else if (property == "Contrast") {
-            imaging->setContrast((uint32_t)value);
-        }
-        else if (property == "Chroma") {
-            imaging->setChroma((uint32_t)value);
-        }
-        else if (property == "Saturation") {
-            imaging->setSaturation((uint32_t)value);
-        }
-        else if (property == "Sharpness") {
-            imaging->setSharpness((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Backlight") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Backlight *blc = imaging->getBacklight();
-        if (!blc) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            blc->setMode((IVideoSource::Imaging::Backlight::BacklightMode)(uint32_t)value);
-        }
-        else if (property == "Level") {
-            blc->setLevel((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Focus") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Focus *focus = imaging->getFocus();
-        if (!focus) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "AutoFocusMode") {
-            focus->setAutoFocusMode((IVideoSource::Imaging::Focus::AutoFocusMode)(uint32_t)value);
-        }
-        else if (property == "DefaultSpeed") {
-            focus->setDefaultSpeed((uint32_t)value);
-        }
-        else if (property == "NearLimit") {
-            focus->setNearLimit((uint32_t)value);
-        }
-        else if (property == "FarLimit") {
-            focus->setFarLimit((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.Exposure") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::Exposure *exposure = imaging->getExposure();
-        if (!exposure) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            exposure->setMode((IVideoSource::Imaging::Exposure::ExposureMode)(uint32_t)value);
-        }
-        else if (property == "Priority") {
-            exposure->setPriority((IVideoSource::Imaging::Exposure::ExposurePriority)(uint32_t)value);
-        }
-        else if (property == "MinExposureTime") {
-            exposure->setMinExposureTime((uint32_t)value);
-        }
-        else if (property == "MaxExposureTime") {
-            exposure->setMaxExposureTime((uint32_t)value);
-        }
-        else if (property == "MinGain") {
-            exposure->setMinGain((uint32_t)value);
-        }
-        else if (property == "MaxGain") {
-            exposure->setMaxGain((uint32_t)value);
-        }
-        else if (property == "ExposureTime") {
-            exposure->setExposureTime((uint32_t)value);
-        }
-        else if (property == "Gain") {
-            exposure->setGain((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WhiteBalance") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::WhiteBalance *wb = imaging->getWhiteBalance();
-        if (!wb) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            wb->setMode((IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode)(uint32_t)value);
-        }
-        else if (property == "CrGain") {
-            wb->setCrGain((uint32_t)value);
-        }
-        else if (property == "CbGain") {
-            wb->setCbGain((uint32_t)value);
-        }
-        else if (property == "RGain") {
-            wb->setRGain((uint32_t)value);
-        }
-        else if (property == "GGain") {
-            wb->setGGain((uint32_t)value);
-        }
-        else if (property == "BGain") {
-            wb->setBGain((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.Imaging.WideDynamicRange") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::WideDynamicRange *wdr = imaging->getWideDynamicRange();
-        if (!wdr) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            wdr->setMode((IVideoSource::Imaging::WideDynamicRange::WDRMode)(uint32_t)value);
-        }
-        else if (property == "Level") {
-            wdr->setLevel((uint32_t)value);
-        }
-    }
-    else if (interface.name() == "ipcam.Media.VideoSource.LDC") {
-        IVideoSource::Imaging *imaging = _video_source->getImaging();
-        if (!imaging) throw DBus::ErrorFailed("requested interface not support");
-        IVideoSource::Imaging::LDC *ldc = imaging->getLDC();
-        if (!ldc) throw DBus::ErrorFailed("requested interface not support");
-
-        if (property == "Mode") {
-            ldc->setMode((uint32_t)value);
-        }
-        else if (property == "Ratio") {
-            ldc->setRatio((uint32_t)value);
-        }
-    }
+    auto iter = _prop_set_handler.find(interface.name() + "." + property);
+    if (iter == _prop_set_handler.end())
+        throw DBus::ErrorFailed("Requested interface or property not found");
+    iter->second(*_video_source, interface, property, value);
 }
 
 } // namespace DBus

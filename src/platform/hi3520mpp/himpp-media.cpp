@@ -140,14 +140,26 @@ void HimppVideoSource::Imaging::setSharpness(uint32_t value)
     _source._vi_chan.setSharpness(value);
 }
 
+IVideoSource::Imaging::IrCutFilterMode
+HimppVideoSource::Imaging::getIrCutFilterMode()
+{
+	throw IpcamError("Not implemented");
+}
+
+void HimppVideoSource::Imaging::setIrCutFilterMode
+(IVideoSource::Imaging::IrCutFilterMode value)
+{
+	throw IpcamError("Not implemented");
+}
+
 IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
 {
-    return NULL;
+	throw IpcamError("Request interface not implemented");
 }
 
 IVideoSource::Imaging::Focus* HimppVideoSource::Imaging::getFocus()
 {
-    return NULL;
+	throw IpcamError("Request interface not implemented");
 }
 
 IVideoSource::Imaging::Exposure* HimppVideoSource::Imaging::getExposure()
@@ -162,12 +174,12 @@ IVideoSource::Imaging::WhiteBalance* HimppVideoSource::Imaging::getWhiteBalance(
 
 IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynamicRange()
 {
-    return NULL;
+	throw IpcamError("Request interface not implemented");
 }
 
 IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 {
-    return NULL;
+	throw IpcamError("Request interface not implemented");
 }
 
 

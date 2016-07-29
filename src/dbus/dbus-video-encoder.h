@@ -50,10 +50,14 @@ public:
 
     ::DBus::Path CreateOSD(const uint32_t& index);
     void DeleteOSD(const uint32_t& index);
-    std::map< uint32_t, ::DBus::Path > GetOSDs();
+    std::map<uint32_t, ::DBus::Path> GetOSDs();
 protected:
     IpcamRuntime &_runtime;
     IVideoEncoder *_video_encoder;
+    typedef std::function<void(IVideoEncoder&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
+    typedef std::function<void(IVideoEncoder&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
+    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
+    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
 private:
     std::map<uint32_t, VideoOSD> _osds;
 };
@@ -64,11 +68,6 @@ class H264VideoEncoder :
 {
 public:
     H264VideoEncoder(IpcamRuntime &runtime, std::string obj_path, IH264VideoEncoder *encoder);
-
-	void on_get_property
-		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
-	void on_set_property
-		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 };
 
 } // namespace DBus

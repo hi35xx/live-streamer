@@ -20,6 +20,9 @@
 #ifndef _DBUS_AUDIO_ENCODER_H_
 #define _DBUS_AUDIO_ENCODER_H_
 
+#include <functional>
+#include <unordered_map>
+
 #include "audio-encoder-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -41,6 +44,10 @@ public:
 protected:
 	IpcamRuntime&  _runtime;
 	IAudioEncoder* _audio_encoder;
+    typedef std::function<void(IAudioEncoder&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
+    typedef std::function<void(IAudioEncoder&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
+    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
+    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
 };
 
 } // namespace DBus

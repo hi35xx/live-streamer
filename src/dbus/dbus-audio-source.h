@@ -20,6 +20,9 @@
 #ifndef _DBUS_AUDIO_SOURCE_H_
 #define _DBUS_AUDIO_SOURCE_H_
 
+#include <functional>
+#include <unordered_map>
+
 #include "audio-source-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -41,6 +44,10 @@ public:
 protected:
 	IpcamRuntime& _runtime;
 	IAudioSource* _audio_source;
+    typedef std::function<void(IAudioSource&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
+    typedef std::function<void(IAudioSource&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
+    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
+    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
 };
 
 } // namespace DBus
