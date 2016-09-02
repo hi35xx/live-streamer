@@ -40,14 +40,20 @@ live_streamer_LDADD = \
 	$(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la
 
-if ENABLE_HI3518MPP
-live_streamer_CPPFLAGS += $(HI3518MPP_CPPFLAGS) -I$(srcdir)/platform/hi3518mpp
-live_streamer_LDFLAGS += $(HI3518MPP_LDFLAGS)
-live_streamer_LDADD += $(builddir)/platform/hi3518mpp/libhi3518mpp.la
+if ENABLE_HI3518V100MPP
+live_streamer_CPPFLAGS += $(HI3518V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3518v100mpp
+live_streamer_LDFLAGS += $(HI3518V100MPP_LDFLAGS)
+live_streamer_LDADD += $(builddir)/platform/hi3518v100mpp/libhi3518v100mpp.la
 endif
 
-if ENABLE_HI3520MPP
-live_streamer_CPPFLAGS += $(HI3520MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520mpp
-live_streamer_LDFLAGS += $(HI3520MPP_LDFLAGS)
-live_streamer_LDADD += $(builddir)/platform/hi3520mpp/libhi3520mpp.la
+if ENABLE_HI3518V200MPP
+live_streamer_CPPFLAGS += $(HI3518V200MPP_CPPFLAGS) -I$(srcdir)/platform/hi3518v200mpp
+live_streamer_LDFLAGS += $(HI3518V200MPP_LDFLAGS)
+live_streamer_LDADD += $(builddir)/platform/hi3518v200mpp/libhi3518v200mpp.la
+endif
+
+if ENABLE_HI3520V100MPP
+live_streamer_CPPFLAGS += $(HI3520V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
+live_streamer_LDFLAGS += $(HI3520V100MPP_LDFLAGS)
+live_streamer_LDADD += $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
 endif

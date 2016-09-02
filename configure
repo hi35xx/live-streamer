@@ -635,14 +635,18 @@ LIBOBJS
 ENABLE_LIBEV_FALSE
 ENABLE_LIBEV_TRUE
 LIBEV_LDFLAGS
-ENABLE_HI3520MPP_FALSE
-ENABLE_HI3520MPP_TRUE
-HI3520MPP_LDFLAGS
-HI3520MPP_CPPFLAGS
-ENABLE_HI3518MPP_FALSE
-ENABLE_HI3518MPP_TRUE
-HI3518MPP_LDFLAGS
-HI3518MPP_CPPFLAGS
+ENABLE_HI3520V100MPP_FALSE
+ENABLE_HI3520V100MPP_TRUE
+HI3520V100MPP_LDFLAGS
+HI3520V100MPP_CPPFLAGS
+ENABLE_HI3518V200MPP_FALSE
+ENABLE_HI3518V200MPP_TRUE
+HI3518V200MPP_LDFLAGS
+HI3518V200MPP_CPPFLAGS
+ENABLE_HI3518V100MPP_FALSE
+ENABLE_HI3518V100MPP_TRUE
+HI3518V100MPP_LDFLAGS
+HI3518V100MPP_CPPFLAGS
 LIVE555_LDFLAGS
 LIVE555_CPPFLAGS
 SDL_LIBS
@@ -788,8 +792,9 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 with_live555
-with_hi3518mpp
-with_hi3520mpp
+with_hi3518v100mpp
+with_hi3518v200mpp
+with_hi3520v100mpp
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1453,8 +1458,15 @@ Optional Packages:
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
   --with-live555=PATH     specify prefix directory for live555 package.
-  --with-hi3518mpp=PATH   specify prefix directory for himpp-hi3518 package.
-  --with-hi3520mpp=PATH   specify prefix directory for himpp-hi3520 package.
+  --with-hi3518v100mpp=PATH
+                          specify prefix directory for himpp-hi3518v100
+                          package.
+  --with-hi3518v200mpp=PATH
+                          specify prefix directory for himpp-hi3518v200
+                          package.
+  --with-hi3520v100mpp=PATH
+                          specify prefix directory for himpp-hi3520v100
+                          package.
 
 Some influential environment variables:
   CC          C compiler command
@@ -16084,37 +16096,37 @@ rm -f core conftest.err conftest.$ac_objext \
 
 
 
-# Check whether --with-hi3518mpp was given.
-if test "${with_hi3518mpp+set}" = set; then :
-  withval=$with_hi3518mpp;
+# Check whether --with-hi3518v100mpp was given.
+if test "${with_hi3518v100mpp+set}" = set; then :
+  withval=$with_hi3518v100mpp;
 else
-  with_hi3518mpp=no
+  with_hi3518v100mpp=no
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3518 mpp library" >&5
-$as_echo_n "checking for hi3518 mpp library... " >&6; }
-case $with_hi3518mpp in
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3518v100 mpp library" >&5
+$as_echo_n "checking for hi3518v100 mpp library... " >&6; }
+case $with_hi3518v100mpp in
  yes)
-   hi3518mpppfx="$ac_sysroot/usr" ;;
+   hi3518v100mpppfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3518mpppfx=`echo "$with_hi3518mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3518v100mpppfx=`echo "$with_hi3518v100mpp" | sed -e "$sed_quote_subst"` ;;
  *)
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3518mpp" >&5
-$as_echo "$with_hi3518mpp" >&6; }
-   as_fn_error $? "hi3518mpp must be an absolute path.\"" "$LINENO" 5
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3518v100mpp" >&5
+$as_echo "$with_hi3518v100mpp" >&6; }
+   as_fn_error $? "hi3518v100mpp must be an absolute path.\"" "$LINENO" 5
    ;;
 esac
-if test "x$with_hi3518mpp" != xno; then
-  hi3518mppinc="-I$hi3518mpppfx/include/hi3518mpp"
-  hi3518mpplib="-L$hi3518mpppfx/lib \
+if test "x$with_hi3518v100mpp" != xno; then
+  hi3518v100mppinc="-I$hi3518v100mpppfx/include/hi3518v100mpp"
+  hi3518v100mpplib="-L$hi3518v100mpppfx/lib \
     -lmpi -lresampler -laec -lvqev2 -lanr -lVoiceEngine \
     -lisp -l_hiae -l_hiawb -l_hiaf -lpthread"
 
-  new_CPPFLAGS=${hi3518mppinc}
-  new_LDFLAGS=${hi3518mpplib}
+  new_CPPFLAGS=${hi3518v100mppinc}
+  new_LDFLAGS=${hi3518v100mpplib}
 
 
 
@@ -16137,9 +16149,9 @@ HI_MPI_SYS_Init();
 
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_hi3518mpp=yes
+  have_hi3518v100mpp=yes
 else
-  have_hi3518mpp=no
+  have_hi3518v100mpp=no
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
@@ -16147,61 +16159,62 @@ rm -f core conftest.err conftest.$ac_objext \
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
 
-  if test x$have_hi3518mpp = xyes; then
-    HI3518MPP_CPPFLAGS=$hi3518mppinc
-    HI3518MPP_LDFLAGS=$hi3518mpplib
+  if test x$have_hi3518v100mpp = xyes; then
+    HI3518V100MPP_CPPFLAGS=$hi3518v100mppinc
+    HI3518V100MPP_LDFLAGS=$hi3518v100mpplib
 
-$as_echo "#define HAVE_HI3518MPP_SUPPORT 1" >>confdefs.h
+$as_echo "#define HAVE_HI3518V100MPP_SUPPORT 1" >>confdefs.h
 
 
 
   fi
 else
-  have_hi3518mpp=no
+  have_hi3518v100mpp=no
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3518mpp" >&5
-$as_echo "$have_hi3518mpp" >&6; }
- if test x$have_hi3518mpp = xyes; then
-  ENABLE_HI3518MPP_TRUE=
-  ENABLE_HI3518MPP_FALSE='#'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3518v100mpp" >&5
+$as_echo "$have_hi3518v100mpp" >&6; }
+ if test x$have_hi3518v100mpp = xyes; then
+  ENABLE_HI3518V100MPP_TRUE=
+  ENABLE_HI3518V100MPP_FALSE='#'
 else
-  ENABLE_HI3518MPP_TRUE='#'
-  ENABLE_HI3518MPP_FALSE=
+  ENABLE_HI3518V100MPP_TRUE='#'
+  ENABLE_HI3518V100MPP_FALSE=
 fi
 
 
 
 
-# Check whether --with-hi3520mpp was given.
-if test "${with_hi3520mpp+set}" = set; then :
-  withval=$with_hi3520mpp;
+# Check whether --with-hi3518v200mpp was given.
+if test "${with_hi3518v200mpp+set}" = set; then :
+  withval=$with_hi3518v200mpp;
 else
-  with_hi3520mpp=no
+  with_hi3518v200mpp=no
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3520 mpp library" >&5
-$as_echo_n "checking for hi3520 mpp library... " >&6; }
-case $with_hi3520mpp in
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3518v200 mpp library" >&5
+$as_echo_n "checking for hi3518v200 mpp library... " >&6; }
+case $with_hi3518v200mpp in
  yes)
-   hi3520mpppfx="$ac_sysroot/usr" ;;
+   hi3518v200mpppfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3520mpppfx=`echo "$with_hi3520mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3518v200mpppfx=`echo "$with_hi3518v200mpp" | sed -e "$sed_quote_subst"` ;;
  *)
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3520mpp" >&5
-$as_echo "$with_hi3520mpp" >&6; }
-   as_fn_error $? "hi3520mpp must be an absolute path.\"" "$LINENO" 5
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3518v200mpp" >&5
+$as_echo "$with_hi3518v200mpp" >&6; }
+   as_fn_error $? "hi3518v200mpp must be an absolute path.\"" "$LINENO" 5
    ;;
 esac
-if test "x$with_hi3520mpp" != xno; then
-  hi3520mppinc="-I$hi3520mpppfx/include/hi3520mpp"
-  hi3520mpplib="-L$hi3520mpppfx/lib \
-    -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lpthread"
+if test "x$with_hi3518v200mpp" != xno; then
+  hi3518v200mppinc="-I$hi3518v200mpppfx/include/hi3518v200mpp"
+  hi3518v200mpplib="-L$hi3518v200mpppfx/lib \
+    -lmpi -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lVoiceEngine \
+    -lisp -l_hiae -l_hiawb -l_hiaf -l_hidefog -lpthread"
 
-  new_CPPFLAGS=${hi3520mppinc}
-  new_LDFLAGS=${hi3520mpplib}
+  new_CPPFLAGS=${hi3518v200mppinc}
+  new_LDFLAGS=${hi3518v200mpplib}
 
 
 
@@ -16224,9 +16237,9 @@ HI_MPI_SYS_Init();
 
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_hi3520mpp=yes
+  have_hi3518v200mpp=yes
 else
-  have_hi3520mpp=no
+  have_hi3518v200mpp=no
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
@@ -16234,26 +16247,113 @@ rm -f core conftest.err conftest.$ac_objext \
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
 
-  if test x$have_hi3520mpp = xyes; then
-    HI3520MPP_CPPFLAGS=$hi3520mppinc
-    HI3520MPP_LDFLAGS=$hi3520mpplib
+  if test x$have_hi3518v200mpp = xyes; then
+    HI3518V200MPP_CPPFLAGS=$hi3518v200mppinc
+    HI3518V200MPP_LDFLAGS=$hi3518v200mpplib
 
-$as_echo "#define HAVE_HI3520MPP_SUPPORT 1" >>confdefs.h
+$as_echo "#define HAVE_HI3518V200MPP_SUPPORT 1" >>confdefs.h
 
 
 
   fi
 else
-  have_hi3520mpp=no
+  have_hi3518v200mpp=no
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3520mpp" >&5
-$as_echo "$have_hi3520mpp" >&6; }
- if test x$have_hi3520mpp = xyes; then
-  ENABLE_HI3520MPP_TRUE=
-  ENABLE_HI3520MPP_FALSE='#'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3518v200mpp" >&5
+$as_echo "$have_hi3518v200mpp" >&6; }
+ if test x$have_hi3518v200mpp = xyes; then
+  ENABLE_HI3518V200MPP_TRUE=
+  ENABLE_HI3518V200MPP_FALSE='#'
 else
-  ENABLE_HI3520MPP_TRUE='#'
-  ENABLE_HI3520MPP_FALSE=
+  ENABLE_HI3518V200MPP_TRUE='#'
+  ENABLE_HI3518V200MPP_FALSE=
+fi
+
+
+
+
+# Check whether --with-hi3520v100mpp was given.
+if test "${with_hi3520v100mpp+set}" = set; then :
+  withval=$with_hi3520v100mpp;
+else
+  with_hi3520v100mpp=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3520v100 mpp library" >&5
+$as_echo_n "checking for hi3520v100 mpp library... " >&6; }
+case $with_hi3520v100mpp in
+ yes)
+   hi3520v100mpppfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3520v100mpppfx=`echo "$with_hi3520v100mpp" | sed -e "$sed_quote_subst"` ;;
+ *)
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3520v100mpp" >&5
+$as_echo "$with_hi3520v100mpp" >&6; }
+   as_fn_error $? "hi3520v100mpp must be an absolute path.\"" "$LINENO" 5
+   ;;
+esac
+if test "x$with_hi3520v100mpp" != xno; then
+  hi3520v100mppinc="-I$hi3520v100mpppfx/include/hi3520v100mpp"
+  hi3520v100mpplib="-L$hi3520v100mpppfx/lib \
+    -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lpthread"
+
+  new_CPPFLAGS=${hi3520v100mppinc}
+  new_LDFLAGS=${hi3520v100mpplib}
+
+
+
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  CPPFLAGS="$CPPFLAGS $new_CPPFLAGS"
+  LDFLAGS="$LDFLAGS $new_LDFLAGS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <hi_comm_sys.h>
+       #include <mpi_sys.h>
+int
+main ()
+{
+HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_hi3520v100mpp=yes
+else
+  have_hi3520v100mpp=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+
+  if test x$have_hi3520v100mpp = xyes; then
+    HI3520V100MPP_CPPFLAGS=$hi3520v100mppinc
+    HI3520V100MPP_LDFLAGS=$hi3520v100mpplib
+
+$as_echo "#define HAVE_HI3520V100MPP_SUPPORT 1" >>confdefs.h
+
+
+
+  fi
+else
+  have_hi3520v100mpp=no
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3520v100mpp" >&5
+$as_echo "$have_hi3520v100mpp" >&6; }
+ if test x$have_hi3520v100mpp = xyes; then
+  ENABLE_HI3520V100MPP_TRUE=
+  ENABLE_HI3520V100MPP_FALSE='#'
+else
+  ENABLE_HI3520V100MPP_TRUE='#'
+  ENABLE_HI3520V100MPP_FALSE=
 fi
 
 
@@ -16330,7 +16430,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/rtsp-server/Makefile src/dbus/Makefile src/platform/Makefile src/platform/hi3518mpp/Makefile src/platform/hi3520mpp/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/rtsp-server/Makefile src/dbus/Makefile src/platform/Makefile src/platform/hi3518v100mpp/Makefile src/platform/hi3518v200mpp/Makefile src/platform/hi3520v100mpp/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16469,12 +16569,16 @@ if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${ENABLE_HI3518MPP_TRUE}" && test -z "${ENABLE_HI3518MPP_FALSE}"; then
-  as_fn_error $? "conditional \"ENABLE_HI3518MPP\" was never defined.
+if test -z "${ENABLE_HI3518V100MPP_TRUE}" && test -z "${ENABLE_HI3518V100MPP_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_HI3518V100MPP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${ENABLE_HI3520MPP_TRUE}" && test -z "${ENABLE_HI3520MPP_FALSE}"; then
-  as_fn_error $? "conditional \"ENABLE_HI3520MPP\" was never defined.
+if test -z "${ENABLE_HI3518V200MPP_TRUE}" && test -z "${ENABLE_HI3518V200MPP_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_HI3518V200MPP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_HI3520V100MPP_TRUE}" && test -z "${ENABLE_HI3520V100MPP_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_HI3520V100MPP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_LIBEV_TRUE}" && test -z "${ENABLE_LIBEV_FALSE}"; then
@@ -17456,8 +17560,9 @@ do
     "src/rtsp-server/Makefile") CONFIG_FILES="$CONFIG_FILES src/rtsp-server/Makefile" ;;
     "src/dbus/Makefile") CONFIG_FILES="$CONFIG_FILES src/dbus/Makefile" ;;
     "src/platform/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/Makefile" ;;
-    "src/platform/hi3518mpp/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3518mpp/Makefile" ;;
-    "src/platform/hi3520mpp/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3520mpp/Makefile" ;;
+    "src/platform/hi3518v100mpp/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3518v100mpp/Makefile" ;;
+    "src/platform/hi3518v200mpp/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3518v200mpp/Makefile" ;;
+    "src/platform/hi3520v100mpp/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3520v100mpp/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

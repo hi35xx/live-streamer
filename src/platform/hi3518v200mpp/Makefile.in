@@ -88,7 +88,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = src/platform/hi3520mpp
+subdir = src/platform/hi3518v200mpp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
@@ -102,12 +102,13 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libhi3520mpp_la_DEPENDENCIES =  \
+libhi3518v200mpp_la_DEPENDENCIES =  \
 	$(top_builddir)/src/dbus/libdbus-iface.la
-am_libhi3520mpp_la_OBJECTS = himpp-object.lo himpp-sysctl.lo \
-	himpp-video-codec.lo himpp-video-viu.lo himpp-video-vpss.lo \
-	himpp-video-venc.lo himpp-video-region.lo himpp-media.lo
-libhi3520mpp_la_OBJECTS = $(am_libhi3520mpp_la_OBJECTS)
+am_libhi3518v200mpp_la_OBJECTS = himpp-object.lo himpp-sysctl.lo \
+	himpp-audio.lo himpp-video-sensor.lo himpp-video-isp.lo \
+	himpp-video-viu.lo himpp-video-vpss.lo himpp-video-venc.lo \
+	himpp-video-region.lo himpp-media.lo
+libhi3518v200mpp_la_OBJECTS = $(am_libhi3518v200mpp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -164,8 +165,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libhi3520mpp_la_SOURCES)
-DIST_SOURCES = $(libhi3520mpp_la_SOURCES)
+SOURCES = $(libhi3518v200mpp_la_SOURCES)
+DIST_SOURCES = $(libhi3518v200mpp_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -228,10 +229,12 @@ FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
 FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
-HI3518MPP_CPPFLAGS = @HI3518MPP_CPPFLAGS@
-HI3518MPP_LDFLAGS = @HI3518MPP_LDFLAGS@
-HI3520MPP_CPPFLAGS = @HI3520MPP_CPPFLAGS@
-HI3520MPP_LDFLAGS = @HI3520MPP_LDFLAGS@
+HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
+HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
+HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
+HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
+HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
+HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -336,21 +339,26 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/dbus -I$(top_builddir)/src/dbus \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS) \
-	$(HI3520MPP_CPPFLAGS)
+	$(SDL_CFLAGS) \
+	$(HI3518V200MPP_CPPFLAGS)
 
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall
 noinst_LTLIBRARIES = \
-	libhi3520mpp.la
+	libhi3518v200mpp.la
 
-libhi3520mpp_la_SOURCES = \
+libhi3518v200mpp_la_SOURCES = \
 	himpp-common.h \
 	himpp-object.cpp \
 	himpp-object.h \
 	himpp-sysctl.cpp \
 	himpp-sysctl.h \
-	himpp-video-codec.cpp \
-	himpp-video-codec.h \
+	himpp-audio.cpp \
+	himpp-audio.h \
+	himpp-video-sensor.cpp \
+	himpp-video-sensor.h \
+	himpp-video-isp.cpp \
+	himpp-video-isp.h \
 	himpp-video-viu.cpp \
 	himpp-video-viu.h \
 	himpp-video-vpss.cpp \
@@ -362,7 +370,7 @@ libhi3520mpp_la_SOURCES = \
 	himpp-media.cpp \
 	himpp-media.h
 
-libhi3520mpp_la_LIBADD = \
+libhi3518v200mpp_la_LIBADD = \
 	$(top_builddir)/src/dbus/libdbus-iface.la
 
 EXTRA_DIST = 
@@ -379,9 +387,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/platform/hi3520mpp/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/platform/hi3518v200mpp/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/platform/hi3520mpp/Makefile
+	  $(AUTOMAKE) --gnu src/platform/hi3518v200mpp/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -411,8 +419,8 @@ clean-noinstLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libhi3520mpp.la: $(libhi3520mpp_la_OBJECTS) $(libhi3520mpp_la_DEPENDENCIES) $(EXTRA_libhi3520mpp_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK)  $(libhi3520mpp_la_OBJECTS) $(libhi3520mpp_la_LIBADD) $(LIBS)
+libhi3518v200mpp.la: $(libhi3518v200mpp_la_OBJECTS) $(libhi3518v200mpp_la_DEPENDENCIES) $(EXTRA_libhi3518v200mpp_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK)  $(libhi3518v200mpp_la_OBJECTS) $(libhi3518v200mpp_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -420,11 +428,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-audio.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-media.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-object.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-sysctl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-codec.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-isp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-region.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-sensor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-venc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-viu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-vpss.Plo@am__quote@

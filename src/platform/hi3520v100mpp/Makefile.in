@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -89,7 +88,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = src/dbus
+subdir = src/platform/hi3520v100mpp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
@@ -103,12 +102,12 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libdbus_iface_la_LIBADD =
-am__objects_1 =
-am_libdbus_iface_la_OBJECTS = dbusxx-libev-integration.lo \
-	$(am__objects_1) dbus-audio-source.lo dbus-audio-encoder.lo \
-	dbus-video-osd.lo dbus-video-source.lo dbus-video-encoder.lo
-libdbus_iface_la_OBJECTS = $(am_libdbus_iface_la_OBJECTS)
+libhi3520v100mpp_la_DEPENDENCIES =  \
+	$(top_builddir)/src/dbus/libdbus-iface.la
+am_libhi3520v100mpp_la_OBJECTS = himpp-object.lo himpp-sysctl.lo \
+	himpp-video-codec.lo himpp-video-viu.lo himpp-video-vpss.lo \
+	himpp-video-venc.lo himpp-video-region.lo himpp-media.lo
+libhi3520v100mpp_la_OBJECTS = $(am_libhi3520v100mpp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -165,42 +164,13 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libdbus_iface_la_SOURCES)
-DIST_SOURCES = $(libdbus_iface_la_SOURCES)
+SOURCES = $(libhi3520v100mpp_la_SOURCES)
+DIST_SOURCES = $(libhi3520v100mpp_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  test -z "$$files" \
-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-         $(am__cd) "$$dir" && rm -f $$files; }; \
-  }
-am__installdirs = "$(DESTDIR)$(dbuspolicydir)"
-DATA = $(dbuspolicy_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -362,51 +332,43 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src -I$(srcdir) -I$(builddir) \
-	$(DBUSXX_CFLAGS)
+	-DPACKAGE_LOCALE_DIR=\""$(localedir)"\" \
+	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
+	-I. -I$(top_srcdir)/src -I$(top_srcdir)/src/rtsp-server \
+	-I$(top_srcdir)/src/dbus -I$(top_builddir)/src/dbus \
+	$(LIVE555_CPPFLAGS) \
+	$(DBUSXX_CFLAGS) \
+	$(HI3520V100MPP_CPPFLAGS)
 
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall
 noinst_LTLIBRARIES = \
-	libdbus-iface.la
+	libhi3520v100mpp.la
 
-BUILT_SOURCES = \
-	audio-source-server-glue.h \
-	audio-encoder-server-glue.h \
-	video-source-server-glue.h \
-	video-encoder-server-glue.h \
-	video-osd-server-glue.h
+libhi3520v100mpp_la_SOURCES = \
+	himpp-common.h \
+	himpp-object.cpp \
+	himpp-object.h \
+	himpp-sysctl.cpp \
+	himpp-sysctl.h \
+	himpp-video-codec.cpp \
+	himpp-video-codec.h \
+	himpp-video-viu.cpp \
+	himpp-video-viu.h \
+	himpp-video-vpss.cpp \
+	himpp-video-vpss.h \
+	himpp-video-venc.cpp \
+	himpp-video-venc.h \
+	himpp-video-region.cpp \
+	himpp-video-region.h \
+	himpp-media.cpp \
+	himpp-media.h
 
-libdbus_iface_la_SOURCES = \
-	dbusxx-libev-integration.cpp \
-	dbusxx-libev-integration.h \
-	$(BUILT_SOURCES) \
-	dbus-audio-source.cpp \
-	dbus-audio-source.h \
-	dbus-audio-encoder.cpp \
-	dbus-audio-encoder.h \
-	dbus-video-osd.cpp \
-	dbus-video-osd.h \
-	dbus-video-source.cpp \
-	dbus-video-source.h \
-	dbus-video-encoder.cpp \
-	dbus-video-encoder.h
+libhi3520v100mpp_la_LIBADD = \
+	$(top_builddir)/src/dbus/libdbus-iface.la
 
-CLEANFILES = $(BUILT_SOURCES)
-dbuspolicydir = $(sysconfdir)/dbus-1/system.d
-dbuspolicy_DATA = \
-	live-streamer.conf
-
-EXTRA_DIST = \
-	video-source-introspect.xml \
-	video-encoder-introspect.xml \
-	video-osd-introspect.xml \
-	audio-source-introspect.xml \
-	audio-encoder-introspect.xml \
-	live-streamer.conf
-
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+EXTRA_DIST = 
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -419,9 +381,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/dbus/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/platform/hi3520v100mpp/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/dbus/Makefile
+	  $(AUTOMAKE) --gnu src/platform/hi3520v100mpp/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -451,8 +413,8 @@ clean-noinstLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libdbus-iface.la: $(libdbus_iface_la_OBJECTS) $(libdbus_iface_la_DEPENDENCIES) $(EXTRA_libdbus_iface_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK)  $(libdbus_iface_la_OBJECTS) $(libdbus_iface_la_LIBADD) $(LIBS)
+libhi3520v100mpp.la: $(libhi3520v100mpp_la_OBJECTS) $(libhi3520v100mpp_la_DEPENDENCIES) $(EXTRA_libhi3520v100mpp_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK)  $(libhi3520v100mpp_la_OBJECTS) $(libhi3520v100mpp_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -460,12 +422,14 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-encoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-source.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-encoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-osd.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-source.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbusxx-libev-integration.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-media.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-object.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-sysctl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-codec.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-region.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-venc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-viu.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-vpss.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -493,27 +457,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-dbuspolicyDATA: $(dbuspolicy_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dbuspolicy_DATA)'; test -n "$(dbuspolicydir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(dbuspolicydir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(dbuspolicydir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dbuspolicydir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dbuspolicydir)" || exit $$?; \
-	done
-
-uninstall-dbuspolicyDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dbuspolicy_DATA)'; test -n "$(dbuspolicydir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(dbuspolicydir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -597,19 +540,11 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) $(DATA)
+check: check-am
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(dbuspolicydir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -631,7 +566,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -640,7 +574,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
@@ -664,7 +597,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dbuspolicyDATA
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -710,33 +643,26 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-dbuspolicyDATA
+uninstall-am:
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
-	ctags-am dist-hook distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dbuspolicyDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-dbuspolicyDATA
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
-
-%-server-glue.h: %-introspect.xml
-	dbusxx-xml2cpp $^ --adaptor=$@
-
-dist-hook:
-	cd $(distdir); rm -f $(BUILT_SOURCES)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

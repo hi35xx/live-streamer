@@ -43,7 +43,9 @@
 
 #include <ipcam-runtime.h>
 
-#if defined(HAVE_HI3518MPP_SUPPORT) || defined(HAVE_HI3520MPP_SUPPORT)
+#if defined(HAVE_HI3518V100MPP_SUPPORT) \
+	|| defined(HAVE_HI3518V200MPP_SUPPORT) \
+	|| defined(HAVE_HI3520V100MPP_SUPPORT)
 #include <himpp-media.h>
 #endif
 
@@ -60,7 +62,7 @@ static void list_supported_sensors(void)
 {
 	std::cout << "RTSP/RTP stream server\n";
 	std::cout << "Supported sensor:\n";
-#ifdef HAVE_HI3518MPP_SUPPORT
+#if defined(HAVE_HI3518V100MPP_SUPPORT)
 	for (auto s : himpp_video_sensor_map) {
 		HimppVideoSensor &sensor = s.second;
 		ISP_IMAGE_ATTR_S *attr = sensor;
@@ -68,6 +70,21 @@ static void list_supported_sensors(void)
 			+ std::to_string(attr->u16Width) + "x" 
 			+ std::to_string(attr->u16Height) + "@"
 			+ std::to_string(attr->u16FrameRate)
+			+ "]";
+		printf("  %-10s %-16s: %s\n",
+		       sensor.getSensorName().c_str(),
+		       resolution.c_str(),
+		       sensor.getModulePath().c_str());
+	}
+#endif
+#if defined(HAVE_HI3518V200MPP_SUPPORT)
+	for (auto s : himpp_video_sensor_map) {
+		HimppVideoSensor &sensor = s.second;
+		ISP_PUB_ATTR_S *attr = sensor;
+		std::string resolution = "["
+			+ std::to_string(attr->stWndRect.u32Width) + "x" 
+			+ std::to_string(attr->stWndRect.u32Height) + "@"
+			+ std::to_string(attr->f32FrameRate)
 			+ "]";
 		printf("  %-10s %-16s: %s\n",
 		       sensor.getSensorName().c_str(),
@@ -238,11 +255,11 @@ int main(int argc, char *argv[])
 		rtspServer->addStreamPath(sv[0], sv[1]);
 	}
 
-#if defined(HAVE_HI3518MPP_SUPPORT)
+#if defined(HAVE_HI3518V100MPP_SUPPORT) || defined(HAVE_HI3518V200MPP_SUPPORT)
 	Hi3518mppMedia hi3518media(runtime, sensor_type);
 #endif
 
-#if defined(HAVE_HI3520MPP_SUPPORT)
+#if defined(HAVE_HI3520V100MPP_SUPPORT)
 	Hi3520mppMedia hi3520media(runtime, sensor_type);
 #endif
 

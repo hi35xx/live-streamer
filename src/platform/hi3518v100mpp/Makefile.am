@@ -8,22 +8,27 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/dbus -I$(top_builddir)/src/dbus \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS) \
-	$(HI3520MPP_CPPFLAGS)
+	$(SDL_CFLAGS) \
+	$(HI3518V100MPP_CPPFLAGS)
 
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall
 
 noinst_LTLIBRARIES =  \
-	libhi3520mpp.la
+	libhi3518v100mpp.la
 
-libhi3520mpp_la_SOURCES =  \
+libhi3518v100mpp_la_SOURCES =  \
 	himpp-common.h \
 	himpp-object.cpp \
 	himpp-object.h \
 	himpp-sysctl.cpp \
 	himpp-sysctl.h \
-	himpp-video-codec.cpp \
-	himpp-video-codec.h \
+	himpp-audio.cpp \
+	himpp-audio.h \
+	himpp-video-sensor.cpp \
+	himpp-video-sensor.h \
+	himpp-video-isp.cpp \
+	himpp-video-isp.h \
 	himpp-video-viu.cpp \
 	himpp-video-viu.h \
 	himpp-video-vpss.cpp \
@@ -35,7 +40,8 @@ libhi3520mpp_la_SOURCES =  \
 	himpp-media.cpp \
 	himpp-media.h
 
-libhi3520mpp_la_LIBADD = \
+libhi3518v100mpp_la_LIBADD = \
 	$(top_builddir)/src/dbus/libdbus-iface.la
 
 EXTRA_DIST =
+

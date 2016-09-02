@@ -87,8 +87,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@ENABLE_HI3518MPP_TRUE@am__append_1 = hi3518mpp
-@ENABLE_HI3520MPP_TRUE@am__append_2 = hi3520mpp
+@ENABLE_HI3518V100MPP_TRUE@am__append_1 = hi3518v100mpp
+@ENABLE_HI3518V200MPP_TRUE@am__append_2 = hi3518v200mpp
+@ENABLE_HI3520V100MPP_TRUE@am__append_3 = hi3520v100mpp
 subdir = src/platform
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -156,7 +157,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = hi3518mpp hi3520mpp
+DIST_SUBDIRS = hi3518v100mpp hi3518v200mpp hi3520v100mpp
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -220,10 +221,12 @@ FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
 FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
-HI3518MPP_CPPFLAGS = @HI3518MPP_CPPFLAGS@
-HI3518MPP_LDFLAGS = @HI3518MPP_LDFLAGS@
-HI3520MPP_CPPFLAGS = @HI3520MPP_CPPFLAGS@
-HI3520MPP_LDFLAGS = @HI3520MPP_LDFLAGS@
+HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
+HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
+HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
+HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
+HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
+HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -321,7 +324,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = $(am__append_1) $(am__append_2)
+SUBDIRS = $(am__append_1) $(am__append_2) $(am__append_3)
 all: all-recursive
 
 .SUFFIXES:
