@@ -257,13 +257,13 @@ VideoSource::VideoSource
             value.writer().append_uint32(vsrc.getImaging()->getWideDynamicRange()->getLevel());
         };
     // Get handler of ipcam.Media.VideoSource.Imaging.LDC
-    _prop_get_handler[WDR_INTERFACE ".Mode"] = 
+    _prop_get_handler[LDC_INTERFACE ".Mode"] = 
         [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
             value.writer().append_uint32(vsrc.getImaging()->getLDC()->getMode());
         };
-    _prop_get_handler[WDR_INTERFACE ".Ratio"] = 
+    _prop_get_handler[LDC_INTERFACE ".Ratio"] = 
         [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
@@ -491,13 +491,13 @@ VideoSource::VideoSource
             vsrc.getImaging()->getWideDynamicRange()->setLevel((uint32_t)value);
         };
     // Set handler of ipcam.Media.VideoSource.Imaging.LDC
-    _prop_set_handler[WDR_INTERFACE ".Mode"] = 
+    _prop_set_handler[LDC_INTERFACE ".Mode"] = 
         [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
-            vsrc.getImaging()->getLDC()->setMode((uint32_t)value);
+            vsrc.getImaging()->getLDC()->setMode((IVideoSource::Imaging::LDC::LDCMode)(uint32_t)value);
         };
-    _prop_set_handler[WDR_INTERFACE ".Ratio"] = 
+    _prop_set_handler[LDC_INTERFACE ".Ratio"] = 
         [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {

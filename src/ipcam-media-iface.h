@@ -198,8 +198,8 @@ public:
         public:
             enum LDCMode { LDC_OFF, LDC_ON };
         public:
-            virtual uint32_t        getMode() = 0;
-            virtual void            setMode(uint32_t value) = 0;
+            virtual LDCMode         getMode() = 0;
+            virtual void            setMode(LDCMode value) = 0;
             virtual uint32_t        getRatio() = 0;
             virtual void            setRatio(uint32_t value) = 0;
         };
