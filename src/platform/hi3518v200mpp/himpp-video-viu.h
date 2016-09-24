@@ -46,6 +46,7 @@ public:
     void     setChroma(uint32_t);
     uint32_t getSaturation();
     void     setSaturation(uint32_t);
+
 protected:
     bool enableObject();
     bool disableObject();
@@ -65,6 +66,8 @@ private:
 class HimppViChan: public HimppVideoObject
 {
 public:
+    typedef IVideoSource::Imaging::LDC::LDCMode LDCMode;
+public:
     HimppViChan(HimppViDev *, VI_CHN);
     ~HimppViChan();
 
@@ -80,6 +83,11 @@ public:
     void setMirror(bool);
     bool getFlip();
     void setFlip(bool);
+
+    LDCMode  getLDCMode();
+    void     setLDCMode(LDCMode);
+    uint32_t getLDCRatio();
+    void     setLDCRatio(uint32_t);
 protected:
     bool enableObject();
     bool disableObject();
@@ -87,10 +95,11 @@ private:
     HimppViDev*     _vi_dev;
     VI_CHN          _chnid;
     MPP_CHN_S       _mpp_chn;
-    VI_LDC_ATTR_S   _ldc_attr;
     ROTATE_E        _rotate;
     bool            _mirror;
     bool            _flip;
+    LDCMode         _ldc_mode;
+    uint32_t        _ldc_ratio;
 };
 
 #endif // _HIMPP_VIDEO_VIU_H_

@@ -66,7 +66,8 @@ IVideoSource::Imaging* HimppVideoSource::getImaging()
 //////////////////////////////////////////////////////////////////////////////
 
 HimppVideoSource::Imaging::Imaging(Hi3518mppMedia &media)
-  : _media(media), _exposure(media), _white_balance(media)
+  : _media(media), _exposure(media), _white_balance(media),
+    _wide_dynamic_range(media), _ldc(media)
 {
 }
 
@@ -174,12 +175,12 @@ IVideoSource::Imaging::WhiteBalance* HimppVideoSource::Imaging::getWhiteBalance(
 
 IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynamicRange()
 {
-	throw IpcamError("Request interface not implemented");
+	return dynamic_cast<IVideoSource::Imaging::WideDynamicRange*>(&_wide_dynamic_range);
 }
 
 IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 {
-	throw IpcamError("Request interface not implemented");
+	return dynamic_cast<IVideoSource::Imaging::LDC*>(&_ldc);
 }
 
 
@@ -644,6 +645,114 @@ void HimppVideoSource::Imaging::WhiteBalance::setBGain(uint32_t value)
 			return wb->setBGain(value);
 		}
 	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::WideDynamicRange
+//////////////////////////////////////////////////////////////////////////////
+HimppVideoSource::Imaging::WideDynamicRange::WideDynamicRange(Hi3518mppMedia &media)
+  : _media(media)
+{
+}
+
+IVideoSource::Imaging::WideDynamicRange::WDRMode
+HimppVideoSource::Imaging::WideDynamicRange::getMode()
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::WideDynamicRange *wdr = isp->getWideDynamicRange();
+		if (wdr) {
+			return wdr->getWDRMode();
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WideDynamicRange::setMode(WDRMode value)
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::WideDynamicRange *wdr = isp->getWideDynamicRange();
+		if (wdr) {
+			return wdr->setWDRMode(value);
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::WideDynamicRange::getLevel()
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::WideDynamicRange *wdr = isp->getWideDynamicRange();
+		if (wdr) {
+			return wdr->getLevel();
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::WideDynamicRange::setLevel(uint32_t value)
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::WideDynamicRange *wdr = isp->getWideDynamicRange();
+		if (wdr) {
+			return wdr->setLevel(value);
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::LDC
+//////////////////////////////////////////////////////////////////////////////
+HimppVideoSource::Imaging::LDC::LDC(Hi3518mppMedia &media)
+  : _media(media)
+{
+}
+
+IVideoSource::Imaging::LDC::LDCMode
+HimppVideoSource::Imaging::LDC::getMode()
+{
+	HimppViChan &vi_chan = _media._vi_chan0;
+
+	return vi_chan.getLDCMode();
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::LDC::setMode(LDCMode value)
+{
+	HimppViChan &vi_chan = _media._vi_chan0;
+
+	return vi_chan.setLDCMode(value);
+
+	throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::LDC::getRatio()
+{
+	HimppViChan &vi_chan = _media._vi_chan0;
+
+	return vi_chan.getLDCRatio();
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::LDC::setRatio(uint32_t value)
+{
+	HimppViChan &vi_chan = _media._vi_chan0;
+
+	return vi_chan.setLDCRatio(value);
 
 	throw IpcamError("Requested interface not supported");
 }

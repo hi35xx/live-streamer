@@ -118,7 +118,7 @@ bool HimppAudioCodec::enableObject()
         return false;
     }
 
-    unsigned int gain_mic = 0x0A;
+    unsigned int gain_mic = 0x06;
     if (ioctl(fd, ACODEC_SET_GAIN_MICL, &gain_mic)) {
         fprintf(stderr, "set acodec micin volume failed\n");
     }
@@ -128,7 +128,7 @@ bool HimppAudioCodec::enableObject()
 
     ACODEC_VOL_CTRL vol_ctrl;
     vol_ctrl.vol_ctrl_mute = 0;
-    vol_ctrl.vol_ctrl = 0x20;
+    vol_ctrl.vol_ctrl = 0x40;
     if (ioctl(fd, ACODEC_SET_ADCL_VOL, &vol_ctrl)) {
         fprintf(stderr, "set acodec adc volume failed\n");
     }

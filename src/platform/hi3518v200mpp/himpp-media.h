@@ -96,6 +96,34 @@ public:
         private:
             Hi3518mppMedia& _media;
         };
+        class WideDynamicRange : public IVideoSource::Imaging::WideDynamicRange
+        {
+        public:
+            typedef IVideoSource::Imaging::WideDynamicRange::WDRMode WDRMode;
+        public:
+            WideDynamicRange(Hi3518mppMedia &media);
+
+            WDRMode     getMode();
+            void        setMode(WDRMode value);
+            uint32_t    getLevel();
+            void        setLevel(uint32_t value);
+        private:
+            Hi3518mppMedia& _media;
+        };
+        class LDC : public IVideoSource::Imaging::LDC
+        {
+        public:
+            typedef IVideoSource::Imaging::LDC::LDCMode LDCMode;
+        public:
+            LDC(Hi3518mppMedia &media);
+
+            LDCMode     getMode();
+            void        setMode(LDCMode value);
+            uint32_t    getRatio();
+            void        setRatio(uint32_t value);
+        private:
+            Hi3518mppMedia& _media;
+        };
     public:
         Imaging(Hi3518mppMedia &media);
 
@@ -124,8 +152,10 @@ public:
         IVideoSource::Imaging::LDC*              getLDC();
     private:
         Hi3518mppMedia&     _media;
-        Exposure        _exposure;
-        WhiteBalance    _white_balance;
+        Exposure            _exposure;
+        WhiteBalance        _white_balance;
+        WideDynamicRange    _wide_dynamic_range;
+        LDC                 _ldc;
     };
 public:
     HimppVideoSource(Hi3518mppMedia &media);

@@ -232,11 +232,8 @@ HimppViChan::HimppViChan(HimppViDev *vi_dev, VI_CHN vi_chn)
     _mpp_chn.s32DevId = vi_dev->getDeviceId();
     _mpp_chn.s32ChnId = _chnid;
 
-    _ldc_attr.bEnable = HI_FALSE;
-    _ldc_attr.stAttr.enViewType = LDC_VIEW_TYPE_ALL;
-    _ldc_attr.stAttr.s32CenterXOffset = 0;
-    _ldc_attr.stAttr.s32CenterYOffset = 0;
-    _ldc_attr.stAttr.s32Ratio = 255;
+    _ldc_mode = IVideoSource::Imaging::LDC::LDC_OFF;
+    _ldc_ratio = 0;
 
     _flip = false;
     _mirror = false;
@@ -272,13 +269,10 @@ bool HimppViChan::enableObject()
         return false;
     }
 
-#if 0
     if ((s32Ret = HI_MPI_VI_SetRotate(_chnid, _rotate)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VI_SetRotate %d failed [%#x]\n",
                     _chnid, s32Ret);
-        return false;
     }
-#endif
 
     if ((s32Ret = HI_MPI_VI_EnableChn(_chnid)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VI_EnableChn %d failed [%#x]\n",
@@ -286,14 +280,21 @@ bool HimppViChan::enableObject()
         return false;
     }
 
-#if 0
     if (_chnid < VIU_MAX_PHYCHN_NUM) {
-        if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &_ldc_attr)) != HI_SUCCESS) {
+        VI_LDC_ATTR_S ldc_attr;
+        ldc_attr.bEnable = (_ldc_mode == IVideoSource::Imaging::LDC::LDC_ON) ?
+            HI_TRUE : HI_FALSE;
+        ldc_attr.bEnable = HI_FALSE;
+        ldc_attr.stAttr.enViewType = LDC_VIEW_TYPE_ALL;
+        ldc_attr.stAttr.s32CenterXOffset = 0;
+        ldc_attr.stAttr.s32CenterYOffset = 0;
+        ldc_attr.stAttr.s32Ratio = _ldc_ratio;
+
+        if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS) {
             HIMPP_PRINT("HI_MPI_VI_SetLDCAttr %d failed [%#x]\n",
                         _chnid, s32Ret);
         }
     }
-#endif
 
     return true;
 }
@@ -396,4 +397,49 @@ void HimppViChan::setFlip(bool value)
     }
 
     _flip = value;
+}
+
+HimppViChan::LDCMode HimppViChan::getLDCMode()
+{
+    return _ldc_mode;
+}
+
+void HimppViChan::setLDCMode(LDCMode value)
+{
+    if (isEnabled()) {
+        HI_S32 s32Ret;
+        VI_LDC_ATTR_S ldc_attr;
+        if ((s32Ret = HI_MPI_VI_GetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
+            throw IpcamError("failed to get LDC attr\n");
+
+        ldc_attr.bEnable = (_ldc_mode == IVideoSource::Imaging::LDC::LDC_ON) ?
+            HI_TRUE : HI_FALSE;
+
+        if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
+            throw IpcamError("failed to set LDC attr\n");
+    }
+
+    _ldc_mode = value;
+}
+
+uint32_t HimppViChan::getLDCRatio()
+{
+    return _ldc_ratio;
+}
+
+void HimppViChan::setLDCRatio(uint32_t value)
+{
+    if (isEnabled()) {
+        HI_S32 s32Ret;
+        VI_LDC_ATTR_S ldc_attr;
+        if ((s32Ret = HI_MPI_VI_GetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
+            throw IpcamError("failed to get LDC attr\n");
+
+        ldc_attr.stAttr.s32Ratio = value;
+
+        if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
+            throw IpcamError("failed to set LDC attr\n");
+    }
+
+    _ldc_ratio = value;
 }

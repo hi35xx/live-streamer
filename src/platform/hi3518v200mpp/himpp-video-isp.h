@@ -43,6 +43,7 @@ public:
     typedef IVideoSource::Imaging::Exposure::ExposureMode ExposureMode;
     typedef IVideoSource::Imaging::Exposure::ExposurePriority ExposurePriority;
     typedef IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode WhiteBalanceMode;
+    typedef IVideoSource::Imaging::WideDynamicRange::WDRMode WDRMode;
     // Exposure
     class Exposure
     {
@@ -118,6 +119,24 @@ public:
         uint32_t            _g_gain;
         uint32_t            _b_gain;
     };
+    // WideDynamicRange
+    class WideDynamicRange
+    {
+    public:
+        WideDynamicRange(HimppVideoISP &video_isp);
+
+        void setWDRMode(WDRMode value);
+        WDRMode getWDRMode();
+        void setLevel(uint32_t value);
+        uint32_t getLevel();
+    private:
+        friend class HimppVideoISP;
+
+        bool isEnabled() { return _video_isp.isEnabled(); }
+        HimppVideoISP&      _video_isp;
+        WDRMode             _mode;
+        uint32_t            _level;
+    };
 
 public:
     HimppVideoISP(HimppVideoSensor *sensor);
@@ -128,8 +147,9 @@ public:
     bool setFramerate(uint32_t fps);
     uint32_t getFramerate();
 
-    Exposure *getExposure() { return &_exposure; };
-    WhiteBalance *getWhiteBalance() { return &_whitebalance; };
+    Exposure *getExposure() { return &_exposure; }
+    WhiteBalance *getWhiteBalance() { return &_whitebalance; }
+    WideDynamicRange *getWideDynamicRange() { return &_widedynamicrange; }
 
     ISP_DEV ispDev() { return isp_dev; }
 protected:
@@ -144,6 +164,7 @@ private:
 
     Exposure        _exposure;
     WhiteBalance    _whitebalance;
+    WideDynamicRange _widedynamicrange;
 
     bool loadSensorModule();
     bool unloadSensorModule();

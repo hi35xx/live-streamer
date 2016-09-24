@@ -41,7 +41,8 @@
 HimppVideoISP::HimppVideoISP(HimppVideoSensor *sensor)
 	: HimppVideoObject(NULL), video_sensor(sensor),
       isp_dev(0), isp_thread(-1),
-	  _exposure(*this), _whitebalance(*this)
+	  _exposure(*this), _whitebalance(*this),
+      _widedynamicrange(*this)
 {
 	memset(&sensor_module, 0, sizeof(sensor_module));
 }
@@ -635,5 +636,60 @@ void HimppVideoISP::WhiteBalance::setBGain(uint32_t value)
 uint32_t HimppVideoISP::WhiteBalance::getBGain()
 {
 	return _b_gain;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoISP::WideDynamicRange
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVideoISP::WideDynamicRange::WideDynamicRange(HimppVideoISP &video_isp)
+	: _video_isp(video_isp),
+	  _mode(IVideoSource::Imaging::WideDynamicRange::WDR_OFF),
+	  _level(0)
+{
+}
+
+void HimppVideoISP::WideDynamicRange::setWDRMode(WDRMode value)
+{
+	if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+		ISP_DRC_ATTR_S wdr_attr;
+		if (HI_MPI_ISP_GetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS)
+            throw IpcamError("get WDR attr failed");
+
+        wdr_attr.bEnable = \
+            (value == IVideoSource::Imaging::WideDynamicRange::WDR_ON) ?
+                HI_TRUE : HI_FALSE;
+        if (HI_MPI_ISP_SetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS)
+            throw IpcamError("get WDR attr failed");
+	}
+	_mode = value;
+}
+
+HimppVideoISP::WDRMode HimppVideoISP::WideDynamicRange::getWDRMode()
+{
+	return _mode;
+}
+
+void HimppVideoISP::WideDynamicRange::setLevel(uint32_t value)
+{
+	if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+		ISP_DRC_ATTR_S wdr_attr;
+		if (HI_MPI_ISP_GetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS)
+            throw IpcamError("get WDR attr failed");
+
+        //wdr_attr.bEnable = 
+        //    (value == IVideoSource::Imaging::WideDynamicRange::WDR_ON) ?
+        //        HI_TRUE : HI_FALSE;
+        if (HI_MPI_ISP_SetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS)
+            throw IpcamError("get WDR attr failed");
+	}
+	_level = value;
+}
+
+uint32_t HimppVideoISP::WideDynamicRange::getLevel()
+{
+	return _level;
 }
 
