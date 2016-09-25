@@ -635,6 +635,10 @@ LIBOBJS
 ENABLE_LIBEV_FALSE
 ENABLE_LIBEV_TRUE
 LIBEV_LDFLAGS
+ENABLE_HI3520DV200MPP_FALSE
+ENABLE_HI3520DV200MPP_TRUE
+HI3520DV200MPP_LDFLAGS
+HI3520DV200MPP_CPPFLAGS
 ENABLE_HI3520V100MPP_FALSE
 ENABLE_HI3520V100MPP_TRUE
 HI3520V100MPP_LDFLAGS
@@ -795,6 +799,7 @@ with_live555
 with_hi3518v100mpp
 with_hi3518v200mpp
 with_hi3520v100mpp
+with_hi3520dv200mpp
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1466,6 +1471,9 @@ Optional Packages:
                           package.
   --with-hi3520v100mpp=PATH
                           specify prefix directory for himpp-hi3520v100
+                          package.
+  --with-hi3520dv200mpp=PATH
+                          specify prefix directory for himpp-hi3520dv200
                           package.
 
 Some influential environment variables:
@@ -16358,6 +16366,92 @@ fi
 
 
 
+# Check whether --with-hi3520dv200mpp was given.
+if test "${with_hi3520dv200mpp+set}" = set; then :
+  withval=$with_hi3520dv200mpp;
+else
+  with_hi3520dv200mpp=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3520dv200 mpp library" >&5
+$as_echo_n "checking for hi3520dv200 mpp library... " >&6; }
+case $with_hi3520dv200mpp in
+ yes)
+   hi3520dv200mpppfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3520dv200mpppfx=`echo "$with_hi3520dv200mpp" | sed -e "$sed_quote_subst"` ;;
+ *)
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3520dv200mpp" >&5
+$as_echo "$with_hi3520dv200mpp" >&6; }
+   as_fn_error $? "hi3520dv200mpp must be an absolute path.\"" "$LINENO" 5
+   ;;
+esac
+if test "x$with_hi3520dv200mpp" != xno; then
+  hi3520dv200mppinc="-I$hi3520dv200mpppfx/include/hi3520dv200mpp"
+  hi3520dv200mpplib="-L$hi3520dv200mpppfx/lib \
+    -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lvqev2 -lpthread"
+
+  new_CPPFLAGS=${hi3520dv200mppinc}
+  new_LDFLAGS=${hi3520dv200mpplib}
+
+
+
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  CPPFLAGS="$CPPFLAGS $new_CPPFLAGS"
+  LDFLAGS="$LDFLAGS $new_LDFLAGS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <hi_comm_sys.h>
+       #include <mpi_sys.h>
+int
+main ()
+{
+HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_hi3520dv200mpp=yes
+else
+  have_hi3520dv200mpp=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+
+  if test x$have_hi3520dv200mpp = xyes; then
+    HI3520DV200MPP_CPPFLAGS=$hi3520dv200mppinc
+    HI3520DV200MPP_LDFLAGS=$hi3520dv200mpplib
+
+$as_echo "#define HAVE_HI3520DV200MPP_SUPPORT 1" >>confdefs.h
+
+
+
+  fi
+else
+  have_hi3520dv200mpp=no
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3520dv200mpp" >&5
+$as_echo "$have_hi3520dv200mpp" >&6; }
+ if test x$have_hi3520dv200mpp = xyes; then
+  ENABLE_HI3520DV200MPP_TRUE=
+  ENABLE_HI3520DV200MPP_FALSE='#'
+else
+  ENABLE_HI3520DV200MPP_TRUE='#'
+  ENABLE_HI3520DV200MPP_FALSE=
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ev_default_loop in -lev" >&5
 $as_echo_n "checking for ev_default_loop in -lev... " >&6; }
 if ${ac_cv_lib_ev_ev_default_loop+:} false; then :
@@ -16579,6 +16673,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_HI3520V100MPP_TRUE}" && test -z "${ENABLE_HI3520V100MPP_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_HI3520V100MPP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_HI3520DV200MPP_TRUE}" && test -z "${ENABLE_HI3520DV200MPP_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_HI3520DV200MPP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_LIBEV_TRUE}" && test -z "${ENABLE_LIBEV_FALSE}"; then

@@ -98,6 +98,9 @@ bin_PROGRAMS = live-streamer$(EXEEXT)
 @ENABLE_HI3520V100MPP_TRUE@am__append_7 = $(HI3520V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
 @ENABLE_HI3520V100MPP_TRUE@am__append_8 = $(HI3520V100MPP_LDFLAGS)
 @ENABLE_HI3520V100MPP_TRUE@am__append_9 = $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
+@ENABLE_HI3520DV200MPP_TRUE@am__append_10 = $(HI3520DV200MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
+@ENABLE_HI3520DV200MPP_TRUE@am__append_11 = $(HI3520DV200MPP_LDFLAGS)
+@ENABLE_HI3520DV200MPP_TRUE@am__append_12 = $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -120,7 +123,7 @@ am_live_streamer_OBJECTS = live_streamer-main.$(OBJEXT) \
 live_streamer_OBJECTS = $(am_live_streamer_OBJECTS)
 live_streamer_DEPENDENCIES = $(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
-	$(am__append_6) $(am__append_9)
+	$(am__append_6) $(am__append_9) $(am__append_12)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -291,6 +294,8 @@ HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
 HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
 HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
 HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
+HI3520DV200MPP_CPPFLAGS = @HI3520DV200MPP_CPPFLAGS@
+HI3520DV200MPP_LDFLAGS = @HI3520DV200MPP_LDFLAGS@
 HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
 HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
 INSTALL = @INSTALL@
@@ -420,12 +425,12 @@ live_streamer_SOURCES = \
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
 	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
 	$(LIBEV_LDFLAGS) -ldl $(am__append_2) $(am__append_5) \
-	$(am__append_8)
+	$(am__append_8) $(am__append_11)
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS) $(am__append_1) \
-	$(am__append_4) $(am__append_7)
+	$(am__append_4) $(am__append_7) $(am__append_10)
 live_streamer_LDADD = $(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
-	$(am__append_6) $(am__append_9)
+	$(am__append_6) $(am__append_9) $(am__append_12)
 all: all-recursive
 
 .SUFFIXES:

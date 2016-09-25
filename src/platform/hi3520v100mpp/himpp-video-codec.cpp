@@ -35,8 +35,11 @@ static VI_DEV_ATTR_S devattr_bt656_d1_4mux = {
     .au32CompMask = { 0xFF000000, 0x0 },
     .enScanMode = VI_SCAN_INTERLACED,
     .s32AdChnId = { -1, -1, -1, -1 },
-    //.enDataSeq = 0,
-    //.stSynCfg = { },
+    .enDataSeq = VI_INPUT_DATA_VUVU,
+    .stSynCfg = { },
+    .enDataPath = VI_PATH_BYPASS,
+    .enInputDataType = VI_DATA_TYPE_YUV,
+    .bDataRev = HI_TRUE,
 };
 
 HimppVideoCodecNVP1918::HimppVideoCodecNVP1918()

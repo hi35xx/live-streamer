@@ -45,7 +45,8 @@
 
 #if defined(HAVE_HI3518V100MPP_SUPPORT) \
 	|| defined(HAVE_HI3518V200MPP_SUPPORT) \
-	|| defined(HAVE_HI3520V100MPP_SUPPORT)
+	|| defined(HAVE_HI3520V100MPP_SUPPORT) \
+	|| defined(HAVE_HI3520DV200MPP_SUPPORT)
 #include <himpp-media.h>
 #endif
 
@@ -259,7 +260,7 @@ int main(int argc, char *argv[])
 	Hi3518mppMedia hi3518media(runtime, sensor_type);
 #endif
 
-#if defined(HAVE_HI3520V100MPP_SUPPORT)
+#if defined(HAVE_HI3520V100MPP_SUPPORT) || defined(HAVE_HI3520DV200MPP_SUPPORT)
 	Hi3520mppMedia hi3520media(runtime, sensor_type);
 #endif
 

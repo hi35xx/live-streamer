@@ -90,6 +90,7 @@ host_triplet = @host@
 @ENABLE_HI3518V100MPP_TRUE@am__append_1 = hi3518v100mpp
 @ENABLE_HI3518V200MPP_TRUE@am__append_2 = hi3518v200mpp
 @ENABLE_HI3520V100MPP_TRUE@am__append_3 = hi3520v100mpp
+@ENABLE_HI3520DV200MPP_TRUE@am__append_4 = hi3520v100mpp
 subdir = src/platform
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -225,6 +226,8 @@ HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
 HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
 HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
 HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
+HI3520DV200MPP_CPPFLAGS = @HI3520DV200MPP_CPPFLAGS@
+HI3520DV200MPP_LDFLAGS = @HI3520DV200MPP_LDFLAGS@
 HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
 HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
 INSTALL = @INSTALL@
@@ -324,7 +327,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = $(am__append_1) $(am__append_2) $(am__append_3)
+SUBDIRS = $(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4)
 all: all-recursive
 
 .SUFFIXES:

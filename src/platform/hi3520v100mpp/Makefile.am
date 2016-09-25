@@ -7,8 +7,15 @@ AM_CPPFLAGS = \
 	-I. -I$(top_srcdir)/src -I$(top_srcdir)/src/rtsp-server \
 	-I$(top_srcdir)/src/dbus -I$(top_builddir)/src/dbus \
 	$(LIVE555_CPPFLAGS) \
-	$(DBUSXX_CFLAGS) \
-	$(HI3520V100MPP_CPPFLAGS)
+	$(DBUSXX_CFLAGS)
+
+if ENABLE_HI3520V100MPP
+AM_CPPFLAGS += $(HI3520V100MPP_CPPFLAGS)
+endif
+
+if ENABLE_HI3520DV200MPP
+AM_CPPFLAGS += $(HI3520DV200MPP_CPPFLAGS)
+endif
 
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall

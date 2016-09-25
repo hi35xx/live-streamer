@@ -57,3 +57,9 @@ live_streamer_CPPFLAGS += $(HI3520V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v
 live_streamer_LDFLAGS += $(HI3520V100MPP_LDFLAGS)
 live_streamer_LDADD += $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
 endif
+
+if ENABLE_HI3520DV200MPP
+live_streamer_CPPFLAGS += $(HI3520DV200MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
+live_streamer_LDFLAGS += $(HI3520DV200MPP_LDFLAGS)
+live_streamer_LDADD += $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
+endif

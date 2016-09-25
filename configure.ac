@@ -251,6 +251,50 @@ fi
 AC_MSG_RESULT([$have_hi3520v100mpp])
 AM_CONDITIONAL([ENABLE_HI3520V100MPP], [test x$have_hi3520v100mpp = xyes])
 
+dnl check for hi3520dv200 mpp library
+AC_ARG_WITH(hi3520dv200mpp,
+	[AS_HELP_STRING([--with-hi3520dv200mpp=PATH],
+		[specify prefix directory for himpp-hi3520dv200 package.])],
+		[], [with_hi3520dv200mpp=no])
+
+AC_MSG_CHECKING([for hi3520dv200 mpp library])
+case $with_hi3520dv200mpp in
+ yes)
+   hi3520dv200mpppfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3520dv200mpppfx=`echo "$with_hi3520dv200mpp" | sed -e "$sed_quote_subst"` ;;
+ *)
+   AC_MSG_RESULT([$with_hi3520dv200mpp])
+   AC_MSG_ERROR([hi3520dv200mpp must be an absolute path."])
+   ;;
+esac
+if test "x$with_hi3520dv200mpp" != xno; then
+  hi3520dv200mppinc="-I$hi3520dv200mpppfx/include/hi3520dv200mpp"
+  hi3520dv200mpplib="-L$hi3520dv200mpppfx/lib \
+    -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lvqev2 -lpthread"
+  AC_CHECK_LIBRARY([${hi3520dv200mppinc}], $[{hi3520dv200mpplib}],
+    [AC_LANG_PROGRAM(
+      [#include <hi_comm_sys.h>
+       #include <mpi_sys.h>],
+      [HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();])
+    ], [have_hi3520dv200mpp=yes], [have_hi3520dv200mpp=no]
+  )
+  if test x$have_hi3520dv200mpp = xyes; then
+    HI3520DV200MPP_CPPFLAGS=$hi3520dv200mppinc
+    HI3520DV200MPP_LDFLAGS=$hi3520dv200mpplib
+    AC_DEFINE(HAVE_HI3520DV200MPP_SUPPORT, 1, [support Hi3520dv200 MPP])
+    AC_SUBST(HI3520DV200MPP_CPPFLAGS)
+    AC_SUBST(HI3520DV200MPP_LDFLAGS)
+  fi
+else
+  have_hi3520dv200mpp=no
+fi
+AC_MSG_RESULT([$have_hi3520dv200mpp])
+AM_CONDITIONAL([ENABLE_HI3520DV200MPP], [test x$have_hi3520dv200mpp = xyes])
+
 
 dnl check for libev library
 AC_CHECK_LIB([ev], ev_default_loop,
