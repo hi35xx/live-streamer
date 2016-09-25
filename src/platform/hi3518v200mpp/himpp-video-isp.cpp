@@ -42,7 +42,7 @@ HimppVideoISP::HimppVideoISP(HimppVideoSensor *sensor)
 	: HimppVideoObject(NULL), video_sensor(sensor),
       isp_dev(0), isp_thread(-1),
 	  _exposure(*this), _whitebalance(*this),
-      _widedynamicrange(*this)
+      _widedynamicrange(*this), _gamma(*this)
 {
 	memset(&sensor_module, 0, sizeof(sensor_module));
 }
@@ -693,3 +693,56 @@ uint32_t HimppVideoISP::WideDynamicRange::getLevel()
 	return _level;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoISP::Gamma
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVideoISP::Gamma::Gamma(HimppVideoISP &video_isp)
+  : _video_isp(video_isp)
+{
+}
+
+void HimppVideoISP::Gamma::setCurveData(std::vector<uint32_t>& value)
+{
+    ISP_GAMMA_ATTR_S gamma_attr;
+
+    if ((value.size() != 0) && (value.size() != ARRAY_SIZE(gamma_attr.u16Table)))
+        throw IpcamError("invalid gamma data");
+
+    if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+        gamma_attr.bEnable = HI_TRUE;
+        if (value.size() > 0) {
+            gamma_attr.enCurveType = ISP_GAMMA_CURVE_USER_DEFINE;
+            for (unsigned i = 0; i < value.size(); i++) {
+                gamma_attr.u16Table[i] = value[i];
+            }
+        }
+        else {
+            gamma_attr.enCurveType = ISP_GAMMA_CURVE_DEFAULT;
+            memset(gamma_attr.u16Table, 0, sizeof(gamma_attr.u16Table));
+        }
+        if (HI_MPI_ISP_SetGammaAttr(isp_dev, &gamma_attr) != HI_SUCCESS)
+            throw IpcamError("failed to set gamma attr");
+    }
+    _curve_data = value;
+}
+
+std::vector<uint32_t>& HimppVideoISP::Gamma::getCurveData()
+{
+    if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+        ISP_GAMMA_ATTR_S gamma_attr;
+
+        if (HI_MPI_ISP_GetGammaAttr(isp_dev, &gamma_attr) != HI_SUCCESS)
+            throw IpcamError("failed to get gamma attr");
+
+        _curve_data.resize(ARRAY_SIZE(gamma_attr.u16Table));
+        for (unsigned i = 0; i < _curve_data.size(); i++) {
+            _curve_data[i] = gamma_attr.u16Table[i];
+        }
+    }
+
+    return _curve_data;
+}

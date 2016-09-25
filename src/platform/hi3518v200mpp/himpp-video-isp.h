@@ -137,6 +137,21 @@ public:
         WDRMode             _mode;
         uint32_t            _level;
     };
+    // Gamma
+    class Gamma
+    {
+    public:
+        Gamma(HimppVideoISP &video_isp);
+
+        void setCurveData(std::vector<uint32_t>& value);
+        std::vector<uint32_t>& getCurveData();
+    private:
+        friend class HimppVideoISP;
+
+        bool isEnabled() { return _video_isp.isEnabled(); }
+        HimppVideoISP&      _video_isp;
+        std::vector<uint32_t> _curve_data;
+    };
 
 public:
     HimppVideoISP(HimppVideoSensor *sensor);
@@ -150,6 +165,7 @@ public:
     Exposure *getExposure() { return &_exposure; }
     WhiteBalance *getWhiteBalance() { return &_whitebalance; }
     WideDynamicRange *getWideDynamicRange() { return &_widedynamicrange; }
+    Gamma *getGamma() { return &_gamma; }
 
     ISP_DEV ispDev() { return isp_dev; }
 protected:
@@ -165,6 +181,7 @@ private:
     Exposure        _exposure;
     WhiteBalance    _whitebalance;
     WideDynamicRange _widedynamicrange;
+    Gamma           _gamma;
 
     bool loadSensorModule();
     bool unloadSensorModule();

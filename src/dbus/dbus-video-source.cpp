@@ -31,6 +31,7 @@ namespace DBus {
 #define WB_INTERFACE            "ipcam.Media.VideoSource.Imaging.WhiteBalance"
 #define WDR_INTERFACE           "ipcam.Media.VideoSource.Imaging.WideDynamicRange"
 #define LDC_INTERFACE           "ipcam.Media.VideoSource.Imaging.LDC"
+#define GAMMA_INTERFACE           "ipcam.Media.VideoSource.Imaging.Gamma"
 
 VideoSource::VideoSource
 (IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source)
@@ -269,6 +270,15 @@ VideoSource::VideoSource
         {
             value.writer().append_uint32(vsrc.getImaging()->getLDC()->getRatio());
         };
+    // Get handler of ipcam.Media.VideoSource.Imaging.LDC
+    _prop_get_handler[GAMMA_INTERFACE ".CurveData"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            std::vector<uint32_t>& curve = vsrc.getImaging()->getGamma()->getCurveData();
+            DBus::MessageIter mi = value.writer();
+            mi << curve;
+        };
 
 
     // Set handler of ipcam.Media.VideoSource
@@ -502,6 +512,14 @@ VideoSource::VideoSource
            const std::string &property, const DBus::Variant &value)
         {
             vsrc.getImaging()->getLDC()->setRatio((uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.Gamma
+    _prop_set_handler[GAMMA_INTERFACE ".CurveData"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            std::vector<uint32_t> curve = value;
+            vsrc.getImaging()->getGamma()->setCurveData(curve);
         };
 }
 

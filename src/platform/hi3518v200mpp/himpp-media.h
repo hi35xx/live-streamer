@@ -124,6 +124,16 @@ public:
         private:
             Hi3518mppMedia& _media;
         };
+        class Gamma : public IVideoSource::Imaging::Gamma
+        {
+        public:
+            Gamma(Hi3518mppMedia &media);
+
+            std::vector<uint32_t>& getCurveData();
+            void            setCurveData(std::vector<uint32_t>& value);
+        private:
+            Hi3518mppMedia& _media;
+        };
     public:
         Imaging(Hi3518mppMedia &media);
 
@@ -150,12 +160,14 @@ public:
         IVideoSource::Imaging::WhiteBalance*     getWhiteBalance();
         IVideoSource::Imaging::WideDynamicRange* getWideDynamicRange();
         IVideoSource::Imaging::LDC*              getLDC();
+        IVideoSource::Imaging::Gamma*            getGamma();
     private:
         Hi3518mppMedia&     _media;
         Exposure            _exposure;
         WhiteBalance        _white_balance;
         WideDynamicRange    _wide_dynamic_range;
         LDC                 _ldc;
+        Gamma               _gamma;
     };
 public:
     HimppVideoSource(Hi3518mppMedia &media);

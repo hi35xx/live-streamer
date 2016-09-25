@@ -38,6 +38,7 @@ class VideoSource :
   public ipcam::Media::VideoSource::Imaging::WhiteBalance_adaptor,
   public ipcam::Media::VideoSource::Imaging::WideDynamicRange_adaptor,
   public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
+  public ipcam::Media::VideoSource::Imaging::Gamma_adaptor,
   public DBus::IntrospectableAdaptor,
   public DBus::PropertiesAdaptor,
   public DBus::ObjectAdaptor

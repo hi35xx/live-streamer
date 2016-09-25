@@ -182,6 +182,11 @@ IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 	throw IpcamError("Request interface not implemented");
 }
 
+IVideoSource::Imaging::Gamma* HimppVideoSource::Imaging::getGamma()
+{
+	throw IpcamError("Request interface not implemented");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // HimppVideoSource::Imaging::Exposure

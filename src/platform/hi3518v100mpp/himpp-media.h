@@ -122,6 +122,7 @@ public:
         IVideoSource::Imaging::WhiteBalance*     getWhiteBalance();
         IVideoSource::Imaging::WideDynamicRange* getWideDynamicRange();
         IVideoSource::Imaging::LDC*              getLDC();
+        IVideoSource::Imaging::Gamma*            getGamma();
     private:
         Hi3518mppMedia&     _media;
         Exposure        _exposure;

@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 #include <string>
+#include <vector>
 #include <dbus-c++/error.h>
 
 struct SDL_Surface;
@@ -203,6 +204,13 @@ public:
             virtual uint32_t        getRatio() = 0;
             virtual void            setRatio(uint32_t value) = 0;
         };
+        class Gamma
+        {
+        public:
+            virtual std::vector<uint32_t>& getCurveData() = 0;
+            virtual void            setCurveData(std::vector<uint32_t>& value) = 0;
+        };
+            
     public:
         enum IrCutFilterMode { IRCUT_ON, IRCUT_OFF, IRCUT_AUTO };
         virtual bool                getMirror() = 0;
@@ -228,6 +236,7 @@ public:
         virtual WhiteBalance*       getWhiteBalance() = 0;
         virtual WideDynamicRange*   getWideDynamicRange() = 0;
         virtual LDC*                getLDC() = 0;
+        virtual Gamma*              getGamma() = 0;
     };
 public:
     virtual ~IVideoSource() {}

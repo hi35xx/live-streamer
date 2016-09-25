@@ -53,4 +53,7 @@
     <property name="Mode" type="u" access="readwrite"/>
     <property name="Ratio" type="u" access="readwrite"/>
   </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.Gamma">
+    <property name="CurveData" type="au" access="readwrite"/>
+  </interface>
 </node>

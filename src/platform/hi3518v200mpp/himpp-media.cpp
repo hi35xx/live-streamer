@@ -67,7 +67,7 @@ IVideoSource::Imaging* HimppVideoSource::getImaging()
 
 HimppVideoSource::Imaging::Imaging(Hi3518mppMedia &media)
   : _media(media), _exposure(media), _white_balance(media),
-    _wide_dynamic_range(media), _ldc(media)
+    _wide_dynamic_range(media), _ldc(media), _gamma(media)
 {
 }
 
@@ -181,6 +181,11 @@ IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynam
 IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 {
 	return dynamic_cast<IVideoSource::Imaging::LDC*>(&_ldc);
+}
+
+IVideoSource::Imaging::Gamma* HimppVideoSource::Imaging::getGamma()
+{
+	return dynamic_cast<IVideoSource::Imaging::Gamma*>(&_gamma);
 }
 
 
@@ -753,6 +758,41 @@ void HimppVideoSource::Imaging::LDC::setRatio(uint32_t value)
 	HimppViChan &vi_chan = _media._vi_chan0;
 
 	return vi_chan.setLDCRatio(value);
+
+	throw IpcamError("Requested interface not supported");
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::Gamma
+//////////////////////////////////////////////////////////////////////////////
+HimppVideoSource::Imaging::Gamma::Gamma(Hi3518mppMedia &media)
+  : _media(media)
+{
+}
+
+std::vector<uint32_t>& HimppVideoSource::Imaging::Gamma::getCurveData()
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::Gamma *gamma = isp->getGamma();
+		if (gamma) {
+			return gamma->getCurveData();
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void HimppVideoSource::Imaging::Gamma::setCurveData(std::vector<uint32_t>& value)
+{
+	HimppVideoISP *isp = (HimppVideoISP *)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::Gamma *gamma = isp->getGamma();
+		if (gamma) {
+			return gamma->setCurveData(value);
+		}
+	}
 
 	throw IpcamError("Requested interface not supported");
 }
