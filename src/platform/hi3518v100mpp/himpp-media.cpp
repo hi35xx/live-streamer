@@ -658,8 +658,8 @@ void HimppVideoSource::Imaging::WhiteBalance::setBGain(uint32_t value)
 // HimppVideoOSD
 //////////////////////////////////////////////////////////////////////////////
 
-HimppVideoOSD::HimppVideoOSD(HimppVencChan &venc_chan, uint32_t id)
-  : _venc_chan(venc_chan), _region(&venc_chan, id)
+HimppVideoOSD::HimppVideoOSD(Hi3518mppMedia &media, HimppVencChan &venc_chan, uint32_t id)
+  : _media(media), _venc_chan(venc_chan), _region(&venc_chan, id)
 {
 	Uint32 Rmask = 0x1F << 10;
 	Uint32 Gmask = 0x1F << 5;
@@ -674,6 +674,7 @@ HimppVideoOSD::HimppVideoOSD(HimppVencChan &venc_chan, uint32_t id)
 HimppVideoOSD::~HimppVideoOSD()
 {
 	_venc_chan.delVideoRegion(&_region);
+	_media.freeRegionHandle(_region.id());
 
 	if (_surface)
 		SDL_FreeSurface(_surface);
@@ -873,9 +874,13 @@ void HimppH264VideoEncoder::setGovLength(uint32_t gop)
 		throw IpcamError("set gop failed");
 }
 
-IVideoOSD *HimppH264VideoEncoder::CreateOSD(uint32_t id)
+IVideoOSD *HimppH264VideoEncoder::CreateOSD(uint32_t index)
 {
-	return new HimppVideoOSD(_venc_chan, id);
+	RGN_HANDLE handle = _media.allocRegionHandle();
+	if (handle != (RGN_HANDLE)-1)
+		return new HimppVideoOSD(_media, _venc_chan, handle);
+
+	return NULL;
 }
 
 
@@ -1217,4 +1222,22 @@ Hi3518mppMedia::~Hi3518mppMedia()
 		_venc_chan1.disable();
 
 	_sysctl.disable();
+}
+
+RGN_HANDLE Hi3518mppMedia::allocRegionHandle()
+{
+	for(RGN_HANDLE i = 0; i < _region_bitmap.size(); i++) {
+		if (!_region_bitmap[i]) {
+			_region_bitmap.set(i);
+			return i;
+		}
+	}
+
+	return (RGN_HANDLE)-1;
+}
+
+void Hi3518mppMedia::freeRegionHandle(RGN_HANDLE handle)
+{
+	if (handle < _region_bitmap.size())
+		_region_bitmap.reset(handle);
 }

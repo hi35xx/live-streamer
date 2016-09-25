@@ -20,6 +20,8 @@
 #ifndef _HIMPP_MEDIA_H_
 #define _HIMPP_MEDIA_H_
 
+#include <bitset>
+
 #include <himpp-sysctl.h>
 #include <himpp-video-sensor.h>
 #include <himpp-video-isp.h>
@@ -188,7 +190,7 @@ private:
 class HimppVideoOSD : public IVideoOSD
 {
 public:
-    HimppVideoOSD(HimppVencChan &venc_chan, uint32_t id);
+    HimppVideoOSD(Hi3518mppMedia &media, HimppVencChan &venc_chan, uint32_t id);
     ~HimppVideoOSD();
 
     Position getPosition();
@@ -209,6 +211,7 @@ public:
     SDL_Surface *getSurface(uint16_t w, uint16_t h);
     void putSurface(SDL_Surface *surf);
 private:
+    Hi3518mppMedia &_media;
     HimppVencChan &_venc_chan;
     HimppVideoRegion _region;
     SDL_Surface *_surface;
@@ -236,7 +239,7 @@ public:
     uint32_t  getGovLength();
     void setGovLength(uint32_t gop);
 
-    IVideoOSD *CreateOSD(uint32_t id);
+    IVideoOSD *CreateOSD(uint32_t index);
 private:
     Hi3518mppMedia&     _media;
     HimppVencChan&      _venc_chan;
@@ -331,8 +334,12 @@ public:
     Hi3518mppMedia(IpcamRuntime*, std::string);
     ~Hi3518mppMedia();
 
+    RGN_HANDLE allocRegionHandle();
+    void freeRegionHandle(RGN_HANDLE handle);
+
 private:
     IpcamRuntime       *_runtime;
+    std::bitset<RGN_HANDLE_MAX> _region_bitmap;
 
     // Video Objects
     HimppSysctl         _sysctl;
