@@ -412,7 +412,7 @@ void HimppViChan::setLDCMode(LDCMode value)
         if ((s32Ret = HI_MPI_VI_GetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
             throw IpcamError("failed to get LDC attr\n");
 
-        ldc_attr.bEnable = (_ldc_mode == IVideoSource::Imaging::LDC::LDC_ON) ?
+        ldc_attr.bEnable = (value == IVideoSource::Imaging::LDC::LDC_ON) ?
             HI_TRUE : HI_FALSE;
 
         if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS)
