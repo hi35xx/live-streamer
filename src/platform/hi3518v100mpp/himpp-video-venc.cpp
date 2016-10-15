@@ -26,10 +26,10 @@ HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN ch
       _h264profile(IH264VideoEncoder::HIGH),
       _rcmode(IVideoEncoder::VBR),
       _resolution(source->getResolution()),
-      _framerate(source->getFramerate())
+      _framerate(source->getFramerate()),
+      _bitrate(2048),
+      _gop(30)
 {
-    _bitrate = 2048;
-    _gop = 30;
     _crop_cfg.bEnable = HI_FALSE;
     _crop_cfg.stRect.u32Width = 0;
     _crop_cfg.stRect.u32Height = 0;
