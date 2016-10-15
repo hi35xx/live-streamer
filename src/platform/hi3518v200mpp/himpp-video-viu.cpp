@@ -263,15 +263,24 @@ bool HimppViChan::enableObject()
     attr.s32DstFrameRate = -1;
     attr.enCompressMode = COMPRESS_MODE_NONE;
 
+    HI_U32 online_mode = 0;
+    if ((s32Ret = HI_MPI_SYS_GetViVpssMode(&online_mode)) != HI_SUCCESS) {
+        HIMPP_PRINT("HI_MPI_SYS_GetViVpssMode failed [%#x]\n", s32Ret);
+        online_mode = 0;
+    }
+
     if ((s32Ret = HI_MPI_VI_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
         HIMPP_PRINT("HI_MPI_VI_SetChnAttr %d failed [%#x]\n",
                     _chnid, s32Ret);
         return false;
     }
 
-    if ((s32Ret = HI_MPI_VI_SetRotate(_chnid, _rotate)) != HI_SUCCESS) {
-        HIMPP_PRINT("HI_MPI_VI_SetRotate %d failed [%#x]\n",
-                    _chnid, s32Ret);
+    // Rotate functionality in viu only available in offline mode
+    if (!online_mode) {
+        if ((s32Ret = HI_MPI_VI_SetRotate(_chnid, _rotate)) != HI_SUCCESS) {
+            HIMPP_PRINT("HI_MPI_VI_SetRotate %d failed [%#x]\n",
+                        _chnid, s32Ret);
+        }
     }
 
     if ((s32Ret = HI_MPI_VI_EnableChn(_chnid)) != HI_SUCCESS) {
@@ -280,7 +289,8 @@ bool HimppViChan::enableObject()
         return false;
     }
 
-    if (_chnid < VIU_MAX_PHYCHN_NUM) {
+    // LDC functionality in viu only available in offline mode
+    if (!online_mode && _chnid < VIU_MAX_PHYCHN_NUM) {
         VI_LDC_ATTR_S ldc_attr;
         ldc_attr.bEnable = (_ldc_mode == IVideoSource::Imaging::LDC::LDC_ON) ?
             HI_TRUE : HI_FALSE;
