@@ -118,6 +118,7 @@ public:
         IVideoSource::Imaging::IrCutFilterMode getIrCutFilterMode();
         void        setIrCutFilterMode(IVideoSource::Imaging::IrCutFilterMode value);
 
+        IVideoSource::Imaging::AntiFlicker*      getAntiFlicker();
         IVideoSource::Imaging::Backlight*        getBacklight();
         IVideoSource::Imaging::Focus*            getFocus();
         IVideoSource::Imaging::Exposure*         getExposure();

@@ -32,6 +32,7 @@ namespace DBus {
 class VideoSource :
   public ipcam::Media::VideoSource_adaptor,
   public ipcam::Media::VideoSource::Imaging_adaptor,
+  public ipcam::Media::VideoSource::Imaging::AntiFlicker_adaptor,
   public ipcam::Media::VideoSource::Imaging::BacklightCompensation_adaptor,
   public ipcam::Media::VideoSource::Imaging::Focus_adaptor,
   public ipcam::Media::VideoSource::Imaging::Exposure_adaptor,

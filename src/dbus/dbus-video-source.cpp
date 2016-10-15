@@ -25,13 +25,14 @@ namespace DBus {
 
 #define VIDEOSOURCE_INTERFACE   "ipcam.Media.VideoSource"
 #define IMAGING_INTERFACE       "ipcam.Media.VideoSource.Imaging"
+#define ANTIFLICKER_INTERFACE   "ipcam.Media.VideoSource.Imaging.AntiFlicker"
 #define BLC_INTERFACE           "ipcam.Media.VideoSource.Imaging.BacklightCompensation"
 #define FOCUS_INTERFACE         "ipcam.Media.VideoSource.Imaging.Focus"
 #define EXPOSURE_INTERFACE      "ipcam.Media.VideoSource.Imaging.Exposure"
 #define WB_INTERFACE            "ipcam.Media.VideoSource.Imaging.WhiteBalance"
 #define WDR_INTERFACE           "ipcam.Media.VideoSource.Imaging.WideDynamicRange"
 #define LDC_INTERFACE           "ipcam.Media.VideoSource.Imaging.LDC"
-#define GAMMA_INTERFACE           "ipcam.Media.VideoSource.Imaging.Gamma"
+#define GAMMA_INTERFACE         "ipcam.Media.VideoSource.Imaging.Gamma"
 
 VideoSource::VideoSource
 (IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source)
@@ -101,6 +102,19 @@ VideoSource::VideoSource
            const std::string &property, DBus::Variant &value)
         {
             value.writer().append_uint32(vsrc.getImaging()->getIrCutFilterMode());
+        };
+    // Get handler of ipcam.Media.VideoSource.Imaging.AntiFlicker
+    _prop_get_handler[ANTIFLICKER_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getAntiFlicker()->getMode());
+        };
+    _prop_get_handler[ANTIFLICKER_INTERFACE ".Frequency"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32(vsrc.getImaging()->getAntiFlicker()->getFrequency());
         };
     // Get handler of ipcam.Media.VideoSource.Imaging.Backlight
     _prop_get_handler[BLC_INTERFACE ".Mode"] = 
@@ -344,6 +358,19 @@ VideoSource::VideoSource
            const std::string &property, const DBus::Variant &value)
         {
             vsrc.getImaging()->setIrCutFilterMode((IVideoSource::Imaging::IrCutFilterMode)(uint32_t)value);
+        };
+    // Set handler of ipcam.Media.VideoSource.Imaging.AntiFlicker
+    _prop_set_handler[ANTIFLICKER_INTERFACE ".Mode"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getAntiFlicker()->setMode((IVideoSource::Imaging::AntiFlicker::AntiFlickerMode)(uint32_t)value);
+        };
+    _prop_set_handler[ANTIFLICKER_INTERFACE ".Frequency"] = 
+        [](IVideoSource &vsrc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, const DBus::Variant &value)
+        {
+            vsrc.getImaging()->getAntiFlicker()->setFrequency((uint32_t)value);
         };
     // Set handler of ipcam.Media.VideoSource.Imaging.BacklightCompensation
     _prop_set_handler[BLC_INTERFACE ".Mode"] = 

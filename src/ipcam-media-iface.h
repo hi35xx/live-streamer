@@ -113,6 +113,16 @@ public:
     class Imaging
     {
     public:
+        class AntiFlicker
+        {
+        public:
+            enum AntiFlickerMode { ANTIFLICKER_OFF, ANTIFLICKER_NORMAL, ANTIFLICKER_AUTO };
+        public:
+            virtual AntiFlickerMode getMode() = 0;
+            virtual void            setMode(AntiFlickerMode value) = 0;
+            virtual uint32_t        getFrequency() = 0;
+            virtual void            setFrequency(uint32_t value) = 0;
+        };
         class Backlight             // Backlight Compensation
         {
         public:
@@ -230,6 +240,7 @@ public:
         virtual IrCutFilterMode     getIrCutFilterMode() = 0;
         virtual void                setIrCutFilterMode(IrCutFilterMode value) = 0;
 
+        virtual AntiFlicker*        getAntiFlicker() = 0;
         virtual Backlight*          getBacklight() = 0;
         virtual Focus*              getFocus() = 0;
         virtual Exposure*           getExposure() = 0;

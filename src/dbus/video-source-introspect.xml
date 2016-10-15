@@ -14,6 +14,10 @@
     <property name="Sharpness" type="u" access="readwrite"/>
     <property name="IrCutFilterMode" type="u" access="readwrite"/>
   </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.AntiFlicker">
+    <property name="Mode" type="u" access="readwrite"/>
+    <property name="Frequency" type="u" access="readwrite"/>
+  </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.BacklightCompensation">
     <property name="Mode" type="u" access="readwrite"/>
     <property name="Level" type="u" access="readwrite"/>

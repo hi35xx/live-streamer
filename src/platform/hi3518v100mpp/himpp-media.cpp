@@ -152,6 +152,11 @@ void HimppVideoSource::Imaging::setIrCutFilterMode
 	throw IpcamError("Not implemented");
 }
 
+IVideoSource::Imaging::AntiFlicker* HimppVideoSource::Imaging::getAntiFlicker()
+{
+	throw IpcamError("Request interface not implemented");
+}
+
 IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
 {
 	throw IpcamError("Request interface not implemented");

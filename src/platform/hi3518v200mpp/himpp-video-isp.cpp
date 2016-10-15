@@ -40,7 +40,7 @@
 
 HimppVideoISP::HimppVideoISP(HimppVideoSensor *sensor)
 	: HimppVideoObject(NULL), video_sensor(sensor),
-      isp_dev(0), isp_thread(-1),
+      isp_dev(0), isp_thread(-1), _antiflicker(*this),
 	  _exposure(*this), _whitebalance(*this),
       _widedynamicrange(*this), _gamma(*this)
 {
@@ -207,6 +207,21 @@ bool HimppVideoISP::enableObject()
 		exp_attr.stAuto.stAGainRange.u32Min = _exposure._min_gain;
 		exp_attr.stAuto.stAGainRange.u32Max = _exposure._max_gain;
 
+        switch (_antiflicker._mode) {
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_OFF:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_FALSE;
+            break;
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_NORMAL:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_TRUE;
+            exp_attr.stAuto.stAntiflicker.enMode = ISP_ANTIFLICKER_NORMAL_MODE;
+            break;
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_AUTO:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_TRUE;
+            exp_attr.stAuto.stAntiflicker.enMode = ISP_ANTIFLICKER_AUTO_MODE;
+            break;
+        }
+        exp_attr.stAuto.stAntiflicker.u8Frequency = _antiflicker._frequency;
+
 		exp_attr.stManual.u32ExpTime = _exposure._exp_time;
 		exp_attr.stManual.u32AGain = _exposure._gain;
 
@@ -279,6 +294,70 @@ uint32_t HimppVideoISP::getFramerate()
 HimppVideoISP::operator MPP_CHN_S* ()
 {
 	return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoISP::AntiFlicker
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVideoISP::AntiFlicker::AntiFlicker(HimppVideoISP &video_isp)
+	: _video_isp(video_isp),
+	  _mode(IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_OFF),
+	  _frequency(50)
+{
+}
+
+void HimppVideoISP::AntiFlicker::setMode(AntiFlickerMode mode)
+{
+	if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+        ISP_EXPOSURE_ATTR_S exp_attr;
+        if (HI_MPI_ISP_GetExposureAttr(isp_dev, &exp_attr) != HI_SUCCESS)
+            throw IpcamError("get exposure attr failed");
+
+        switch (mode) {
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_OFF:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_FALSE;
+            break;
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_NORMAL:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_TRUE;
+            exp_attr.stAuto.stAntiflicker.enMode = ISP_ANTIFLICKER_NORMAL_MODE;
+            break;
+        case IVideoSource::Imaging::AntiFlicker::ANTIFLICKER_AUTO:
+            exp_attr.stAuto.stAntiflicker.bEnable = HI_TRUE;
+            exp_attr.stAuto.stAntiflicker.enMode = ISP_ANTIFLICKER_AUTO_MODE;
+            break;
+        }
+
+        if (HI_MPI_ISP_SetExposureAttr(isp_dev, &exp_attr) != HI_SUCCESS)
+			throw IpcamError("set exposure attr failed");
+	}
+	_mode = mode;
+}
+
+HimppVideoISP::AntiFlickerMode HimppVideoISP::AntiFlicker::getMode()
+{
+	return _mode;
+}
+
+void HimppVideoISP::AntiFlicker::setFrequency(uint32_t value)
+{
+	if (isEnabled()) {
+        ISP_DEV isp_dev = _video_isp.ispDev();
+        ISP_EXPOSURE_ATTR_S exp_attr;
+        if (HI_MPI_ISP_GetExposureAttr(isp_dev, &exp_attr) != HI_SUCCESS)
+            throw IpcamError("get exposure attr failed");
+		exp_attr.stAuto.stAntiflicker.u8Frequency = value;
+		if (HI_MPI_ISP_SetExposureAttr(isp_dev, &exp_attr) != HI_SUCCESS)
+			throw IpcamError("set exposure attr failed");
+	}
+	_frequency = value;
+}
+
+uint32_t HimppVideoISP::AntiFlicker::getFrequency()
+{
+	return _frequency;
 }
 
 

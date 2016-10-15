@@ -40,10 +40,29 @@ struct HimppSensorModule
 class HimppVideoISP: public HimppVideoObject 
 {
 public:
+    typedef IVideoSource::Imaging::AntiFlicker::AntiFlickerMode AntiFlickerMode;
     typedef IVideoSource::Imaging::Exposure::ExposureMode ExposureMode;
     typedef IVideoSource::Imaging::Exposure::ExposurePriority ExposurePriority;
     typedef IVideoSource::Imaging::WhiteBalance::WhiteBalanceMode WhiteBalanceMode;
     typedef IVideoSource::Imaging::WideDynamicRange::WDRMode WDRMode;
+    // AntiFlicker
+    class AntiFlicker
+    {
+    public:
+        AntiFlicker(HimppVideoISP &video_isp);
+
+        void setMode(AntiFlickerMode value);
+        AntiFlickerMode getMode();
+        void setFrequency(uint32_t value);
+        uint32_t getFrequency();
+    private:
+        friend class HimppVideoISP;
+
+        bool isEnabled() { return _video_isp.isEnabled(); }
+        HimppVideoISP &     _video_isp;
+        AntiFlickerMode     _mode;
+        uint32_t            _frequency;
+    };
     // Exposure
     class Exposure
     {
@@ -162,6 +181,7 @@ public:
     bool setFramerate(uint32_t fps);
     uint32_t getFramerate();
 
+    AntiFlicker *getAntiFlicker() { return &_antiflicker; }
     Exposure *getExposure() { return &_exposure; }
     WhiteBalance *getWhiteBalance() { return &_whitebalance; }
     WideDynamicRange *getWideDynamicRange() { return &_widedynamicrange; }
@@ -178,6 +198,7 @@ private:
     ISP_DEV         isp_dev;
     pthread_t       isp_thread;
 
+    AntiFlicker     _antiflicker;
     Exposure        _exposure;
     WhiteBalance    _whitebalance;
     WideDynamicRange _widedynamicrange;

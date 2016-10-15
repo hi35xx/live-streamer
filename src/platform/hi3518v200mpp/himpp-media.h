@@ -43,6 +43,20 @@ public:
     class Imaging : public IVideoSource::Imaging
     {
     public:
+        class AntiFlicker : public IVideoSource::Imaging::AntiFlicker
+        {
+        public:
+            typedef IVideoSource::Imaging::AntiFlicker::AntiFlickerMode AntiFlickerMode;
+        public:
+            AntiFlicker(Hi3518mppMedia &media);
+
+            AntiFlickerMode getMode();
+            void            setMode(AntiFlickerMode value);
+            uint32_t        getFrequency();
+            void            setFrequency(uint32_t value);
+        private:
+            Hi3518mppMedia& _media;
+        };
         class Exposure : public IVideoSource::Imaging::Exposure
         {
         public:
@@ -156,6 +170,7 @@ public:
         IVideoSource::Imaging::IrCutFilterMode getIrCutFilterMode();
         void        setIrCutFilterMode(IVideoSource::Imaging::IrCutFilterMode value);
 
+        IVideoSource::Imaging::AntiFlicker*      getAntiFlicker();
         IVideoSource::Imaging::Backlight*        getBacklight();
         IVideoSource::Imaging::Focus*            getFocus();
         IVideoSource::Imaging::Exposure*         getExposure();
@@ -165,6 +180,7 @@ public:
         IVideoSource::Imaging::Gamma*            getGamma();
     private:
         Hi3518mppMedia&     _media;
+        AntiFlicker         _anti_flicker;
         Exposure            _exposure;
         WhiteBalance        _white_balance;
         WideDynamicRange    _wide_dynamic_range;

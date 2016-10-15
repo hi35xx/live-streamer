@@ -66,8 +66,9 @@ IVideoSource::Imaging* HimppVideoSource::getImaging()
 //////////////////////////////////////////////////////////////////////////////
 
 HimppVideoSource::Imaging::Imaging(Hi3518mppMedia &media)
-  : _media(media), _exposure(media), _white_balance(media),
-    _wide_dynamic_range(media), _ldc(media), _gamma(media)
+  : _media(media), _anti_flicker(media), _exposure(media),
+    _white_balance(media), _wide_dynamic_range(media),
+    _ldc(media), _gamma(media)
 {
 }
 
@@ -153,6 +154,11 @@ void HimppVideoSource::Imaging::setIrCutFilterMode
 	throw IpcamError("Not implemented");
 }
 
+IVideoSource::Imaging::AntiFlicker* HimppVideoSource::Imaging::getAntiFlicker()
+{
+	return dynamic_cast<IVideoSource::Imaging::AntiFlicker*>(&_anti_flicker);
+}
+
 IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
 {
 	throw IpcamError("Request interface not implemented");
@@ -186,6 +192,71 @@ IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
 IVideoSource::Imaging::Gamma* HimppVideoSource::Imaging::getGamma()
 {
 	return dynamic_cast<IVideoSource::Imaging::Gamma*>(&_gamma);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoSource::Imaging::AntiFlicker
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVideoSource::Imaging::AntiFlicker::AntiFlicker(Hi3518mppMedia &media)
+  : _media(media)
+{
+}
+
+IVideoSource::Imaging::AntiFlicker::AntiFlickerMode
+HimppVideoSource::Imaging::AntiFlicker::getMode()
+{
+	HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::AntiFlicker *antiflicker = isp->getAntiFlicker();
+		if (antiflicker) {
+			return antiflicker->getMode();
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void
+HimppVideoSource::Imaging::AntiFlicker::setMode(AntiFlickerMode value)
+{
+	HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::AntiFlicker *antiflicker = isp->getAntiFlicker();
+		if (antiflicker) {
+			return antiflicker->setMode(value);
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+uint32_t HimppVideoSource::Imaging::AntiFlicker::getFrequency()
+{
+	HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::AntiFlicker *antiflicker = isp->getAntiFlicker();
+		if (antiflicker) {
+			return antiflicker->getFrequency();
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
+}
+
+void
+HimppVideoSource::Imaging::AntiFlicker::setFrequency(uint32_t value)
+{
+	HimppVideoISP *isp = (HimppVideoISP*)_media._vi_dev0;
+	if (isp) {
+		HimppVideoISP::AntiFlicker *antiflicker = isp->getAntiFlicker();
+		if (antiflicker) {
+			return antiflicker->setFrequency(value);
+		}
+	}
+
+	throw IpcamError("Requested interface not supported");
 }
 
 
