@@ -40,7 +40,6 @@ class VideoOSD:
 {
 public:
 	VideoOSD(IpcamRuntime& runtime, std::string obj_path, IVideoOSD *video_osd);
-	~VideoOSD();
 	void on_get_property
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property
@@ -48,10 +47,16 @@ public:
 protected:
 	IpcamRuntime &_runtime;
 	IpcamVideoOSD _video_osd;
-    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGetHandler;
-    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySetHandler;
-    std::unordered_map<std::string, PropertyGetHandler> _prop_get_handler;
-    std::unordered_map<std::string, PropertySetHandler> _prop_set_handler;
+    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
+    typedef std::function<void(IpcamVideoOSD&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
+    class PropertyHandler {
+    public:
+        PropertyHandler(PropertyGet get, PropertySet set)
+            : Get(get), Set(set) {}
+        PropertyGet Get;
+        PropertySet Set;
+    };
+    std::unordered_map<std::string, PropertyHandler> _prop_handler;
 };
 
 } // namespace DBus

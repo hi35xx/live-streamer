@@ -25,6 +25,11 @@ namespace DBus {
 
 #define AUDIOENCODER_INTERFACE	  "ipcam.Media.AudioEncoder"
 
+#define DEFINE_PROP(prop, get, set) \
+    _prop_handler.emplace(std::piecewise_construct, \
+        std::forward_as_tuple(prop), \
+        std::forward_as_tuple(get, set))
+
 AudioEncoder::AudioEncoder
 (IpcamRuntime &runtime, std::string obj_path, IAudioEncoder *encoder)
   : DBus::ObjectAdaptor(runtime.dbus_conn(), obj_path),
@@ -32,82 +37,60 @@ AudioEncoder::AudioEncoder
 {
 	assert(encoder != NULL);
 
-    // Get handler of ipcam.Media.AudioEncoder
-    _prop_get_handler[AUDIOENCODER_INTERFACE ".Encoding"] = 
+    // Handler of ipcam.Media.AudioEncoder
+    DEFINE_PROP(AUDIOENCODER_INTERFACE ".Encoding",
         [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
             value.writer().append_uint32((uint32_t)aenc.getEncoding());
-        };
-    _prop_get_handler[AUDIOENCODER_INTERFACE ".Bitrate"] = 
-        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
-           const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)aenc.getBitrate());
-        };
-    _prop_get_handler[AUDIOENCODER_INTERFACE ".SampleRate"] = 
-        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
-           const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)aenc.getSampleRate());
-        };
-
-    // Set handler of ipcam.Media.AudioEncoder
-    _prop_set_handler[AUDIOENCODER_INTERFACE ".Encoding"] = 
+        },
         [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             aenc.setEncoding((IAudioEncoder::EncodingType)(uint32_t)value);
-        };
-    _prop_set_handler[AUDIOENCODER_INTERFACE ".Bitrate"] = 
+        });
+    DEFINE_PROP(AUDIOENCODER_INTERFACE ".Bitrate",
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32((uint32_t)aenc.getBitrate());
+        },
         [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             aenc.setBitrate((uint32_t)value);
-        };
-    _prop_set_handler[AUDIOENCODER_INTERFACE ".SampleRate"] = 
+        });
+    DEFINE_PROP(AUDIOENCODER_INTERFACE ".SampleRate",
+        [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
+           const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_uint32((uint32_t)aenc.getSampleRate());
+        },
         [](IAudioEncoder &aenc, DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             aenc.setSampleRate((uint32_t)value);
-        };
+        });
 }
 
 void AudioEncoder::on_get_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
-	value.clear();
-	DBus::MessageIter mi = value.writer();
+    value.clear();
 
-	if (interface.name() == "ipcam.Media.AudioEncoder") {
-		if (property == "Encoding") {
-			mi.append_uint32((uint32_t)_audio_encoder->getEncoding());
-		}
-		if (property == "Bitrate") {
-			mi.append_uint32(_audio_encoder->getBitrate());
-		}
-		else if (property == "SampleRate") {
-			mi.append_uint32(_audio_encoder->getSampleRate());
-		}
-	}
+    auto iter = _prop_handler.find(interface.name() + "." + property);
+    if (iter == _prop_handler.end())
+        throw DBus::ErrorFailed("Requested interface or property not found");
+    iter->second.Get(*_audio_encoder, interface, property, value);
 }
 
 void AudioEncoder::on_set_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
-	if (interface.name() == "ipcam.Media.AudioEncoder") {
-		if (property == "Encoding") {
-			IAudioEncoder::EncodingType encoding;
-			encoding = (IAudioEncoder::EncodingType)(uint32_t)value;
-			_audio_encoder->setEncoding(encoding);
-		}
-		if (property == "Bitrate") {
-			_audio_encoder->setBitrate(value);
-		}
-		else if (property == "SampleRate") {
-			_audio_encoder->setSampleRate(value);
-		}
-	}
+    auto iter = _prop_handler.find(interface.name() + "." + property);
+    if (iter == _prop_handler.end())
+        throw DBus::ErrorFailed("Requested interface or property not found");
+    iter->second.Set(*_audio_encoder, interface, property, value);
 }
 
 } //namespace DBus
