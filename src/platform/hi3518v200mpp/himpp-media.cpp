@@ -1415,7 +1415,7 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
 	_venc_chan1.setEncoding(IVideoEncoder::H264);
 	_venc_chan1.setResolution(r1);
 	_venc_chan1.setFramerate(15);
-	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 4);
+	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 8);
 	_sysctl.addVideoBuffer(196 * 4, 2);
 
 	_sysctl.enable();
