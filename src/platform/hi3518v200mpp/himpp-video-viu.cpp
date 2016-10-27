@@ -161,17 +161,19 @@ bool HimppViDev::enableObject()
         goto err_disable_isp;
     }
 
-#if 0
     VI_CSC_ATTR_S csc_attr;
-    csc_attr.enViCscType = VI_CSC_TYPE_709;
-    csc_attr.u32LumaVal = _brightness;
-    csc_attr.u32ContrVal = _contrast;
-    csc_attr.u32HueVal = _chroma;
-    csc_attr.u32SatuVal = _saturation;
-    if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
-        HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
+    if ((s32Ret = HI_MPI_VI_GetCSCAttr(_devid, &csc_attr)) == HI_SUCCESS) {
+        csc_attr.u32LumaVal = _brightness;
+        csc_attr.u32ContrVal = _contrast;
+        csc_attr.u32HueVal = _chroma;
+        csc_attr.u32SatuVal = _saturation;
+        if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
+            HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
+        }
     }
-#endif
+    else {
+        HIMPP_PRINT("HI_MPI_VI_GetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
+    }
 
     return true;
 

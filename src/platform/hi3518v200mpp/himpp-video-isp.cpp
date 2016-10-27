@@ -246,6 +246,33 @@ bool HimppVideoISP::enableObject()
             fprintf(stderr, "HI_MPI_ISP_SetWBType failed\n");
     }
 
+    // Initialize WideDynamicRange
+    ISP_DRC_ATTR_S wdr_attr;
+    if (HI_MPI_ISP_GetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS) {
+        wdr_attr.bEnable = \
+            (_widedynamicrange._mode == IVideoSource::Imaging::WideDynamicRange::WDR_ON) ?
+                HI_TRUE : HI_FALSE;
+        if (HI_MPI_ISP_SetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS)
+            fprintf(stderr, "HI_MPI_ISP_SetDRCAttr failed\n");
+    }
+
+    // Initialize Gamma
+    ISP_GAMMA_ATTR_S gamma_attr;
+    if (_gamma._curve_data.size() == ARRAY_SIZE(gamma_attr.u16Table)) {
+        gamma_attr.bEnable = HI_TRUE;
+        gamma_attr.enCurveType = ISP_GAMMA_CURVE_USER_DEFINE;
+        for (unsigned i = 0; i < _gamma._curve_data.size(); i++) {
+            gamma_attr.u16Table[i] = _gamma._curve_data[i];
+        }
+    }
+    else {
+        gamma_attr.bEnable = HI_TRUE;
+        gamma_attr.enCurveType = ISP_GAMMA_CURVE_DEFAULT;
+        memset(gamma_attr.u16Table, 0, sizeof(gamma_attr.u16Table));
+    }
+    if (HI_MPI_ISP_SetGammaAttr(isp_dev, &gamma_attr) != HI_SUCCESS)
+        fprintf(stderr, "HI_MPI_ISP_SetGammaAttr failed\n");
+
     return true;
 
 err_exit_isp:
