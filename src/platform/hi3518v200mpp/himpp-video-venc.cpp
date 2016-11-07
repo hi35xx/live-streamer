@@ -37,8 +37,8 @@ HimppVencChan::HimppVencChan(HimppVideoObject *source, VENC_GRP grp, VENC_CHN ch
     _crop_cfg.stRect.s32Y = 0;
 
     _mpp_chn.enModId = HI_ID_VENC;
-    _mpp_chn.s32DevId = chn;
-    _mpp_chn.s32ChnId = 0;
+    _mpp_chn.s32DevId = 0;
+    _mpp_chn.s32ChnId = chn;
 }
 
 HimppVencChan::~HimppVencChan()
