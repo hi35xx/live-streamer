@@ -106,8 +106,9 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libdbus_iface_la_LIBADD =
 am__objects_1 =
 am_libdbus_iface_la_OBJECTS = dbusxx-libev-integration.lo \
-	$(am__objects_1) dbus-audio-source.lo dbus-audio-encoder.lo \
-	dbus-video-osd.lo dbus-video-source.lo dbus-video-encoder.lo
+	$(am__objects_1) dbus-ipcam-base.lo dbus-audio-source.lo \
+	dbus-audio-encoder.lo dbus-video-osd.lo dbus-video-source.lo \
+	dbus-video-encoder.lo
 libdbus_iface_la_OBJECTS = $(am_libdbus_iface_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -383,6 +384,8 @@ libdbus_iface_la_SOURCES = \
 	dbusxx-libev-integration.cpp \
 	dbusxx-libev-integration.h \
 	$(BUILT_SOURCES) \
+	dbus-ipcam-base.cpp \
+	dbus-ipcam-base.h \
 	dbus-audio-source.cpp \
 	dbus-audio-source.h \
 	dbus-audio-encoder.cpp \
@@ -464,6 +467,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-encoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-audio-source.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-ipcam-base.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-encoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-osd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus-video-source.Plo@am__quote@

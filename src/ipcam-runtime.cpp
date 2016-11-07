@@ -17,12 +17,17 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <RTSPServer.hh>
 #include <ServerMediaSession.hh>
 #include <FramedFilter.hh>
 #include <LiveStreamInput.hh>
 #include <LiveStreamInput.hh>
 
+#include <dbus-c++/dbus.h>
 #include <ipcam-runtime.h>
 
 #include <dbus-audio-source.h>

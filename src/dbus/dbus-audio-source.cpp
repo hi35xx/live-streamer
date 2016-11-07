@@ -17,6 +17,11 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <dbus-c++/dbus.h>
 #include <ipcam-runtime.h>
 
 #include "dbus-audio-source.h"
@@ -32,26 +37,26 @@ namespace DBus {
 
 AudioSource::AudioSource
 (IpcamRuntime &runtime, std::string obj_path, IAudioSource *source)
-  : DBus::ObjectAdaptor(runtime.dbus_conn(), obj_path),
-	_runtime(runtime), _audio_source(source)
+  : IpcamBase(runtime, obj_path),
+    _audio_source(source)
 {
 	assert(source != NULL);
 
-    // Get handler of ipcam.Media.Source
+    // Handler of ipcam.Media.Source
     DEFINE_PROP(AUDIOSOURCE_INTERFACE ".Channels",
-        [](IAudioSource &asrc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_uint32(asrc.getChannels());
+            value.writer().append_uint32(_audio_source->getChannels());
         },
-        [](IAudioSource &asrc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             throw DBus::ErrorFailed("Readonly property");
         });
 }
 
-void AudioSource::on_get_property
+void AudioSource::do_property_get
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
 	value.clear();
@@ -59,16 +64,16 @@ void AudioSource::on_get_property
     auto iter = _prop_handler.find(interface.name() + "." + property);
     if (iter == _prop_handler.end())
         throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Get(*_audio_source, interface, property, value);
+    iter->second.Get(interface, property, value);
 }
 
-void AudioSource::on_set_property
+void AudioSource::do_property_set
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
     auto iter = _prop_handler.find(interface.name() + "." + property);
     if (iter == _prop_handler.end())
         throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Set(*_audio_source, interface, property, value);
+    iter->second.Set(interface, property, value);
 }
 
 } // namespace DBus

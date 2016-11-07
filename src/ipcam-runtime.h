@@ -58,9 +58,6 @@ public:
 	ev::default_loop &mainloop() { return _loop; }
 	DBus::Connection &dbus_conn() { return *_dbus_connection; }
 private:
-	class IpcamRuntimePriv;
-	IpcamRuntimePriv	*_priv;
-
 	ev::default_loop	&_loop;
 	RTSPServer          *_rtsp_server;
 	DBus::Connection    *_dbus_connection;

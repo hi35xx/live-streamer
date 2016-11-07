@@ -20,12 +20,8 @@
 #ifndef _DBUS_VIDEO_ENCODER_H_
 #define _DBUS_VIDEO_ENCODER_H_
 
-#include <map>
-#include <dbus-c++/dbus.h>
-#include <dbus-c++/error.h>
-#include "ipcam-media-iface.h"
+#include "dbus-ipcam-base.h"
 #include "dbus-video-osd.h"
-
 #include "video-encoder-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -36,34 +32,21 @@ class VideoEncoder :
   public ipcam::Media::VideoEncoder_adaptor,
   public ipcam::Media::VideoEncoder::RateControl_adaptor,
   public ipcam::Media::VideoEncoder::OSD_adaptor,
-  public DBus::IntrospectableAdaptor,
-  public DBus::PropertiesAdaptor,
-  public DBus::ObjectAdaptor
+  public DBus::IpcamBase
 {
 public:
     VideoEncoder(IpcamRuntime &runtime, std::string obj_path, IVideoEncoder *encoder);
 
-	void on_get_property
+	void do_property_get
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
-	void on_set_property
+	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 
     ::DBus::Path CreateOSD(const uint32_t& index);
     void DeleteOSD(const uint32_t& index);
     std::map<uint32_t, ::DBus::Path> GetOSDs();
 protected:
-    IpcamRuntime &_runtime;
     IVideoEncoder *_video_encoder;
-    typedef std::function<void(IVideoEncoder&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
-    typedef std::function<void(IVideoEncoder&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
-    class PropertyHandler {
-    public:
-        PropertyHandler(PropertyGet get, PropertySet set)
-            : Get(get), Set(set) {}
-        PropertyGet Get;
-        PropertySet Set;
-    };
-    std::unordered_map<std::string, PropertyHandler> _prop_handler;
 private:
     std::map<uint32_t, VideoOSD> _osds;
 };

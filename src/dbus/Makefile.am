@@ -21,6 +21,8 @@ libdbus_iface_la_SOURCES =  \
 	dbusxx-libev-integration.cpp \
 	dbusxx-libev-integration.h \
 	$(BUILT_SOURCES) \
+	dbus-ipcam-base.cpp \
+	dbus-ipcam-base.h \
 	dbus-audio-source.cpp \
 	dbus-audio-source.h \
 	dbus-audio-encoder.cpp \

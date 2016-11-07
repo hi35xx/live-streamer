@@ -20,9 +20,7 @@
 #ifndef _DBUS_AUDIO_SOURCE_H_
 #define _DBUS_AUDIO_SOURCE_H_
 
-#include <functional>
-#include <unordered_map>
-
+#include "dbus-ipcam-base.h"
 #include "audio-source-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -31,29 +29,16 @@ namespace DBus {
 
 class AudioSource :
   public ipcam::Media::AudioSource_adaptor,
-  public DBus::IntrospectableAdaptor,
-  public DBus::PropertiesAdaptor,
-  public DBus::ObjectAdaptor
+  public IpcamBase
 {
 public:
 	AudioSource(IpcamRuntime &runtime, std::string obj_path, IAudioSource *source);
-	void on_get_property
+	void do_property_get
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
-	void on_set_property
+	void do_property_set
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-	IpcamRuntime& _runtime;
-	IAudioSource* _audio_source;
-    typedef std::function<void(IAudioSource&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
-    typedef std::function<void(IAudioSource&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
-    class PropertyHandler {
-    public:
-        PropertyHandler(PropertyGet get, PropertySet set)
-            : Get(get), Set(set) {}
-        PropertyGet Get;
-        PropertySet Set;
-    };
-    std::unordered_map<std::string, PropertyHandler> _prop_handler;
+	IAudioSource *_audio_source;
 };
 
 } // namespace DBus

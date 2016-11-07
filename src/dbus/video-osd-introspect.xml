@@ -2,7 +2,7 @@
 <node>
   <interface name="ipcam.Media.OSD">
     <property name="Type" type="u" access="readwrite" />
-    <property name="Visiable" type="b" access="readwrite"/>
+    <property name="Visible" type="b" access="readwrite"/>
     <property name="Size" type="(uu)" access="readwrite"/>
     <property name="Position" type="(ii)" access="readwrite"/>
     <property name="BackgroundColor" type="u" access="readwrite"/>

@@ -20,9 +20,7 @@
 #ifndef _DBUS_VIDEO_SOURCE_H_
 #define _DBUS_VIDEO_SOURCE_H_
 
-#include <functional>
-#include <unordered_map>
-
+#include "dbus-ipcam-base.h"
 #include "video-source-server-glue.h"
 
 using namespace Ipcam::Media;
@@ -40,30 +38,17 @@ class VideoSource :
   public ipcam::Media::VideoSource::Imaging::WideDynamicRange_adaptor,
   public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
   public ipcam::Media::VideoSource::Imaging::Gamma_adaptor,
-  public DBus::IntrospectableAdaptor,
-  public DBus::PropertiesAdaptor,
-  public DBus::ObjectAdaptor
+  public IpcamBase
 {
 public:
 	VideoSource(IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source);
 
-	void on_get_property
+	void do_property_get
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
-	void on_set_property
+	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-    IpcamRuntime& _runtime;
     IVideoSource *_video_source;
-    typedef std::function<void(IVideoSource&, DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
-    typedef std::function<void(IVideoSource&, DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
-    class PropertyHandler {
-    public:
-        PropertyHandler(PropertyGet get, PropertySet set)
-            : Get(get), Set(set) {}
-        PropertyGet Get;
-        PropertySet Set;
-    };
-    std::unordered_map<std::string, PropertyHandler> _prop_handler;
 };
 
 } // namespace DBus

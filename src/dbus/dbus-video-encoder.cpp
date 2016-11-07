@@ -17,8 +17,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <dbus-c++/dbus.h>
 #include <ipcam-runtime.h>
+
 #include "dbus-video-encoder.h"
 
 namespace DBus {
@@ -34,73 +39,73 @@ namespace DBus {
 
 VideoEncoder::VideoEncoder
 (IpcamRuntime &runtime, std::string obj_path, IVideoEncoder *encoder)
-  : DBus::ObjectAdaptor(runtime.dbus_conn(), obj_path),
-    _runtime(runtime), _video_encoder(encoder)
+  : IpcamBase(runtime, obj_path),
+    _video_encoder(encoder)
 {
     assert(encoder != NULL);
 
-    // Get handler of ipcam.Media.VideoEncoder
+    // Handler of ipcam.Media.VideoEncoder
     DEFINE_PROP(VIDEOENCODER_INTERFACE ".Encoding",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_uint32((uint32_t)venc.getEncoding());
+            value.writer().append_uint32((uint32_t)_video_encoder->getEncoding());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             throw DBus::ErrorFailed("Readonly property");
         });
     DEFINE_PROP(VIDEOENCODER_INTERFACE ".Resolution",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_string(((std::string)venc.getResolution()).c_str());
+            value.writer().append_string(((std::string)_video_encoder->getResolution()).c_str());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             std::string s = value;
             ImageResolution r(s);
-            venc.setResolution(r);
+            _video_encoder->setResolution(r);
         });
-    // Get handler of ipcam.Media.VideoEncoder.RateControl
+    // Handler of ipcam.Media.VideoEncoder.RateControl
     DEFINE_PROP(RATECONTROL_INTERFACE ".RateControlMode",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_uint32(venc.getRcMode());
+            value.writer().append_uint32(_video_encoder->getRcMode());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
-            venc.setRcMode((IVideoEncoder::RateCtrlMode)(uint32_t)value);
+            _video_encoder->setRcMode((IVideoEncoder::RateCtrlMode)(uint32_t)value);
         });
     DEFINE_PROP(RATECONTROL_INTERFACE ".FrameRate",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_uint32(venc.getFramerate());
+            value.writer().append_uint32(_video_encoder->getFramerate());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
-            venc.setFramerate((uint32_t)value);
+            _video_encoder->setFramerate((uint32_t)value);
         });
     DEFINE_PROP(RATECONTROL_INTERFACE ".Bitrate",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
-            value.writer().append_uint32(venc.getBitrate());
+            value.writer().append_uint32(_video_encoder->getBitrate());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
-            venc.setBitrate((uint32_t)value);
+            _video_encoder->setBitrate((uint32_t)value);
         });
 }
 
-void VideoEncoder::on_get_property
+void VideoEncoder::do_property_get
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
     value.clear();
@@ -108,16 +113,16 @@ void VideoEncoder::on_get_property
     auto iter = _prop_handler.find(interface.name() + "." + property);
     if (iter == _prop_handler.end())
         throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Get(*_video_encoder, interface, property, value);
+    iter->second.Get(interface, property, value);
 }
 
-void VideoEncoder::on_set_property
+void VideoEncoder::do_property_set
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
     auto iter = _prop_handler.find(interface.name() + "." + property);
     if (iter == _prop_handler.end())
         throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Set(*_video_encoder, interface, property, value);
+    iter->second.Set(interface, property, value);
 }
 
 DBus::Path VideoEncoder::CreateOSD(const uint32_t& index)
@@ -161,35 +166,35 @@ H264VideoEncoder::H264VideoEncoder
 {
     assert(encoder != NULL);
 
-    // Get handler of ipcam.Media.VideoEncoder
+    // Handler of ipcam.Media.VideoEncoder
     DEFINE_PROP(H264_INTERFACE ".H264Profile",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
             IH264VideoEncoder *h264venc
-                = dynamic_cast<IH264VideoEncoder*>(&venc);
+                = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
             value.writer().append_uint32((uint32_t)h264venc->getProfile());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             IH264VideoEncoder *h264venc
-                = dynamic_cast<IH264VideoEncoder*>(&venc);
+                = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
             h264venc->setProfile((IH264VideoEncoder::H264Profile)(uint32_t)value);
         });
     DEFINE_PROP(H264_INTERFACE ".GovLength",
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, DBus::Variant &value)
         {
             IH264VideoEncoder *h264venc
-                = dynamic_cast<IH264VideoEncoder*>(&venc);
+                = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
             value.writer().append_uint32((uint32_t)h264venc->getGovLength());
         },
-        [](IVideoEncoder &venc, DBus::InterfaceAdaptor &interface,
+        [this](DBus::InterfaceAdaptor &interface,
            const std::string &property, const DBus::Variant &value)
         {
             IH264VideoEncoder *h264venc
-                = dynamic_cast<IH264VideoEncoder*>(&venc);
+                = dynamic_cast<IH264VideoEncoder*>(_video_encoder);
             h264venc->setGovLength((uint32_t)value);
         });
 }

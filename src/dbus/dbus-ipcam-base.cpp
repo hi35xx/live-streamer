@@ -1,6 +1,6 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * dbus-video-osd.h
+ * dbus-ipcam-base.cpp
  * Copyright (C) 2016 Watson Xu <xuhuashan@gmail.com>
  *
  * live-streamer is free software: you can redistribute it and/or modify it
@@ -17,32 +17,32 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _DBUS_VIDEO_OSD_H_
-#define _DBUS_VIDEO_OSD_H_
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-#include "ipcam-video-osd.h"
+#include <dbus/dbus.h>
+#include <dbus-c++/dbus.h>
+#include <ipcam-runtime.h>
 #include "dbus-ipcam-base.h"
-#include "video-osd-server-glue.h"
 
-using namespace Ipcam::Media;
+using namespace DBus;
 
-namespace DBus {
-
-class VideoOSD:
-  public ipcam::Media::OSD_adaptor,
-  public IpcamBase
+IpcamBase::IpcamBase(IpcamRuntime &runtime, const Path &path)
+  : ObjectAdaptor(runtime.dbus_conn(), path),
+    _runtime(runtime)
 {
-public:
-	VideoOSD(IpcamRuntime& runtime, std::string obj_path, IVideoOSD *video_osd);
-	void do_property_get
-		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
-	void do_property_set
-		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
-protected:
-	IpcamVideoOSD _video_osd;
-};
+}
 
-} // namespace DBus
+void IpcamBase::on_get_property
+(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
+{
+    value.clear();
+	do_property_get(interface, property, value);
+}
 
-#endif // _DBUS_VIDEO_OSD_H_
-
+void IpcamBase::on_set_property
+(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
+{
+	do_property_set(interface, property, value);
+}
