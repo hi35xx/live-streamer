@@ -55,9 +55,9 @@ void HimppVideoSource::setResolution(ImageResolution &res)
 	throw IpcamError("Readonly property");
 }
 
-IVideoSource::Imaging* HimppVideoSource::getImaging()
+IVideoSource::Imaging& HimppVideoSource::getImaging()
 {
-	return dynamic_cast<IVideoSource::Imaging*>(&_imaging);
+	return _imaging;
 }
 
 
@@ -152,42 +152,42 @@ void HimppVideoSource::Imaging::setIrCutFilterMode
 	throw IpcamError("Not implemented");
 }
 
-IVideoSource::Imaging::AntiFlicker* HimppVideoSource::Imaging::getAntiFlicker()
+IVideoSource::Imaging::AntiFlicker& HimppVideoSource::Imaging::getAntiFlicker()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
+IVideoSource::Imaging::Backlight& HimppVideoSource::Imaging::getBacklight()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Focus* HimppVideoSource::Imaging::getFocus()
+IVideoSource::Imaging::Focus& HimppVideoSource::Imaging::getFocus()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Exposure* HimppVideoSource::Imaging::getExposure()
+IVideoSource::Imaging::Exposure& HimppVideoSource::Imaging::getExposure()
 {
-	return dynamic_cast<IVideoSource::Imaging::Exposure*>(&_exposure);
+	return _exposure;
 }
 
-IVideoSource::Imaging::WhiteBalance* HimppVideoSource::Imaging::getWhiteBalance()
+IVideoSource::Imaging::WhiteBalance& HimppVideoSource::Imaging::getWhiteBalance()
 {
-	return dynamic_cast<IVideoSource::Imaging::WhiteBalance*>(&_white_balance);
+	return _white_balance;
 }
 
-IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynamicRange()
-{
-	throw IpcamError("Request interface not implemented");
-}
-
-IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
+IVideoSource::Imaging::WideDynamicRange& HimppVideoSource::Imaging::getWideDynamicRange()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Gamma* HimppVideoSource::Imaging::getGamma()
+IVideoSource::Imaging::LDC& HimppVideoSource::Imaging::getLDC()
+{
+	throw IpcamError("Request interface not implemented");
+}
+
+IVideoSource::Imaging::Gamma& HimppVideoSource::Imaging::getGamma()
 {
 	throw IpcamError("Request interface not implemented");
 }

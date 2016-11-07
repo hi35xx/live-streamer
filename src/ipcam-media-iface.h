@@ -240,14 +240,14 @@ public:
         virtual IrCutFilterMode     getIrCutFilterMode() = 0;
         virtual void                setIrCutFilterMode(IrCutFilterMode value) = 0;
 
-        virtual AntiFlicker*        getAntiFlicker() = 0;
-        virtual Backlight*          getBacklight() = 0;
-        virtual Focus*              getFocus() = 0;
-        virtual Exposure*           getExposure() = 0;
-        virtual WhiteBalance*       getWhiteBalance() = 0;
-        virtual WideDynamicRange*   getWideDynamicRange() = 0;
-        virtual LDC*                getLDC() = 0;
-        virtual Gamma*              getGamma() = 0;
+        virtual AntiFlicker&        getAntiFlicker() = 0;
+        virtual Backlight&          getBacklight() = 0;
+        virtual Focus&              getFocus() = 0;
+        virtual Exposure&           getExposure() = 0;
+        virtual WhiteBalance&       getWhiteBalance() = 0;
+        virtual WideDynamicRange&   getWideDynamicRange() = 0;
+        virtual LDC&                getLDC() = 0;
+        virtual Gamma&              getGamma() = 0;
     };
 public:
     virtual ~IVideoSource() {}
@@ -256,7 +256,7 @@ public:
     virtual ImageResolution getResolution() = 0;
     virtual void        setResolution(ImageResolution &value) = 0;
 
-    virtual Imaging*    getImaging() = 0;
+    virtual Imaging&    getImaging() = 0;
 };
 
 

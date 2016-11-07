@@ -116,14 +116,14 @@ public:
         IVideoSource::Imaging::IrCutFilterMode getIrCutFilterMode();
         void        setIrCutFilterMode(IVideoSource::Imaging::IrCutFilterMode value);
 
-        IVideoSource::Imaging::AntiFlicker*      getAntiFlicker();
-        IVideoSource::Imaging::Backlight*        getBacklight();
-        IVideoSource::Imaging::Focus*            getFocus();
-        IVideoSource::Imaging::Exposure*         getExposure();
-        IVideoSource::Imaging::WhiteBalance*     getWhiteBalance();
-        IVideoSource::Imaging::WideDynamicRange* getWideDynamicRange();
-        IVideoSource::Imaging::LDC*              getLDC();
-        IVideoSource::Imaging::Gamma*            getGamma();
+        IVideoSource::Imaging::AntiFlicker&      getAntiFlicker();
+        IVideoSource::Imaging::Backlight&        getBacklight();
+        IVideoSource::Imaging::Focus&            getFocus();
+        IVideoSource::Imaging::Exposure&         getExposure();
+        IVideoSource::Imaging::WhiteBalance&     getWhiteBalance();
+        IVideoSource::Imaging::WideDynamicRange& getWideDynamicRange();
+        IVideoSource::Imaging::LDC&              getLDC();
+        IVideoSource::Imaging::Gamma&            getGamma();
     private:
         HimppVideoSource& _source;
         Exposure        _exposure;
@@ -139,7 +139,7 @@ public:
     void        setResolution(ImageResolution &res);
     ImageResolution getResolution();
     // imaging method
-    IVideoSource::Imaging*    getImaging();
+    IVideoSource::Imaging&    getImaging();
 private:
     Hi3520mppMedia& _media;
     Imaging         _imaging;

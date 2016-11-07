@@ -55,9 +55,9 @@ void HimppVideoSource::setResolution(ImageResolution &res)
 	throw IpcamError("Readonly property");
 }
 
-IVideoSource::Imaging* HimppVideoSource::getImaging()
+IVideoSource::Imaging& HimppVideoSource::getImaging()
 {
-	return dynamic_cast<IVideoSource::Imaging*>(&_imaging);
+	return _imaging;
 }
 
 
@@ -154,44 +154,44 @@ void HimppVideoSource::Imaging::setIrCutFilterMode
 	throw IpcamError("Not implemented");
 }
 
-IVideoSource::Imaging::AntiFlicker* HimppVideoSource::Imaging::getAntiFlicker()
+IVideoSource::Imaging::AntiFlicker& HimppVideoSource::Imaging::getAntiFlicker()
 {
-	return dynamic_cast<IVideoSource::Imaging::AntiFlicker*>(&_anti_flicker);
+	return _anti_flicker;
 }
 
-IVideoSource::Imaging::Backlight* HimppVideoSource::Imaging::getBacklight()
+IVideoSource::Imaging::Backlight& HimppVideoSource::Imaging::getBacklight()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Focus* HimppVideoSource::Imaging::getFocus()
+IVideoSource::Imaging::Focus& HimppVideoSource::Imaging::getFocus()
 {
 	throw IpcamError("Request interface not implemented");
 }
 
-IVideoSource::Imaging::Exposure* HimppVideoSource::Imaging::getExposure()
+IVideoSource::Imaging::Exposure& HimppVideoSource::Imaging::getExposure()
 {
-	return dynamic_cast<IVideoSource::Imaging::Exposure*>(&_exposure);
+	return _exposure;
 }
 
-IVideoSource::Imaging::WhiteBalance* HimppVideoSource::Imaging::getWhiteBalance()
+IVideoSource::Imaging::WhiteBalance& HimppVideoSource::Imaging::getWhiteBalance()
 {
-	return dynamic_cast<IVideoSource::Imaging::WhiteBalance*>(&_white_balance);
+	return _white_balance;
 }
 
-IVideoSource::Imaging::WideDynamicRange* HimppVideoSource::Imaging::getWideDynamicRange()
+IVideoSource::Imaging::WideDynamicRange& HimppVideoSource::Imaging::getWideDynamicRange()
 {
-	return dynamic_cast<IVideoSource::Imaging::WideDynamicRange*>(&_wide_dynamic_range);
+	return _wide_dynamic_range;
 }
 
-IVideoSource::Imaging::LDC* HimppVideoSource::Imaging::getLDC()
+IVideoSource::Imaging::LDC& HimppVideoSource::Imaging::getLDC()
 {
-	return dynamic_cast<IVideoSource::Imaging::LDC*>(&_ldc);
+	return _ldc;
 }
 
-IVideoSource::Imaging::Gamma* HimppVideoSource::Imaging::getGamma()
+IVideoSource::Imaging::Gamma& HimppVideoSource::Imaging::getGamma()
 {
-	return dynamic_cast<IVideoSource::Imaging::Gamma*>(&_gamma);
+	return _gamma;
 }
 
 
