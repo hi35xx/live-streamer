@@ -33,7 +33,7 @@ static inline HI_S32 argb1555_to_lum(HI_U32 color)
 }
 
 HimppVideoRegion::HimppVideoRegion(HimppVideoObject *source, RGN_HANDLE handle)
-	:_source(source), _rgn_handle(handle), _enabled(false),
+	:_source(source), _rgn_handle(handle), _enabled(false), _visible(HI_FALSE),
 	 _fgcolor(0xFFFFFF), _bgcolor(0), _fgalpha(128), _bgalpha(0),
 	 _layer(0), _invert_color(HI_FALSE)
 {
@@ -79,7 +79,7 @@ bool HimppVideoRegion::enable()
 	}
 
 	memset(&chn_attr, 0, sizeof(chn_attr));
-	chn_attr.bShow = HI_TRUE;
+	chn_attr.bShow = _visible;
 	chn_attr.enType = OVERLAY_RGN;
 	chn_attr.unChnAttr.stOverlayChn.stPoint.s32X = _position.s32X;
 	chn_attr.unChnAttr.stOverlayChn.stPoint.s32Y = _position.s32Y;
@@ -138,6 +138,36 @@ bool HimppVideoRegion::disable()
 	}
 
 	_enabled = false;
+
+	return true;
+}
+
+HI_BOOL HimppVideoRegion::getVisible()
+{
+	return _visible;
+}
+
+bool HimppVideoRegion::setVisible(HI_BOOL val)
+{
+	if (isEnabled()) {
+		HI_S32 s32Ret;
+		RGN_CHN_ATTR_S chn_attr;
+
+		s32Ret = HI_MPI_RGN_GetDisplayAttr(_rgn_handle, (MPP_CHN_S *)*_source, &chn_attr);
+		if (s32Ret != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_RGN_GetDisplayAttr(%d) failed [%#x]\n",
+			            _rgn_handle, s32Ret);
+			return false;
+		}
+		chn_attr.bShow = _visible;
+		s32Ret = HI_MPI_RGN_SetDisplayAttr(_rgn_handle, (MPP_CHN_S *)*_source, &chn_attr);
+		if (s32Ret != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_RGN_SetDisplayAttr(%d) failed [%#x]\n",
+			            _rgn_handle, s32Ret);
+			return false;
+		}
+	}
+	_visible = val;
 
 	return true;
 }

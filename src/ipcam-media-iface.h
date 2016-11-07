@@ -86,6 +86,8 @@ public:
     };
 public:
     virtual ~IVideoOSD() {}
+    virtual bool        getVisible() = 0;
+    virtual void        setVisible(bool val) = 0;
     virtual Position    getPosition() = 0;
     virtual void        setPosition(Position pos) = 0;
     virtual Size        getSize() = 0;

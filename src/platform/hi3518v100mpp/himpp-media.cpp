@@ -685,6 +685,16 @@ HimppVideoOSD::~HimppVideoOSD()
 		SDL_FreeSurface(_surface);
 }
 
+bool HimppVideoOSD::getVisible()
+{
+	return (bool)_region.getVisible();
+}
+
+void HimppVideoOSD::setVisible(bool val)
+{
+	_region.setVisible((HI_BOOL)val);
+}
+
 IVideoOSD::Position HimppVideoOSD::getPosition()
 {
 	POINT_S pt = _region.getPosition();

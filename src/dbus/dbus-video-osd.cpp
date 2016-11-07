@@ -54,6 +54,17 @@ VideoOSD::VideoOSD
         {
             _video_osd.setType((IpcamVideoOSD::OSDType)(uint32_t)value);
         });
+	DEFINE_PROP(OSD_INTERFACE ".Visible",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+        {
+            value.writer().append_bool(_video_osd.getVisible());
+        },
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+        {
+            _video_osd.setVisible((bool)value);
+        });
 	DEFINE_PROP(OSD_INTERFACE ".Size",
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)

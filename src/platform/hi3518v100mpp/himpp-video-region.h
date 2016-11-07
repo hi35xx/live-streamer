@@ -34,6 +34,8 @@ public:
 	bool isEnabled() { return _enabled; }
 	uint32_t id() { return (uint32_t)_rgn_handle; }
 
+	HI_BOOL getVisible();
+	bool setVisible(HI_BOOL val);
 	SIZE_S getSize();
 	bool setSize(SIZE_S size);
 	HI_U32 getFgColor();
@@ -59,6 +61,7 @@ private:
 	RGN_HANDLE	_rgn_handle;
 	bool		_enabled;
 
+	HI_BOOL		_visible;
 	SIZE_S		_size;
 	HI_U32		_fgcolor;
 	HI_U32		_bgcolor;

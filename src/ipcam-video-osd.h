@@ -39,6 +39,8 @@ public:
 
 	OSDType			getType();
 	void			setType(OSDType val);
+	bool			getVisible();
+	void			setVisible(bool val);
 	IVideoOSD::Position	getPosition();
 	void			setPosition(IVideoOSD::Position val);
 	IVideoOSD::Size	getSize();

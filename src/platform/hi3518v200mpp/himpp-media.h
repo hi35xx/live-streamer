@@ -209,6 +209,8 @@ public:
     HimppVideoOSD(Hi3518mppMedia &media, HimppVencChan &venc_chan, uint32_t id);
     ~HimppVideoOSD();
 
+    bool getVisible();
+    void setVisible(bool val);
     Position getPosition();
     void setPosition(Position pos);
     Size getSize();

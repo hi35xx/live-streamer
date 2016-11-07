@@ -167,6 +167,16 @@ void IpcamVideoOSD::setType(OSDType val)
 	_osd_type = val;
 }
 
+bool IpcamVideoOSD::getVisible()
+{
+	return _video_osd->getVisible();
+}
+
+void IpcamVideoOSD::setVisible(bool val)
+{
+	_video_osd->setVisible(val);
+}
+
 IVideoOSD::Position	IpcamVideoOSD::getPosition()
 {
 	return _video_osd->getPosition();
