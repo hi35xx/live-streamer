@@ -248,7 +248,7 @@ bool HimppVideoISP::enableObject()
 
     // Initialize WideDynamicRange
     ISP_DRC_ATTR_S wdr_attr;
-    if (HI_MPI_ISP_GetDRCAttr(isp_dev, &wdr_attr) != HI_SUCCESS) {
+    if (HI_MPI_ISP_GetDRCAttr(isp_dev, &wdr_attr) == HI_SUCCESS) {
         wdr_attr.bEnable = \
             (_widedynamicrange._mode == IVideoSource::Imaging::WideDynamicRange::WDR_ON) ?
                 HI_TRUE : HI_FALSE;
