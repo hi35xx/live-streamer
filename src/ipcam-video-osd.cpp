@@ -63,7 +63,7 @@ static TTF_Font *getFont(const char *name)
 	}
 
 	FcChar8 *fontname = FcNameUnparse(m);
-	char *colon = strchr((const char *) fontname, ':');
+	char *colon = strchr((char *) fontname, ':');
 	if (colon)
 		*colon = '\0';
 	printf("Found font '%s'\n", fontname);

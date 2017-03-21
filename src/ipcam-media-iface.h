@@ -340,6 +340,7 @@ public:
     virtual bool unregisterConsumer(StreamDataConsumer *consumer) = 0;
     virtual void enableStreaming() = 0;
     virtual void disableStreaming() = 0;
+    virtual void requestIDR() = 0;
 };
 
 

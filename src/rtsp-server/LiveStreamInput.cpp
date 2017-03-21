@@ -251,6 +251,30 @@ RTPSink* LiveVideoServerMediaSubsession
     return rtp_sink;
 }
 
+void LiveVideoServerMediaSubsession
+::startStream(unsigned clientSessionId, void* streamToken,
+              TaskFunc* rtcpRRHandler,
+              void* rtcpRRHandlerClientData,
+              unsigned short& rtpSeqNum,
+              unsigned& rtpTimestamp,
+              ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+              void* serverRequestAlternativeByteHandlerClientData)
+{
+    OnDemandServerMediaSubsession::startStream(clientSessionId, streamToken, rtcpRRHandler,
+                                               rtcpRRHandlerClientData,
+                                               rtpSeqNum,
+                                               rtpTimestamp,
+                                               serverRequestAlternativeByteHandler,
+                                               serverRequestAlternativeByteHandlerClientData);
+    fVideoStream.requestIDR();
+}
+
+void LiveVideoServerMediaSubsession
+::pauseStream(unsigned clientSessionId, void* streamToken)
+{
+    OnDemandServerMediaSubsession::pauseStream(clientSessionId, streamToken);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Audio

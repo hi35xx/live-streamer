@@ -35,6 +35,15 @@ public:
   void checkForAuxSDPLine1();
   void afterPlayingDummy1();
 
+  void startStream(unsigned clientSessionId, void* streamToken,
+                   TaskFunc* rtcpRRHandler,
+                   void* rtcpRRHandlerClientData,
+                   unsigned short& rtpSeqNum,
+                   unsigned& rtpTimestamp,
+                   ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+                   void* serverRequestAlternativeByteHandlerClientData);
+  void pauseStream(unsigned clientSessionId, void* streamToken);
+
 protected:
   LiveVideoServerMediaSubsession(UsageEnvironment& env, IVideoStream& stream);
       // called only by createNew();

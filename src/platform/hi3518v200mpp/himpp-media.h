@@ -275,6 +275,7 @@ public:
     bool unregisterConsumer(StreamDataConsumer *consumer);
     void enableStreaming();
     void disableStreaming();
+    void requestIDR();
 
 private:
     void watch_handler(ev::io &w, int revents);

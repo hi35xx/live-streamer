@@ -46,6 +46,8 @@ public:
     bool setGop(uint32_t);
     uint32_t getGop();
 
+    void requestIDR();
+
     operator MPP_CHN_S* ();
     bool setResolution(ImageResolution &res);
     ImageResolution getResolution();

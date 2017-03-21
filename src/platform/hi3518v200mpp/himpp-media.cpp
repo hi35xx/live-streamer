@@ -1164,6 +1164,11 @@ void HimppVideoStream::disableStreaming()
 	_io.stop();
 }
 
+void HimppVideoStream::requestIDR()
+{
+	_venc_chan.requestIDR();
+}
+
 void HimppVideoStream::watch_handler(ev::io &w, int revents)
 {
 	if (!(revents & ev::READ))

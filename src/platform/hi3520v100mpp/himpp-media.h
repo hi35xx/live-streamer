@@ -220,6 +220,8 @@ public:
     bool unregisterConsumer(StreamDataConsumer *consumer);
     void enableStreaming();
     void disableStreaming();
+    void requestIDR();
+
 private:
     IpcamRuntime*       _runtime;
     HimppVencChan&      _venc_chan;

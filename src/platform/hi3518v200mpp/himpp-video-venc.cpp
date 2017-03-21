@@ -133,6 +133,17 @@ uint32_t HimppVencChan::getGop()
     return _gop;
 }
 
+void HimppVencChan::requestIDR()
+{
+    if (isEnabled()) {
+        HI_S32 s32Ret = HI_MPI_VENC_RequestIDR(_chnid, HI_TRUE);
+        if (s32Ret != HI_SUCCESS) {
+            HIMPP_PRINT("HI_MPI_VENC_RequestIDR %d failed [%#x]\n",
+                        _chnid, s32Ret);
+        }
+    }
+}
+
 HimppVencChan::operator MPP_CHN_S* ()
 {
     return &_mpp_chn;
