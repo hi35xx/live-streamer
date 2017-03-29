@@ -17,27 +17,27 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <alloca.h>
-
 #include <SimpleRTPSink.hh>
 #include <H264VideoRTPSink.hh>
 #include <H264VideoStreamDiscreteFramer.hh>
+#include <JPEGVideoSource.hh>
+#include <JPEGVideoRTPSink.hh>
 
 #include "LiveStreamInput.hh"
 
 
-class LiveVideoStreamSource: public FramedSource, public StreamDataConsumer
+class LiveH264StreamSource: public FramedSource, public StreamDataConsumer
 {
 public:
-    static LiveVideoStreamSource* createNew(UsageEnvironment& env, IVideoStream& stream);
+    static LiveH264StreamSource* createNew(UsageEnvironment& env, IVideoStream& stream);
 
     int &referenceCount() { return fReferenceCount; }
 
-    void streamData(StreamData &data);
+    void streamData(FrameData& data, void* info);
 protected:
-    LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream);
+    LiveH264StreamSource(UsageEnvironment& env, IVideoStream& stream);
     // called only by createNew(), or by subclass constructors
-    virtual ~LiveVideoStreamSource();
+    virtual ~LiveH264StreamSource();
 
 private:
     // redefined virtual functions:
@@ -50,42 +50,41 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-// LiveVideoStreamSource
+// LiveH264StreamSource
 //////////////////////////////////////////////////////////////////////////////
 
-LiveVideoStreamSource*
-LiveVideoStreamSource::createNew(UsageEnvironment& env, IVideoStream& stream)
+LiveH264StreamSource*
+LiveH264StreamSource::createNew(UsageEnvironment& env, IVideoStream& stream)
 {
-    return new LiveVideoStreamSource(env, stream);
+    return new LiveH264StreamSource(env, stream);
 }
 
-LiveVideoStreamSource::LiveVideoStreamSource(UsageEnvironment& env, IVideoStream& stream)
+LiveH264StreamSource::LiveH264StreamSource(UsageEnvironment& env, IVideoStream& stream)
 : FramedSource(env), fVideoStream(stream), fReferenceCount(1)
 {
     fVideoStream.registerConsumer(this);
 }
 
-LiveVideoStreamSource::~LiveVideoStreamSource()
+LiveH264StreamSource::~LiveH264StreamSource()
 {
     fVideoStream.unregisterConsumer(this);
 }
 
-void LiveVideoStreamSource::streamData(StreamData &data)
+void LiveH264StreamSource::streamData(FrameData& data, void* info)
 {
     // check if we're ready for the data
     if (!isCurrentlyAwaitingData()) {
-        envir() << "WARN: LiveVideoStreamSource is not ready for data yet\n";
+        envir() << "WARN: LiveH264StreamSource is not ready for data yet\n";
         return;
     }
 
     fPresentationTime = data.tstamp;
     fFrameSize = 0;
-    for (int i = 0; i < (int)data.pack_count; i++) {
+    for (unsigned i = 0; i < data.pack_count; i++) {
         uint8_t *ptr = data.pack[i].addr;
         uint32_t len = data.pack[i].len;
 
-        if ((ptr == NULL) || (len == 0))
-            break;
+        if ((ptr == NULL) || (len == 0)) break;
 
         if (len >= 4 && ptr[0] == 0x00 && ptr[1] == 0x00
             && ptr[2] == 0x00 && ptr[3] == 0x01)
@@ -97,8 +96,7 @@ void LiveVideoStreamSource::streamData(StreamData &data)
         if (fFrameSize + len < fMaxSize) {
             memmove(&fTo[fFrameSize], ptr, len);
             fFrameSize += len;
-        }
-        else {
+        } else {
             fNumTruncatedBytes += len;
         }
     }
@@ -109,46 +107,46 @@ void LiveVideoStreamSource::streamData(StreamData &data)
     FramedSource::afterGetting(this);
 }
 
-void LiveVideoStreamSource::doGetNextFrame()
+void LiveH264StreamSource::doGetNextFrame()
 {
     fVideoStream.enableStreaming();
 }
 
-void LiveVideoStreamSource::doStopGettingFrames()
+void LiveH264StreamSource::doStopGettingFrames()
 {
     fVideoStream.disableStreaming();
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
-// LiveVideoServerMediaSubsession
+// LiveH264VideoServerMediaSubsession
 //////////////////////////////////////////////////////////////////////////////
 
-LiveVideoServerMediaSubsession*
-LiveVideoServerMediaSubsession::createNew(UsageEnvironment& env, IVideoStream& stream)
+LiveH264VideoServerMediaSubsession*
+LiveH264VideoServerMediaSubsession::createNew(UsageEnvironment& env, IH264VideoStream& stream)
 {
-  return new LiveVideoServerMediaSubsession(env, stream);
+  return new LiveH264VideoServerMediaSubsession(env, stream);
 }
 
-LiveVideoServerMediaSubsession
-::LiveVideoServerMediaSubsession(UsageEnvironment& env, IVideoStream& stream)
+LiveH264VideoServerMediaSubsession
+::LiveH264VideoServerMediaSubsession(UsageEnvironment& env, IH264VideoStream& stream)
     : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
       fVideoStream(stream), fStreamSource(NULL),
       fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
 {
 }
 
-LiveVideoServerMediaSubsession::~LiveVideoServerMediaSubsession()
+LiveH264VideoServerMediaSubsession::~LiveH264VideoServerMediaSubsession()
 {
     delete[] fAuxSDPLine;
 }
 
 static void afterPlayingDummy(void* clientData) {
-    LiveVideoServerMediaSubsession* subsess = (LiveVideoServerMediaSubsession*)clientData;
+    LiveH264VideoServerMediaSubsession* subsess = (LiveH264VideoServerMediaSubsession*)clientData;
     subsess->afterPlayingDummy1();
 }
 
-void LiveVideoServerMediaSubsession::afterPlayingDummy1()
+void LiveH264VideoServerMediaSubsession::afterPlayingDummy1()
 {
     // Unschedule any pending 'checking' task:
     envir().taskScheduler().unscheduleDelayedTask(nextTask());
@@ -158,11 +156,11 @@ void LiveVideoServerMediaSubsession::afterPlayingDummy1()
 
 static void checkForAuxSDPLine(void* clientData)
 {
-    LiveVideoServerMediaSubsession* subsess = (LiveVideoServerMediaSubsession*)clientData;
+    LiveH264VideoServerMediaSubsession* subsess = (LiveH264VideoServerMediaSubsession*)clientData;
     subsess->checkForAuxSDPLine1();
 }
 
-void LiveVideoServerMediaSubsession::checkForAuxSDPLine1()
+void LiveH264VideoServerMediaSubsession::checkForAuxSDPLine1()
 {
     char const* dasl;
 
@@ -183,7 +181,7 @@ void LiveVideoServerMediaSubsession::checkForAuxSDPLine1()
     }
 }
 
-char const* LiveVideoServerMediaSubsession
+char const* LiveH264VideoServerMediaSubsession
 ::getAuxSDPLine(RTPSink* rtpSink, FramedSource* inputSource)
 {
     if (fAuxSDPLine != NULL) return fAuxSDPLine; // it's already been set up (for a previous client)
@@ -206,26 +204,26 @@ char const* LiveVideoServerMediaSubsession
     return fAuxSDPLine;
 }
 
-FramedSource* LiveVideoServerMediaSubsession
+FramedSource* LiveH264VideoServerMediaSubsession
 ::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate)
 {
     estBitrate = fVideoStream.getBitrate(); // kbps, estimate
 
     // StreamSource has been already created
     if (fStreamSource) {
-        LiveVideoStreamSource *liveSource =
-            dynamic_cast<LiveVideoStreamSource*>(fStreamSource->inputSource());
+        LiveH264StreamSource *liveSource =
+            dynamic_cast<LiveH264StreamSource*>(fStreamSource->inputSource());
         liveSource->referenceCount()++;
         return fStreamSource;
     }
 
     // Create the video source:
-    LiveVideoStreamSource *source = LiveVideoStreamSource::createNew(envir(), fVideoStream);
+    LiveH264StreamSource *source = LiveH264StreamSource::createNew(envir(), fVideoStream);
     fStreamSource = H264VideoStreamDiscreteFramer::createNew(envir(), source);
     return fStreamSource;
 }
 
-void LiveVideoServerMediaSubsession::closeStreamSource(FramedSource *inputSource)
+void LiveH264VideoServerMediaSubsession::closeStreamSource(FramedSource *inputSource)
 {
     // Sanity check, should not happend
     if (fStreamSource != inputSource) {
@@ -233,15 +231,15 @@ void LiveVideoServerMediaSubsession::closeStreamSource(FramedSource *inputSource
         return;
     }
 
-    LiveVideoStreamSource *liveSource =
-        dynamic_cast<LiveVideoStreamSource*>(fStreamSource->inputSource());
+    LiveH264StreamSource *liveSource =
+        dynamic_cast<LiveH264StreamSource*>(fStreamSource->inputSource());
     if (--liveSource->referenceCount() == 0) {
         Medium::close(fStreamSource);
         fStreamSource = NULL;
     }
 }
 
-RTPSink* LiveVideoServerMediaSubsession
+RTPSink* LiveH264VideoServerMediaSubsession
 ::createNewRTPSink(Groupsock* rtpGroupsock,
 		   unsigned char rtpPayloadTypeIfDynamic,
 		   FramedSource* /*inputSource*/)
@@ -251,7 +249,7 @@ RTPSink* LiveVideoServerMediaSubsession
     return rtp_sink;
 }
 
-void LiveVideoServerMediaSubsession
+void LiveH264VideoServerMediaSubsession
 ::startStream(unsigned clientSessionId, void* streamToken,
               TaskFunc* rtcpRRHandler,
               void* rtcpRRHandlerClientData,
@@ -269,10 +267,166 @@ void LiveVideoServerMediaSubsession
     fVideoStream.requestIDR();
 }
 
-void LiveVideoServerMediaSubsession
+void LiveH264VideoServerMediaSubsession
 ::pauseStream(unsigned clientSessionId, void* streamToken)
 {
     OnDemandServerMediaSubsession::pauseStream(clientSessionId, streamToken);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// LiveJPEGStreamSource
+//////////////////////////////////////////////////////////////////////////////
+
+class LiveJPEGStreamSource: public JPEGVideoSource, public StreamDataConsumer
+{
+public:
+  static LiveJPEGStreamSource* createNew(UsageEnvironment& env, IVideoStream& stream);
+
+protected:
+  LiveJPEGStreamSource(UsageEnvironment& env, IVideoStream& stream);
+  virtual ~LiveJPEGStreamSource();
+
+  void streamData(FrameData& data, void* info);
+
+protected: // redefined virtual functions
+  virtual void doGetNextFrame();
+  virtual void doStopGettingFrames();
+  virtual u_int8_t type();
+  virtual u_int8_t qFactor();
+  virtual u_int8_t width();
+  virtual u_int8_t height();
+
+private:
+  IVideoStream& fVideoStream;
+  u_int8_t fLastQFactor;
+  u_int8_t fLastWidth, fLastHeight; // actual dimensions / 8
+};
+
+LiveJPEGStreamSource*
+LiveJPEGStreamSource::createNew(UsageEnvironment& env, IVideoStream& stream)
+{
+    return new LiveJPEGStreamSource(env, stream);
+}
+
+LiveJPEGStreamSource
+::LiveJPEGStreamSource(UsageEnvironment& env, IVideoStream& stream)
+  : JPEGVideoSource(env),
+    fVideoStream(stream), fLastQFactor(0),
+    fLastWidth(0), fLastHeight(0)
+{
+    fVideoStream.registerConsumer(this);
+}
+
+LiveJPEGStreamSource::~LiveJPEGStreamSource()
+{
+    fVideoStream.unregisterConsumer(this);
+}
+
+void LiveJPEGStreamSource::doGetNextFrame()
+{
+    fVideoStream.enableStreaming();
+}
+
+void LiveJPEGStreamSource::doStopGettingFrames()
+{
+    fVideoStream.disableStreaming();
+}
+
+void LiveJPEGStreamSource::streamData(FrameData& data, void* info)
+{
+    // check if we're ready for the data
+    if (!isCurrentlyAwaitingData()) {
+        envir() << "WARN: LiveJPEGStreamSource is not ready for data yet\n";
+        return;
+    }
+
+    fPresentationTime = data.tstamp;
+    fFrameSize = 0;
+
+    JPEGFrameInfo *jpeginfo = static_cast<JPEGFrameInfo*>(info);
+    fLastQFactor = jpeginfo->qfactor;
+    fLastWidth = jpeginfo->width;
+    fLastHeight = jpeginfo->height;
+
+    for (uint32_t i = 0; i < data.pack_count; i++) {
+        uint8_t *ptr = data.pack[i].addr;
+        uint32_t len = data.pack[i].len;
+
+        if ((ptr == NULL) || (len == 0)) break;
+
+        if (fFrameSize + len < fMaxSize) {
+            memmove(&fTo[fFrameSize], ptr, len);
+            fFrameSize += len;
+        } else {
+            fNumTruncatedBytes += len;
+        }
+    }
+
+    fVideoStream.disableStreaming();
+
+    // After delivering the data, inform the reader that it is now available:
+    FramedSource::afterGetting(this);
+}
+
+u_int8_t LiveJPEGStreamSource::type()
+{
+    return 1;
+}
+
+u_int8_t LiveJPEGStreamSource::qFactor()
+{
+    return fLastQFactor;//255; // indicates that quantization tables are dynamic
+}
+
+u_int8_t LiveJPEGStreamSource::width()
+{
+    return fLastWidth;
+}
+
+u_int8_t LiveJPEGStreamSource::height()
+{
+    return fLastHeight;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// LiveJPEGVideoServerMediaSubsession
+//////////////////////////////////////////////////////////////////////////////
+
+LiveJPEGVideoServerMediaSubsession* LiveJPEGVideoServerMediaSubsession
+::createNew(UsageEnvironment& env, IJPEGVideoStream& stream)
+{
+    return new LiveJPEGVideoServerMediaSubsession(env, stream);
+}
+
+LiveJPEGVideoServerMediaSubsession
+::LiveJPEGVideoServerMediaSubsession(UsageEnvironment& env, IJPEGVideoStream& stream)
+  : OnDemandServerMediaSubsession(env, True /* reuse the first source */),
+    fVideoStream(stream)
+{
+}
+
+LiveJPEGVideoServerMediaSubsession::~LiveJPEGVideoServerMediaSubsession()
+{
+}
+
+FramedSource* LiveJPEGVideoServerMediaSubsession
+::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate)
+{
+    estBitrate = fVideoStream.getBitrate(); // kbps, estimate
+
+    OutPacketBuffer::maxSize = 400000;
+
+    return LiveJPEGStreamSource::createNew(envir(), fVideoStream);
+}
+
+RTPSink* LiveJPEGVideoServerMediaSubsession
+::createNewRTPSink(Groupsock* rtpGroupsock,
+                   unsigned char /*rtpPayloadTypeIfDynamic*/,
+                   FramedSource* /*inputSource*/)
+{
+    return JPEGVideoRTPSink::createNew(envir(), rtpGroupsock);
 }
 
 
@@ -280,13 +434,12 @@ void LiveVideoServerMediaSubsession
 // Audio
 ////////////////////////////////////////////////////////////////////////////////
 
-
 class LiveAudioStreamSource: public FramedSource, public StreamDataConsumer
 {
 public:
     static LiveAudioStreamSource* createNew(UsageEnvironment& env, IAudioStream& stream);
 
-    void streamData(StreamData &data);
+    void streamData(FrameData& data, void* info);
 protected:
     LiveAudioStreamSource(UsageEnvironment& env, IAudioStream& stream);
     // called only by createNew(), or by subclass constructors
@@ -319,7 +472,7 @@ LiveAudioStreamSource::~LiveAudioStreamSource()
     fAudioStream.unregisterConsumer(this);
 }
 
-void LiveAudioStreamSource::streamData(StreamData &data)
+void LiveAudioStreamSource::streamData(FrameData& data, void* info)
 {
     // check if we're ready for data
     if (!isCurrentlyAwaitingData()) {
@@ -344,6 +497,8 @@ void LiveAudioStreamSource::streamData(StreamData &data)
             fNumTruncatedBytes += len;
         }
     }
+
+    fAudioStream.disableStreaming();
 
     // After delivering the data, inform the reader that it is now available:
     FramedSource::afterGetting(this);

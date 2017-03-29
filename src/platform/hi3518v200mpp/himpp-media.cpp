@@ -1176,37 +1176,66 @@ void HimppVideoStream::watch_handler(ev::io &w, int revents)
 
 	int chnid = _venc_chan.channelId();
 
-	VENC_PACK_S stPack;
+	HI_S32 s32Ret;
+
+	VENC_CHN_STAT_S stChnStat;
+	s32Ret = HI_MPI_VENC_Query(chnid, &stChnStat);
+	if (s32Ret != HI_SUCCESS || stChnStat.u32CurPacks == 0)
+		return;
+
+	VENC_PACK_S stPack[stChnStat.u32CurPacks];
 	VENC_STREAM_S stStream = {
-		.pstPack = &stPack,
-		.u32PackCount = 1,
+		.pstPack = stPack,
+		.u32PackCount = stChnStat.u32CurPacks,
 		.u32Seq = 0
 	};
 
-	HI_S32 s32Ret = HI_MPI_VENC_GetStream(chnid, &stStream, HI_FALSE);
+	s32Ret = HI_MPI_VENC_GetStream(chnid, &stStream, 0);
 	if (s32Ret != HI_SUCCESS) {
-		//HIMPP_PRINT("Get video stream %d failed [%#x]\n", chnid, s32Ret);
+		HIMPP_PRINT("Get video stream %d failed [%#x]\n", chnid, s32Ret);
 		return;
 	}
 
-	StreamDataConsumer::StreamData::Pack stream_data_pack;
+	StreamDataConsumer::FrameData::Pack stream_data_pack[stStream.u32PackCount];
 	memset(&stream_data_pack, 0, sizeof(stream_data_pack));
-	StreamDataConsumer::StreamData stream_data;
-	stream_data.pack_count = 0;
-	stream_data.pack = &stream_data_pack;
+	StreamDataConsumer::FrameData stream_data;
+	stream_data.pack_count = stStream.u32PackCount;
+	stream_data.pack = stream_data_pack;
 	gettimeofday(&stream_data.tstamp, NULL);
 
-	HI_U8 *ptr = stStream.pstPack[0].pu8Addr;
-	HI_U32 len = stStream.pstPack[0].u32Len;
+	for (int i = 0; i < (int)stStream.u32PackCount; i++) {
+		VENC_PACK_S *pstPack = &stStream.pstPack[i];
+		stream_data.pack[i].addr = pstPack->pu8Addr + pstPack->u32Offset;
+		stream_data.pack[i].len = pstPack->u32Len - pstPack->u32Offset;
+	}
 
-	if ((ptr != NULL) && (len != 0)) {
-		stream_data.pack[0].addr = ptr;
-		stream_data.pack[0].len = len;
-		stream_data.pack_count++;
+	StreamDataConsumer::H264FrameInfo h264info;
+	StreamDataConsumer::JPEGFrameInfo jpeginfo;
+	void *extra_info = NULL;
+
+	switch (_venc_chan.getEncoding()) {
+	case IVideoEncoder::EncodingType::JPEG:
+	case IVideoEncoder::EncodingType::MJPEG:
+		{
+			ImageResolution r = _venc_chan.getResolution();
+			jpeginfo.qfactor = stStream.stJpegInfo.u32Qfactor;
+			jpeginfo.width = r.Width >> 3;
+			jpeginfo.height = r.Height >> 3;
+			extra_info = &jpeginfo;
+		}
+		break;
+	case IVideoEncoder::EncodingType::H264:
+		{
+			h264info.keyframe = (stStream.stH264Info.enRefType == BASE_IDRSLICE);
+			extra_info = &h264info;
+		}
+		break;
+	default:
+		break;
 	}
 
 	if (_consumer) {
-		_consumer->streamData(stream_data);
+		_consumer->streamData(stream_data, extra_info);
 	}
 
 	s32Ret = HI_MPI_VENC_ReleaseStream(chnid, &stStream);
@@ -1371,10 +1400,10 @@ void HimppAudioStream::watch_handler(ev::io &w, int revents)
 	}
 
 	if (stStream.u32Len > 4) {
-		StreamDataConsumer::StreamData::Pack stream_data_pack;
+		StreamDataConsumer::FrameData::Pack stream_data_pack;
 		memset(&stream_data_pack, 0, sizeof(stream_data_pack));
 
-		StreamDataConsumer::StreamData stream_data;
+		StreamDataConsumer::FrameData stream_data;
 		stream_data.pack_count = 1;
 		stream_data.pack = &stream_data_pack;
 		gettimeofday(&stream_data.tstamp, NULL);
@@ -1383,7 +1412,7 @@ void HimppAudioStream::watch_handler(ev::io &w, int revents)
 		stream_data.pack[0].len = stStream.u32Len - 4;
 
 		if (_consumer)
-			_consumer->streamData(stream_data);
+			_consumer->streamData(stream_data, NULL);
 	}
 
 	s32Ret = HI_MPI_AENC_ReleaseStream(chnid, &stStream);
@@ -1407,11 +1436,13 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
     _vpss_chan0(&_vpss_group0, 0),
     _venc_chan0(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 0, 0),
     _venc_chan1(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 1, 1),
+    _venc_chan2(dynamic_cast<HimppVideoObject*>(&_vpss_chan0), 2, 2),
     _acodec(AUDIO_SAMPLE_RATE_8000),
     _ai_dev0(&_sysctl, &_acodec, 0), _ai_chan0(&_ai_dev0, 0),
     _aenc_chan0(&_ai_chan0, 0), _aenc_chan1(&_ai_chan0, 1),
     _video_stream0(runtime, _venc_chan0),
     _video_stream1(runtime, _venc_chan1),
+    _video_stream2(runtime, _venc_chan2),
     _audio_stream0(runtime, _ai_dev0, _aenc_chan0),
     _audio_stream1(runtime, _ai_dev0, _aenc_chan1),
     _video_source0(*this),
@@ -1423,20 +1454,27 @@ Hi3518mppMedia::Hi3518mppMedia(IpcamRuntime *runtime, std::string sensor_name)
 {
 	ImageResolution ri = _vi_dev0.getResolution();
 	ImageResolution r0 = _venc_chan0.getResolution();
-	ImageResolution r1("D1");
+	ImageResolution r1("VGA");
+
 	_venc_chan0.setEncoding(IVideoEncoder::H264);
 	_venc_chan0.setResolution(r0);
 	//_venc_chan0.setFramerate(25);
-	_venc_chan1.setEncoding(IVideoEncoder::H264);
+
+	_venc_chan1.setEncoding(IVideoEncoder::MJPEG);
 	_venc_chan1.setResolution(r1);
-	_venc_chan1.setFramerate(15);
-	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 8);
+	_venc_chan1.setFramerate(5);
+
+	_venc_chan2.setEncoding(IVideoEncoder::JPEG);
+	_venc_chan2.setFramerate(1);
+
+	_sysctl.addVideoBuffer(ri.Width * ri.Height * 3 / 2, 12);
 	_sysctl.addVideoBuffer(196 * 4, 2);
 
 	_sysctl.enable();
 
 	runtime->addRTSPStream(&_video_stream0, &_audio_stream0);
-	runtime->addRTSPStream(&_video_stream1, &_audio_stream1);
+	runtime->addRTSPStream(&_video_stream1, NULL/*&_audio_stream1*/);
+	runtime->addRTSPStream(&_video_stream2, NULL/*&_audio_stream1*/);
 
 	runtime->addVideoSourceInterface(&_video_source0);
 

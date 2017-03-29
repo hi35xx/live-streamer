@@ -263,7 +263,7 @@ private:
     HimppVencChan&      _venc_chan;
 };
 
-class HimppVideoStream : public IVideoStream
+class HimppVideoStream : public IH264VideoStream, public IJPEGVideoStream
 {
 public:
     HimppVideoStream(IpcamRuntime *runtime, HimppVencChan &venc_chan);
@@ -369,6 +369,7 @@ private:
     HimppVpssChan       _vpss_chan0;
     HimppVencChan       _venc_chan0;
     HimppVencChan       _venc_chan1;
+    HimppVencChan       _venc_chan2;
 
     // Audio Objects
     HimppAudioCodec     _acodec;
@@ -384,6 +385,7 @@ private:
 
     HimppVideoStream        _video_stream0;
     HimppVideoStream        _video_stream1;
+    HimppVideoStream        _video_stream2;
     HimppAudioStream        _audio_stream0;
     HimppAudioStream        _audio_stream1;
 

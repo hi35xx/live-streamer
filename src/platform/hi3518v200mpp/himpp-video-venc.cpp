@@ -224,6 +224,8 @@ void HimppVencChan::delVideoRegion(HimppVideoRegion *region)
     _regions.remove(region);
 }
 
+#define ROUND16(x)      (((x) + 15) & 0xfffffff0)
+
 bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
 {
     HI_U32 stattime;
@@ -233,13 +235,13 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
     switch (_encoding) {
     case IVideoEncoder::H264:
         attr.stVeAttr.enType = PT_H264;
-        attr.stVeAttr.stAttrH264e.u32MaxPicWidth = _resolution.Width;
-        attr.stVeAttr.stAttrH264e.u32MaxPicHeight = _resolution.Height;
-        attr.stVeAttr.stAttrH264e.u32BufSize = _resolution.Width * _resolution.Height * 2;
+        attr.stVeAttr.stAttrH264e.u32MaxPicWidth = ROUND16(_resolution.Width);
+        attr.stVeAttr.stAttrH264e.u32MaxPicHeight = ROUND16(_resolution.Height);
+        attr.stVeAttr.stAttrH264e.u32BufSize = _resolution.Width * _resolution.Height;
         attr.stVeAttr.stAttrH264e.u32PicWidth = _resolution.Width;
         attr.stVeAttr.stAttrH264e.u32PicHeight = _resolution.Height;
         attr.stVeAttr.stAttrH264e.u32Profile = _h264profile;
-        attr.stVeAttr.stAttrH264e.bByFrame = HI_FALSE;
+            attr.stVeAttr.stAttrH264e.bByFrame = HI_FALSE;
         attr.stVeAttr.stAttrH264e.u32BFrameNum = 0;
         attr.stVeAttr.stAttrH264e.u32RefNum = 1;
         // Rate Control Attribute
@@ -278,9 +280,9 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
         break;
     case IVideoEncoder::MJPEG:
         attr.stVeAttr.enType = PT_MJPEG;
-        attr.stVeAttr.stAttrMjpeg.u32MaxPicWidth = _resolution.Width;
-        attr.stVeAttr.stAttrMjpeg.u32MaxPicHeight = _resolution.Height;
-        attr.stVeAttr.stAttrMjpeg.u32BufSize = _resolution.Width * _resolution.Height * 2;
+        attr.stVeAttr.stAttrMjpeg.u32MaxPicWidth = ROUND16(_resolution.Width);
+        attr.stVeAttr.stAttrMjpeg.u32MaxPicHeight = ROUND16(_resolution.Height);
+        attr.stVeAttr.stAttrMjpeg.u32BufSize = _resolution.Width * _resolution.Height;
         attr.stVeAttr.stAttrMjpeg.u32PicWidth = _resolution.Width;
         attr.stVeAttr.stAttrMjpeg.u32PicHeight = _resolution.Height;
         attr.stVeAttr.stAttrMjpeg.bByFrame = HI_TRUE;
@@ -290,7 +292,7 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGCBR;
             attr.stRcAttr.stAttrMjpegeCbr.u32StatTime = 1;
             attr.stRcAttr.stAttrMjpegeCbr.u32SrcFrmRate = videoSource()->getFramerate();
-            attr.stRcAttr.stAttrMjpegeCbr.fr32DstFrmRate = _framerate;
+            attr.stRcAttr.stAttrMjpegeCbr.fr32DstFrmRate = videoSource()->getFramerate();
             attr.stRcAttr.stAttrMjpegeCbr.u32BitRate = _bitrate;
             attr.stRcAttr.stAttrMjpegeCbr.u32FluctuateLevel = 0;
             break;
@@ -298,14 +300,15 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGVBR;
             attr.stRcAttr.stAttrMjpegeVbr.u32StatTime = 1;
             attr.stRcAttr.stAttrMjpegeVbr.u32SrcFrmRate = videoSource()->getFramerate();
-            attr.stRcAttr.stAttrMjpegeVbr.fr32DstFrmRate = _framerate;
+            attr.stRcAttr.stAttrMjpegeVbr.fr32DstFrmRate = videoSource()->getFramerate();
+            attr.stRcAttr.stAttrMjpegeVbr.u32MaxBitRate = _bitrate;
             attr.stRcAttr.stAttrMjpegeVbr.u32MinQfactor = 50;
             attr.stRcAttr.stAttrMjpegeVbr.u32MaxQfactor = 95;
             break;
         case IVideoEncoder::FIXQP:
             attr.stRcAttr.enRcMode = VENC_RC_MODE_MJPEGFIXQP;
             attr.stRcAttr.stAttrMjpegeFixQp.u32SrcFrmRate = videoSource()->getFramerate();
-            attr.stRcAttr.stAttrMjpegeFixQp.fr32DstFrmRate = _framerate;
+            attr.stRcAttr.stAttrMjpegeFixQp.fr32DstFrmRate = videoSource()->getFramerate();
             attr.stRcAttr.stAttrMjpegeFixQp.u32Qfactor = 90;
             break;
         default:
@@ -315,8 +318,8 @@ bool HimppVencChan::prepareVencChnAttr(VENC_CHN_ATTR_S &attr)
         break;
     case IVideoEncoder::JPEG:
         attr.stVeAttr.enType = PT_JPEG;
-        attr.stVeAttr.stAttrJpeg.u32MaxPicWidth = _resolution.Width;
-        attr.stVeAttr.stAttrJpeg.u32MaxPicHeight = _resolution.Height;
+        attr.stVeAttr.stAttrJpeg.u32MaxPicWidth = ROUND16(_resolution.Width);
+        attr.stVeAttr.stAttrJpeg.u32MaxPicHeight = ROUND16(_resolution.Height);
         attr.stVeAttr.stAttrJpeg.u32BufSize = _resolution.Width * _resolution.Height * 2;
         attr.stVeAttr.stAttrJpeg.u32PicWidth = _resolution.Width;
         attr.stVeAttr.stAttrJpeg.u32PicHeight = _resolution.Height;
@@ -348,13 +351,26 @@ bool HimppVencChan::enableObject()
                     _chnid, s32Ret);
     }
 
-    VENC_PARAM_H264_VUI_S stVui;
-    if ((s32Ret = HI_MPI_VENC_GetH264Vui(_chnid, &stVui)) == HI_SUCCESS) {
-        stVui.stVuiTimeInfo.timing_info_present_flag = 1;
-        stVui.stVuiTimeInfo.num_units_in_tick = 1;
-        stVui.stVuiTimeInfo.time_scale = _framerate * 2;
-        if ((s32Ret = HI_MPI_VENC_SetH264Vui(_chnid, &stVui)) != HI_SUCCESS) {
-            HIMPP_PRINT("HI_MPI_VENC_SetH264Vui(%d) failed [%#x]\n",
+    if (_encoding == IVideoEncoder::H264) {
+        VENC_PARAM_H264_VUI_S stVui;
+        if ((s32Ret = HI_MPI_VENC_GetH264Vui(_chnid, &stVui)) == HI_SUCCESS) {
+            stVui.stVuiTimeInfo.timing_info_present_flag = 1;
+            stVui.stVuiTimeInfo.num_units_in_tick = 1;
+            stVui.stVuiTimeInfo.time_scale = _framerate * 2;
+            if ((s32Ret = HI_MPI_VENC_SetH264Vui(_chnid, &stVui)) != HI_SUCCESS) {
+                HIMPP_PRINT("HI_MPI_VENC_SetH264Vui(%d) failed [%#x]\n",
+                            _chnid, s32Ret);
+            }
+        }
+    }
+
+    // for JPEG/MJPEG encoding, use channel rate-control to reduce the latency.
+    if (_encoding == IVideoEncoder::JPEG || _encoding == IVideoEncoder::MJPEG) {
+        VENC_FRAME_RATE_S fr;
+        fr.s32SrcFrmRate = 30;
+        fr.s32DstFrmRate = _framerate;
+        if ((s32Ret = HI_MPI_VENC_SetFrameRate(_chnid, &fr)) != HI_SUCCESS) {
+            HIMPP_PRINT("HI_MPI_VENC_SetFrameRate(%d) failed [%#x]\n",
                         _chnid, s32Ret);
         }
     }

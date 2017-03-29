@@ -25,11 +25,11 @@
 
 using namespace Ipcam::Media;
 
-class LiveVideoServerMediaSubsession: public OnDemandServerMediaSubsession
+class LiveH264VideoServerMediaSubsession: public OnDemandServerMediaSubsession
 {
 public:
-  static LiveVideoServerMediaSubsession*
-  createNew(UsageEnvironment& env, IVideoStream& stream);
+  static LiveH264VideoServerMediaSubsession*
+  createNew(UsageEnvironment& env, IH264VideoStream& stream);
 
   // Used to implement "getAuxSDPLine()":
   void checkForAuxSDPLine1();
@@ -45,9 +45,9 @@ public:
   void pauseStream(unsigned clientSessionId, void* streamToken);
 
 protected:
-  LiveVideoServerMediaSubsession(UsageEnvironment& env, IVideoStream& stream);
+  LiveH264VideoServerMediaSubsession(UsageEnvironment& env, IH264VideoStream& stream);
       // called only by createNew();
-  virtual ~LiveVideoServerMediaSubsession();
+  virtual ~LiveH264VideoServerMediaSubsession();
 
   void setDoneFlag() { fDoneFlag = ~0; }
 
@@ -63,11 +63,32 @@ protected: // redefined virtual functions
                                     FramedSource* inputSource);
 
 private:
-  IVideoStream &fVideoStream;
+  IH264VideoStream &fVideoStream;
   FramedFilter *fStreamSource;
   char* fAuxSDPLine;
   char fDoneFlag; // used when setting up "fAuxSDPLine"
   RTPSink* fDummyRTPSink; // ditto
+};
+
+
+class LiveJPEGVideoServerMediaSubsession: public OnDemandServerMediaSubsession
+{
+public:
+  static LiveJPEGVideoServerMediaSubsession*
+    createNew(UsageEnvironment& env, IJPEGVideoStream& stream);
+
+protected:
+  LiveJPEGVideoServerMediaSubsession(UsageEnvironment& env, IJPEGVideoStream& stream);
+  virtual ~LiveJPEGVideoServerMediaSubsession();
+
+private:
+  virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+                                              unsigned& estBitrate);
+  virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+                                    unsigned char rtpPayloadTypeIfDynamic,
+                                    FramedSource* inputSource);
+private:
+  IJPEGVideoStream &fVideoStream;
 };
 
 

@@ -285,7 +285,7 @@ public:
 
 
 // control interface for h264 video encoder
-class IH264VideoEncoder : public IVideoEncoder
+class IH264VideoEncoder : public virtual IVideoEncoder
 {
 public:
     enum H264Profile { BASELINE, MAIN, HIGH, SVC_T };
@@ -302,7 +302,7 @@ public:
 class StreamDataConsumer
 {
 public:
-    struct StreamData
+    struct FrameData
     {
         struct timeval  tstamp;
         uint32_t        pack_count;
@@ -311,7 +311,18 @@ public:
             uint32_t    len;
         } *pack;
     };
-    virtual void streamData(StreamData &data) = 0;
+
+    struct H264FrameInfo {
+        bool    keyframe;
+    };
+
+    struct JPEGFrameInfo {
+        uint8_t qfactor;
+        uint8_t width;
+        uint8_t height;
+    };
+
+    virtual void streamData(FrameData& data, void* info) = 0;
 };
 
 
@@ -340,7 +351,17 @@ public:
     virtual bool unregisterConsumer(StreamDataConsumer *consumer) = 0;
     virtual void enableStreaming() = 0;
     virtual void disableStreaming() = 0;
+};
+
+class IH264VideoStream : public virtual IVideoStream
+{
+public:
     virtual void requestIDR() = 0;
+};
+
+class IJPEGVideoStream : public virtual IVideoStream
+{
+public:
 };
 
 

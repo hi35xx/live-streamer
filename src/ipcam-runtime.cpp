@@ -62,10 +62,23 @@ RTSPStream IpcamRuntime::addRTSPStream
                                         description);
     if (sms) {
         if (video) {
-            LiveVideoServerMediaSubsession* vsmss;
-            vsmss = LiveVideoServerMediaSubsession
-                ::createNew(_rtsp_server->envir(), *video);
-            sms->addSubsession(vsmss);
+			ServerMediaSubsession* vsmss = NULL;
+			switch (video->getEncoding()) {
+			case IVideoEncoder::EncodingType::H264:
+				vsmss = LiveH264VideoServerMediaSubsession
+					::createNew(_rtsp_server->envir(), *dynamic_cast<IH264VideoStream*>(video));
+				break;
+			case IVideoEncoder::EncodingType::JPEG:
+			case IVideoEncoder::EncodingType::MJPEG:
+				vsmss = LiveJPEGVideoServerMediaSubsession
+					::createNew(_rtsp_server->envir(), *dynamic_cast<IJPEGVideoStream*>(video));
+				break;
+			default:
+				break;
+			}
+			if (vsmss) {
+				sms->addSubsession(vsmss);
+			}
         }
 		if (audio) {
 			LiveAudioServerMediaSubsession* asmss;
