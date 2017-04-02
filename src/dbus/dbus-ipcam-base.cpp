@@ -34,10 +34,14 @@ IpcamBase::IpcamBase(IpcamRuntime &runtime, const Path &path)
 {
 }
 
+IpcamBase::~IpcamBase()
+{
+}
+
 void IpcamBase::on_get_property
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
-    value.clear();
+	value.clear();
 	do_property_get(interface, property, value);
 }
 

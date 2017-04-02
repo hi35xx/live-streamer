@@ -22,7 +22,11 @@
 
 #include <list>
 #include <ev++.h>
-#include <ipcam-media-iface.h>
+#include <media-stream.h>
+#include <video-source.h>
+#include <video-encoder.h>
+#include <audio-source.h>
+#include <audio-encoder.h>
 
 using namespace Ipcam::Media;
 
@@ -49,24 +53,26 @@ public:
 	IpcamRuntime(ev::default_loop &loop, RTSPServer *rtspServer, DBus::Connection *conn);
 	~IpcamRuntime();
 
-	RTSPStream addRTSPStream(IVideoStream *video, IAudioStream *audio);
-	void addAudioSourceInterface(IAudioSource *audio_source);
-	void addAudioEncoderInterface(IAudioEncoder *audio_encoder);
-	void addVideoSourceInterface(IVideoSource *video_source);
-	void addVideoEncoderInterface(IVideoEncoder *video_encoder);
+	RTSPStream addRTSPStream(const std::string& path, VideoStreamSource* video, AudioStreamSource* audio);
+	void addAudioSource(AudioSource* audio_source);
+	void addAudioEncoder(AudioEncoder* audio_encoder);
+	void addVideoSource(VideoSource* video_source);
+	void addVideoEncoder(VideoEncoder* video_encoder);
 
 	ev::default_loop &mainloop() { return _loop; }
 	DBus::Connection &dbus_conn() { return *_dbus_connection; }
+
 private:
-	ev::default_loop	&_loop;
-	RTSPServer          *_rtsp_server;
-	DBus::Connection    *_dbus_connection;
+	ev::default_loop&		_loop;
+	RTSPServer*				_rtsp_server;
+	DBus::Connection*		_dbus_connection;
 
 	typedef std::list<ServerMediaSession*> IpcamStreamList;
-	typedef std::list<std::unique_ptr<DBus::AudioSource>> IpcamAudioSourceList;
-	typedef std::list<std::unique_ptr<DBus::AudioEncoder>> IpcamAudioEncoderList;
-	typedef std::list<std::unique_ptr<DBus::VideoSource>> IpcamVideoSourceList;
-	typedef std::list<std::unique_ptr<DBus::VideoEncoder>> IpcamVideoEncoderList;
+	typedef std::list<std::unique_ptr<DBus::AudioSource>>	IpcamAudioSourceList;
+	typedef std::list<std::unique_ptr<DBus::AudioEncoder>>	IpcamAudioEncoderList;
+	typedef std::list<std::unique_ptr<DBus::VideoSource>>	IpcamVideoSourceList;
+	typedef std::list<std::unique_ptr<DBus::VideoEncoder>>	IpcamVideoEncoderList;
+
 	IpcamStreamList			_stream_list;
 	IpcamAudioSourceList	_audio_source_list;
 	IpcamAudioEncoderList   _audio_encoder_list;

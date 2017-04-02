@@ -16,8 +16,7 @@
   </interface>
   <interface name="ipcam.Media.VideoEncoder.OSD">
     <method name="CreateOSD">
-      <arg name="index" type="u" direction="in"/>
-      <arg name="path" type="o" direction="out"/>
+      <arg name="index" type="u" direction="out"/>
     </method>
     <method name="DeleteOSD">
       <arg name="index" type="u" direction="in"/>

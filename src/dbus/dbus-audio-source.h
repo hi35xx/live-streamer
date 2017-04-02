@@ -32,13 +32,13 @@ class AudioSource :
   public IpcamBase
 {
 public:
-	AudioSource(IpcamRuntime &runtime, std::string obj_path, IAudioSource *source);
+	AudioSource(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::AudioSource* source);
 	void do_property_get
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void do_property_set
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-	IAudioSource *_audio_source;
+	Ipcam::Media::AudioSource* _audio_source;
 };
 
 } // namespace DBus

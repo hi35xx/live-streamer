@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
  *
  *  D-Bus++ - C++ bindings for D-Bus
@@ -42,84 +43,84 @@ class DXXAPI BusTimeout : public Timeout
 {
 private:
 
-  BusTimeout(Timeout::Internal *, ev::loop_ref &, int);
+	BusTimeout(Timeout::Internal *, ev::loop_ref &, int);
 
-  ~BusTimeout();
+	~BusTimeout();
 
-  void toggle();
+	void toggle();
 
-  void timeout_handler(ev::timer &, int);
+	void timeout_handler(ev::timer &, int);
 
-  void _enable();
+	void _enable();
 
-  void _disable();
+	void _disable();
 
 private:
 
-  ev::loop_ref &_loop;
-  int _priority;
-  ev::timer _timer;
+	ev::loop_ref &_loop;
+	int _priority;
+	ev::timer _timer;
 
-  friend class BusDispatcher;
+	friend class BusDispatcher;
 };
 
 class DXXAPI BusWatch : public Watch
 {
 private:
 
-  BusWatch(Watch::Internal *, ev::loop_ref &, int);
+	BusWatch(Watch::Internal *, ev::loop_ref &, int);
 
-  ~BusWatch();
+	~BusWatch();
 
-  void toggle();
+	void toggle();
 
-  void watch_handler(ev::io &, int);
+	void watch_handler(ev::io &, int);
 
-  void _enable();
+	void _enable();
 
-  void _disable();
+	void _disable();
 
 private:
 
-  ev::loop_ref &_loop;
-  int _priority;
-  ev::io _io;
+	ev::loop_ref &_loop;
+	int _priority;
+	ev::io _io;
 
-  friend class BusDispatcher;
+	friend class BusDispatcher;
 };
 
 class DXXAPI BusDispatcher : public Dispatcher
 {
 public:
 
-  BusDispatcher();
-  ~BusDispatcher();
+	BusDispatcher();
+	~BusDispatcher();
 
-  void attach(ev::loop_ref *);
+	void attach(ev::loop_ref *);
 
-  void enter() {}
+	void enter() {}
 
-  void leave() {}
+	void leave() {}
 
-  Timeout *add_timeout(Timeout::Internal *);
+	Timeout *add_timeout(Timeout::Internal *);
 
-  void rem_timeout(Timeout *);
+	void rem_timeout(Timeout *);
 
-  Watch *add_watch(Watch::Internal *);
+	Watch *add_watch(Watch::Internal *);
 
-  void rem_watch(Watch *);
+	void rem_watch(Watch *);
 
-  void set_priority(int priority);
+	void set_priority(int priority);
 
-  void prepare_handler(ev::prepare &, int);
-  void check_handler(ev::check &, int);
+	void prepare_handler(ev::prepare &, int);
+	void check_handler(ev::check &, int);
 
 private:
 
-  ev::loop_ref _loop;
-  int _priority;
-  ev::check _check;
-  ev::prepare _prepare;
+	ev::loop_ref _loop;
+	int _priority;
+	ev::check _check;
+	ev::prepare _prepare;
 };
 
 } /* namespace Ev */

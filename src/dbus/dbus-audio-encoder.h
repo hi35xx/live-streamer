@@ -32,13 +32,13 @@ class AudioEncoder :
   public IpcamBase
 {
 public:
-	AudioEncoder(IpcamRuntime &runtime, std::string obj_path, IAudioEncoder *encoder);
+	AudioEncoder(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::AudioEncoder* encoder);
 	void do_property_get
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void do_property_set
 		 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-	IAudioEncoder *_audio_encoder;
+	Ipcam::Media::AudioEncoder* _audio_encoder;
 };
 
 } // namespace DBus

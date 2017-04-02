@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src -I$(srcdir) -I$(builddir) \
+	-I$(top_srcdir)/src -I$(top_srcdir)/src/common \
+	-I$(srcdir) -I$(builddir) \
 	$(DBUSXX_CFLAGS)
 
 AM_CFLAGS = -Wall
@@ -33,6 +34,9 @@ libdbus_iface_la_SOURCES =  \
 	dbus-video-source.h \
 	dbus-video-encoder.cpp \
 	dbus-video-encoder.h
+
+libdbus_iface_la_LIBADD = \
+	$(top_builddir)/src/common/libcommon.la
 
 %-server-glue.h: %-introspect.xml
 	dbusxx-xml2cpp $^ --adaptor=$@

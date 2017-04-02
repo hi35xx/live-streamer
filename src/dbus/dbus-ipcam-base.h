@@ -27,27 +27,31 @@ namespace DBus
 {
 
 class IpcamBase :
-  public IntrospectableAdaptor,
-  public PropertiesAdaptor,
-  public ObjectAdaptor
+	public IntrospectableAdaptor,
+	public PropertiesAdaptor,
+	public ObjectAdaptor
 {
 public:
 	IpcamBase(IpcamRuntime &runtime, const Path &path);
+	virtual ~IpcamBase();
+
 protected:
 	virtual void do_property_get(InterfaceAdaptor &interface, const std::string &property, Variant &value) = 0;
 	virtual void do_property_set(InterfaceAdaptor &interface, const std::string &property, const Variant &value) = 0;
+
 protected:
 	IpcamRuntime&	_runtime;
-    typedef std::function<void(DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
-    typedef std::function<void(DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
-    class PropertyHandler {
-    public:
-        PropertyHandler(PropertyGet get, PropertySet set)
-            : Get(get), Set(set) {}
-        PropertyGet Get;
-        PropertySet Set;
-    };
-    std::unordered_map<std::string, PropertyHandler> _prop_handler;
+	typedef std::function<void(DBus::InterfaceAdaptor&, const std::string&, DBus::Variant&)> PropertyGet;
+	typedef std::function<void(DBus::InterfaceAdaptor&, const std::string&, const DBus::Variant&)> PropertySet;
+	class PropertyHandler {
+	public:
+		PropertyHandler(PropertyGet get, PropertySet set)
+			: Get(get), Set(set) {}
+		PropertyGet Get;
+		PropertySet Set;
+	};
+	std::unordered_map<std::string, PropertyHandler> _prop_handler;
+
 private:
 	void on_get_property(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void on_set_property(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);

@@ -51,27 +51,28 @@ IpcamRuntime::~IpcamRuntime()
 }
 
 RTSPStream IpcamRuntime::addRTSPStream
-(IVideoStream *video, IAudioStream *audio)
+(const std::string& path, VideoStreamSource* video, AudioStreamSource* audio)
 {
-    char const* description = "RTSP/RTP stream from live-streamer";
-    ServerMediaSession *sms;
-	std::string stream_path = std::to_string(_stream_list.size());
-    sms = ServerMediaSession::createNew(_rtsp_server->envir(),
-                                        stream_path.c_str(),
-                                        stream_path.c_str(),
-                                        description);
-    if (sms) {
-        if (video) {
+	char const* description = "RTSP/RTP stream from live-streamer";
+	ServerMediaSession *sms;
+	sms = ServerMediaSession::createNew(_rtsp_server->envir(),
+	                                    path.c_str(),
+	                                    path.c_str(),
+	                                    description);
+	if (sms) {
+		if (video) {
 			ServerMediaSubsession* vsmss = NULL;
-			switch (video->getEncoding()) {
-			case IVideoEncoder::EncodingType::H264:
+			switch (video->encoding()) {
+			case H264:
 				vsmss = LiveH264VideoServerMediaSubsession
-					::createNew(_rtsp_server->envir(), *dynamic_cast<IH264VideoStream*>(video));
+					::createNew(_rtsp_server->envir(), 
+					            H264_VIDEO_STREAM_SOURCE(video));
 				break;
-			case IVideoEncoder::EncodingType::JPEG:
-			case IVideoEncoder::EncodingType::MJPEG:
+			case JPEG:
+			case MJPEG:
 				vsmss = LiveJPEGVideoServerMediaSubsession
-					::createNew(_rtsp_server->envir(), *dynamic_cast<IJPEGVideoStream*>(video));
+					::createNew(_rtsp_server->envir(),
+					            JPEG_VIDEO_STREAM_SOURCE(video));
 				break;
 			default:
 				break;
@@ -79,58 +80,58 @@ RTSPStream IpcamRuntime::addRTSPStream
 			if (vsmss) {
 				sms->addSubsession(vsmss);
 			}
-        }
+		}
 		if (audio) {
 			LiveAudioServerMediaSubsession* asmss;
 			asmss = LiveAudioServerMediaSubsession
-				::createNew(_rtsp_server->envir(), *audio);
+				::createNew(_rtsp_server->envir(), audio);
 			sms->addSubsession(asmss);
 		}
 
 		_rtsp_server->addServerMediaSession(sms);
 
 		_stream_list.push_back(sms);
-    }
+	}
 
 	return sms;
 }
 
-void IpcamRuntime::addAudioSourceInterface(IAudioSource *audio_source)
+void IpcamRuntime::addAudioSource(AudioSource* audio_source)
 {
 	int index = _audio_source_list.size();
 	std::string obj_path = std::string(AUDIO_SOURCE_SERVER_PATH)
 		+ std::to_string(index);
-    _audio_source_list.emplace_back(new DBus::AudioSource(*this, obj_path, audio_source));
+	_audio_source_list.emplace_back(new DBus::AudioSource(*this, obj_path, audio_source));
 }
 
-void IpcamRuntime::addAudioEncoderInterface(IAudioEncoder *audio_encoder)
+void IpcamRuntime::addAudioEncoder(AudioEncoder* audio_encoder)
 {
 	int index = _audio_encoder_list.size();
 	std::string obj_path = std::string(AUDIO_ENCODER_SERVER_PATH)
 		+ std::to_string(index);
-    _audio_encoder_list.emplace_back(new DBus::AudioEncoder(*this, obj_path, audio_encoder));
+	_audio_encoder_list.emplace_back(new DBus::AudioEncoder(*this, obj_path, audio_encoder));
 }
 
-void IpcamRuntime::addVideoSourceInterface(IVideoSource *video_source)
+void IpcamRuntime::addVideoSource(VideoSource* video_source)
 {
 	int index = _video_source_list.size();
 	std::string obj_path = std::string(VIDEO_SOURCE_SERVER_PATH)
 		+ std::to_string(index);
-    _video_source_list.emplace_back(new DBus::VideoSource(*this, obj_path, video_source));
+	_video_source_list.emplace_back(new DBus::VideoSource(*this, obj_path, video_source));
 }
 
-void IpcamRuntime::addVideoEncoderInterface(IVideoEncoder *video_encoder)
+void IpcamRuntime::addVideoEncoder(VideoEncoder* video_encoder)
 {
 	int index = _video_encoder_list.size();
 	std::string obj_path = std::string(VIDEO_ENCODER_SERVER_PATH)
 		+ std::to_string(index);
 
 	switch (video_encoder->getEncoding()) {
-	case IVideoEncoder::H264:
-	    _video_encoder_list.emplace_back(new DBus::H264VideoEncoder(*this, obj_path, dynamic_cast<IH264VideoEncoder*>(video_encoder)));
+	case H264:
+		_video_encoder_list.emplace_back(new DBus::H264VideoEncoder(*this, obj_path, H264_VIDEO_ENCODER(video_encoder)));
 		break;
 	default:
-	    _video_encoder_list.emplace_back(new DBus::VideoEncoder(*this, obj_path, video_encoder));
+		_video_encoder_list.emplace_back(new DBus::VideoEncoder(*this, obj_path, video_encoder));
 		break;
 	}
 }

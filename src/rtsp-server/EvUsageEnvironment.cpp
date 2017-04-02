@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
  * EvUsageEnvironment.cpp
  * Copyright (C) 2015 Watson Xu <watson@localhost.localdomain>
@@ -20,172 +20,197 @@
 #include "EvUsageEnvironment.h"
 
 
+EvTaskScheduler::DelayedTask::DelayedTask
+(ev::loop_ref& loop, uint64_t usec, TaskFunc* proc, void* data)
+ : timer(loop), fCallback(proc), fData(data)
+{
+	set(usec / 1000000.0, 0.0);
+	do { fToken = ++tokenCounter; } while (fToken == 0);
+}
+
+
+EvTaskScheduler::BackgroundHandling::BackgroundHandling
+(ev::loop_ref& loop, int fd, int events, BackgroundHandlerProc* proc, void* data)
+ : io(loop), fCallback(proc), fData(data)
+{
+	set(fd, events);
+}
+
+
+EvTaskScheduler::EventTrigger::EventTrigger
+(ev::loop_ref& loop, TaskFunc *proc)
+ : async(loop), fCallback(proc), fData(NULL)
+{
+	do { fTriggerId = ++triggerCounter; } while (fTriggerId == 0);
+}
+
 EvTaskScheduler* EvTaskScheduler::createNew(ev::default_loop& loop)
 {
-    return new EvTaskScheduler(loop);
+	return new EvTaskScheduler(loop);
 }
 
 EvTaskScheduler::EvTaskScheduler(ev::default_loop& loop)
-    : fMainLoop(loop)
+  : fMainLoop(loop)
 {
 }
 
 EvTaskScheduler::~EvTaskScheduler()
 {
-    fSocketMap.clear();
-    fDelayedTaskMap.clear();
 }
 
 void EvTaskScheduler::delayed_task_thunk(ev::timer& w, int revents)
 {
-    DelayedTaskWatcher* tw = static_cast<DelayedTaskWatcher*>(&w);
+	DelayedTask* task = static_cast<DelayedTask*>(&w);
 
-    // after call the callback, this task may be unscheduled.
-    TaskToken token = tw->token();
+	// after call the callback, this task may be unscheduled.
+	TaskToken token = task->token();
 
-    tw->fCallback(tw->fData);
+	task->fCallback(task->fData);
 
-    fDelayedTaskMap.erase(token);
+	fDelayedTaskMap.erase(token);
 }
 
-long EvTaskScheduler::DelayedTaskWatcher::tokenCounter = 0;
+long EvTaskScheduler::DelayedTask::tokenCounter = 0;
 
 TaskToken EvTaskScheduler::scheduleDelayedTask(int64_t microseconds,
                                                TaskFunc* proc,
                                                void* clientData)
 {
-    DelayedTaskWatcher *tw = new DelayedTaskWatcher(fMainLoop);
+	DelayedTask *task = new DelayedTask(fMainLoop, microseconds, proc, clientData);
 
-    tw->set(microseconds / 1000000.0, 0.0);
-    tw->set<EvTaskScheduler, &EvTaskScheduler::delayed_task_thunk>(this);
-    tw->setHandler(proc, clientData);
-    tw->start();
+	task->set<EvTaskScheduler, &EvTaskScheduler::delayed_task_thunk>(this);
+	task->start();
 
-    fDelayedTaskMap.emplace(tw->token(), std::unique_ptr<DelayedTaskWatcher>(tw));
+	fDelayedTaskMap.emplace(task->token(), task);
 
-    return tw->token();
+	return task->token();
 }
 
 void EvTaskScheduler::unscheduleDelayedTask(TaskToken& prevTask)
 {
-    if (prevTask == NULL) return;
+	if (prevTask == NULL) return;
 
-    fDelayedTaskMap.erase(prevTask);
+	fDelayedTaskMap.erase(prevTask);
 
-    prevTask = NULL;
+	prevTask = NULL;
 }
 
-void EvTaskScheduler::socket_io_thunk(ev::io& w, int revents)
+void EvTaskScheduler::background_handling_thunk(ev::io& w, int revents)
 {
-    SocketIoWatcher* iow = static_cast<SocketIoWatcher*>(&w);
-    int mask = 0;
+	BackgroundHandling* iow = static_cast<BackgroundHandling*>(&w);
+	int mask = 0;
 
-    if (revents & ev::READ) mask |= SOCKET_READABLE;
-    if (revents & ev::WRITE) mask |= SOCKET_WRITABLE;
-    if (revents & ev::ERROR) mask |= SOCKET_EXCEPTION;
+	if (revents & ev::READ) mask |= SOCKET_READABLE;
+	if (revents & ev::WRITE) mask |= SOCKET_WRITABLE;
+	if (revents & ev::ERROR) mask |= SOCKET_EXCEPTION;
 
-    iow->fCallback(iow->fData, mask);
+	iow->fCallback(iow->fData, mask);
 }
 
 void EvTaskScheduler::setBackgroundHandling(int socketNum, int conditionSet,
                                             BackgroundHandlerProc* handlerProc,
                                             void* clientData)
 {
-    if (socketNum < 0)
-        return;
+	if (socketNum < 0)
+		return;
 
-    if (conditionSet == 0) {
-        fSocketMap.erase(socketNum);
-    }
-    else {
-        SocketIoMap::iterator it = fSocketMap.find(socketNum);
-        int events = 0;
+	if (conditionSet == 0) {
+		fBackgroundHandlingMap.erase(socketNum);
+	}
+	else {
+		BackgroundHandlingMap::iterator it = fBackgroundHandlingMap.find(socketNum);
+		int events = 0;
 
-        if (conditionSet & SOCKET_READABLE) events |= ev::READ;
-        if (conditionSet & SOCKET_WRITABLE) events |= ev::WRITE;
+		if (conditionSet & SOCKET_READABLE) events |= ev::READ;
+		if (conditionSet & SOCKET_WRITABLE) events |= ev::WRITE;
 
-        if (it != fSocketMap.end()) {
-            std::unique_ptr<SocketIoWatcher> &iow = it->second;
-            iow->stop();
-            iow->set(socketNum, events);
-            iow->setHandler(handlerProc, clientData);
-            iow->start();
-        }
-        else {
-            SocketIoWatcher *iow = new SocketIoWatcher(fMainLoop);
-            iow->set<EvTaskScheduler, &EvTaskScheduler::socket_io_thunk>(this);
-            iow->set(socketNum, events);
-            iow->setHandler(handlerProc, clientData);
-            iow->start();
-            fSocketMap.emplace(socketNum, std::unique_ptr<SocketIoWatcher>(iow));
-        }
-    }
+		if (it != fBackgroundHandlingMap.end()) {
+			BackgroundHandling* iow;
+
+			fBackgroundHandlingMap.erase(socketNum);
+
+			iow = new BackgroundHandling(fMainLoop, socketNum, events,
+			                             handlerProc, clientData);
+			iow->set<EvTaskScheduler, &EvTaskScheduler::background_handling_thunk>(this);
+			iow->start();
+			fBackgroundHandlingMap.emplace(socketNum, iow);
+		}
+		else {
+			BackgroundHandling *iow;
+			iow = new BackgroundHandling(fMainLoop, socketNum, events,
+			                             handlerProc, clientData);
+			iow->set<EvTaskScheduler, &EvTaskScheduler::background_handling_thunk>(this);
+			iow->start();
+			fBackgroundHandlingMap.emplace(socketNum, iow);
+		}
+	}
 }
 
 void EvTaskScheduler::moveSocketHandling(int oldSocketNum, int newSocketNum)
 {
-    if (oldSocketNum < 0 || newSocketNum < 0) return;
+	if (oldSocketNum < 0 || newSocketNum < 0) return;
 
-    SocketIoMap::iterator it = fSocketMap.find(oldSocketNum);
-    if (it != fSocketMap.end()) {
-        auto iow = std::unique_ptr<SocketIoWatcher>(std::move(it->second));
-        iow->stop();
-        fSocketMap.erase(it);
-        iow->set(newSocketNum, iow->events);
-        iow->start();
-        fSocketMap.insert(std::make_pair(newSocketNum, std::move(iow)));
-    }
+	BackgroundHandlingMap::iterator it = fBackgroundHandlingMap.find(oldSocketNum);
+	if (it != fBackgroundHandlingMap.end()) {
+		auto iow = std::unique_ptr<BackgroundHandling>(std::move(it->second));
+		iow->stop();
+		fBackgroundHandlingMap.erase(it);
+		iow->set(newSocketNum, iow->events);
+		iow->start();
+		fBackgroundHandlingMap.insert(std::make_pair(newSocketNum, std::move(iow)));
+	}
 }
+
+extern bool _terminated;
 
 void EvTaskScheduler::doEventLoop(char volatile* watchVariable)
 {
-    while (True) {
-        fMainLoop.run(ev::ONCE);
-        if (*watchVariable)
-            break;
-    }
+	while (True) {
+		fMainLoop.run(ev::ONCE);
+		if (*watchVariable || _terminated)
+			break;
+	}
 }
 
 void EvTaskScheduler::event_trigger_thunk(ev::async& w, int revents)
 {
-    EventTriggerWatcher* tw = static_cast<EventTriggerWatcher*>(&w);
+	EventTrigger* et = static_cast<EventTrigger*>(&w);
 
-    if (tw->fData) {
-        tw->fCallback(tw->fData);
-    }
+	if (et->fData) {
+		et->fCallback(et->fData);
+	}
 }
 
-uint32_t EvTaskScheduler::EventTriggerWatcher::triggerCounter = 0;
+uint32_t EvTaskScheduler::EventTrigger::triggerCounter = 0;
 
 EventTriggerId EvTaskScheduler::createEventTrigger(TaskFunc* eventHandlerProc)
 {
-    EventTriggerWatcher *tw = new EventTriggerWatcher(fMainLoop);
+	EventTrigger *et = new EventTrigger(fMainLoop, eventHandlerProc);
 
-    tw->set<EvTaskScheduler, &EvTaskScheduler::event_trigger_thunk>(this);
-    tw->setHandler(eventHandlerProc);
-    tw->start();
+	et->set<EvTaskScheduler, &EvTaskScheduler::event_trigger_thunk>(this);
+	et->start();
 
-    fEventTriggerMap.emplace(tw->triggerId(), std::unique_ptr<EventTriggerWatcher>(tw));
+	fEventTriggerMap.emplace(et->triggerId(), et);
 
-    return tw->triggerId();
+	return et->triggerId();
 }
 
 void EvTaskScheduler::deleteEventTrigger(EventTriggerId eventTriggerId)
 {
-    fEventTriggerMap.erase(eventTriggerId);
+	fEventTriggerMap.erase(eventTriggerId);
 }
 
 void EvTaskScheduler::triggerEvent(EventTriggerId eventTriggerId, void* clientData)
 {
-    EventTriggerMap::iterator it = fEventTriggerMap.find(eventTriggerId);
-    if (it != fEventTriggerMap.end()) {
-        std::unique_ptr<EventTriggerWatcher> &w = it->second;
-        w->setClientData(clientData);
-        w->send();
-    }
+	EventTriggerMap::iterator it = fEventTriggerMap.find(eventTriggerId);
+	if (it != fEventTriggerMap.end()) {
+		EventTriggerPtr &et = it->second;
+		et->setClientData(clientData);
+		et->send();
+	}
 }
 
 void EvTaskScheduler::internalError()
 {
-    abort();
+	abort();
 }

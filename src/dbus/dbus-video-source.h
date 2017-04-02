@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
  * dbus-video-source.h
  * Copyright (C) 2015 Watson Xu <xuhuashan@gmail.com>
@@ -28,30 +28,29 @@ using namespace Ipcam::Media;
 namespace DBus {
 
 class VideoSource :
-  public ipcam::Media::VideoSource_adaptor,
-  public ipcam::Media::VideoSource::Imaging_adaptor,
-  public ipcam::Media::VideoSource::Imaging::AntiFlicker_adaptor,
-  public ipcam::Media::VideoSource::Imaging::BacklightCompensation_adaptor,
-  public ipcam::Media::VideoSource::Imaging::Focus_adaptor,
-  public ipcam::Media::VideoSource::Imaging::Exposure_adaptor,
-  public ipcam::Media::VideoSource::Imaging::WhiteBalance_adaptor,
-  public ipcam::Media::VideoSource::Imaging::WideDynamicRange_adaptor,
-  public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
-  public ipcam::Media::VideoSource::Imaging::Gamma_adaptor,
-  public IpcamBase
+	public ipcam::Media::VideoSource_adaptor,
+	public ipcam::Media::VideoSource::Imaging_adaptor,
+	public ipcam::Media::VideoSource::Imaging::AntiFlicker_adaptor,
+	public ipcam::Media::VideoSource::Imaging::BacklightCompensation_adaptor,
+	public ipcam::Media::VideoSource::Imaging::Focus_adaptor,
+	public ipcam::Media::VideoSource::Imaging::Exposure_adaptor,
+	public ipcam::Media::VideoSource::Imaging::WhiteBalance_adaptor,
+	public ipcam::Media::VideoSource::Imaging::WideDynamicRange_adaptor,
+	public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
+	public ipcam::Media::VideoSource::Imaging::Gamma_adaptor,
+	public IpcamBase
 {
 public:
-	VideoSource(IpcamRuntime &runtime, std::string obj_path, IVideoSource *video_source);
+	VideoSource(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::VideoSource* video_source);
 
 	void do_property_get
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-    IVideoSource *_video_source;
+	Ipcam::Media::VideoSource* _video_source;
 };
 
 } // namespace DBus
 
 #endif // _DBUS_VIDEO_SOURCE_H_
-

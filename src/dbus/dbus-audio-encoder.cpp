@@ -31,71 +31,71 @@ namespace DBus {
 #define AUDIOENCODER_INTERFACE	  "ipcam.Media.AudioEncoder"
 
 #define DEFINE_PROP(prop, get, set) \
-    _prop_handler.emplace(std::piecewise_construct, \
-        std::forward_as_tuple(prop), \
-        std::forward_as_tuple(get, set))
+	_prop_handler.emplace(std::piecewise_construct, \
+		std::forward_as_tuple(prop), \
+		std::forward_as_tuple(get, set))
 
 AudioEncoder::AudioEncoder
-(IpcamRuntime &runtime, std::string obj_path, IAudioEncoder *encoder)
+(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::AudioEncoder* encoder)
   : IpcamBase(runtime, obj_path),
     _audio_encoder(encoder)
 {
 	assert(encoder != NULL);
 
 	// Handler of ipcam.Media.AudioEncoder
-    DEFINE_PROP(AUDIOENCODER_INTERFACE ".Encoding",
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_audio_encoder->getEncoding());
-        },
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, const DBus::Variant &value)
-        {
-            _audio_encoder->setEncoding((IAudioEncoder::EncodingType)(uint32_t)value);
-        });
-    DEFINE_PROP(AUDIOENCODER_INTERFACE ".Bitrate",
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_audio_encoder->getBitrate());
-        },
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, const DBus::Variant &value)
-        {
-            _audio_encoder->setBitrate((uint32_t)value);
-        });
-    DEFINE_PROP(AUDIOENCODER_INTERFACE ".SampleRate",
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_audio_encoder->getSampleRate());
-        },
-        [this](DBus::InterfaceAdaptor &interface,
-           const std::string &property, const DBus::Variant &value)
-        {
-            _audio_encoder->setSampleRate((uint32_t)value);
-        });
+	DEFINE_PROP(AUDIOENCODER_INTERFACE ".Encoding",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32((uint32_t)_audio_encoder->getEncoding());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			throw IpcamError("Readonly property");
+		});
+	DEFINE_PROP(AUDIOENCODER_INTERFACE ".Bitrate",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32((uint32_t)_audio_encoder->getBitrate());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_audio_encoder->setBitrate((uint32_t)value);
+		});
+	DEFINE_PROP(AUDIOENCODER_INTERFACE ".SampleRate",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32((uint32_t)_audio_encoder->getSampleRate());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_audio_encoder->setSampleRate((uint32_t)value);
+		});
 }
 
 void AudioEncoder::do_property_get
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
-    value.clear();
+	value.clear();
 
-    auto iter = _prop_handler.find(interface.name() + "." + property);
-    if (iter == _prop_handler.end())
-        throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Get(interface, property, value);
+	auto iter = _prop_handler.find(interface.name() + "." + property);
+	if (iter == _prop_handler.end())
+		throw DBus::ErrorFailed("Requested interface or property not found");
+	iter->second.Get(interface, property, value);
 }
 
 void AudioEncoder::do_property_set
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
-    auto iter = _prop_handler.find(interface.name() + "." + property);
-    if (iter == _prop_handler.end())
-        throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Set(interface, property, value);
+	auto iter = _prop_handler.find(interface.name() + "." + property);
+	if (iter == _prop_handler.end())
+		throw DBus::ErrorFailed("Requested interface or property not found");
+	iter->second.Set(interface, property, value);
 }
 
 } //namespace DBus

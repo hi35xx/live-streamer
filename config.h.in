@@ -10,16 +10,16 @@
 #undef HAVE_EV_H
 
 /* support Hi3518v100 MPP */
-#undef HAVE_HI3518V100MPP_SUPPORT
+#undef HAVE_HI3518V100_SUPPORT
 
 /* support Hi3518v200 MPP */
-#undef HAVE_HI3518V200MPP_SUPPORT
+#undef HAVE_HI3518V200_SUPPORT
 
 /* support Hi3520dv200 MPP */
-#undef HAVE_HI3520DV200MPP_SUPPORT
+#undef HAVE_HI3520DV200_SUPPORT
 
 /* support Hi3520 MPP */
-#undef HAVE_HI3520V100MPP_SUPPORT
+#undef HAVE_HI3520V100_SUPPORT
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

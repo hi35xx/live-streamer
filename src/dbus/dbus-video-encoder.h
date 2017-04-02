@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
  * dbus-video-encoder.h
  * Copyright (C) 2015 Watson Xu <watson@localhost.localdomain>
@@ -29,34 +29,34 @@ using namespace Ipcam::Media;
 namespace DBus {
 
 class VideoEncoder : 
-  public ipcam::Media::VideoEncoder_adaptor,
-  public ipcam::Media::VideoEncoder::RateControl_adaptor,
-  public ipcam::Media::VideoEncoder::OSD_adaptor,
-  public DBus::IpcamBase
+	public ipcam::Media::VideoEncoder_adaptor,
+	public ipcam::Media::VideoEncoder::RateControl_adaptor,
+	public ipcam::Media::VideoEncoder::OSD_adaptor,
+	public DBus::IpcamBase
 {
 public:
-    VideoEncoder(IpcamRuntime &runtime, std::string obj_path, IVideoEncoder *encoder);
+	VideoEncoder(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::VideoEncoder* encoder);
 
 	void do_property_get
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 
-    ::DBus::Path CreateOSD(const uint32_t& index);
-    void DeleteOSD(const uint32_t& index);
-    std::map<uint32_t, ::DBus::Path> GetOSDs();
+	uint32_t CreateOSD();
+	void DeleteOSD(const uint32_t& index);
+	std::map<uint32_t, Path> GetOSDs();
 protected:
-    IVideoEncoder *_video_encoder;
+	Ipcam::Media::VideoEncoder* _video_encoder;
 private:
-    std::map<uint32_t, VideoOSD> _osds;
+	std::map<uint32_t, VideoOSD> _osds;
 };
 
 class H264VideoEncoder : 
-  public VideoEncoder,
-  public ipcam::Media::VideoEncoder::H264_adaptor
+	public VideoEncoder,
+	public ipcam::Media::VideoEncoder::H264_adaptor
 {
 public:
-    H264VideoEncoder(IpcamRuntime &runtime, std::string obj_path, IH264VideoEncoder *encoder);
+	H264VideoEncoder(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::H264VideoEncoder* encoder);
 };
 
 } // namespace DBus

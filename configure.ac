@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(live-streamer, 1.0.0)
+AC_INIT(live-streamer, 1.9.0)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -116,184 +116,184 @@ AC_CHECK_LIBRARY(
 
 
 dnl check for hi3518v100 mpp library
-AC_ARG_WITH(hi3518v100mpp,
-	[AS_HELP_STRING([--with-hi3518v100mpp=PATH],
+AC_ARG_WITH(hi3518v100,
+	[AS_HELP_STRING([--with-hi3518v100=PATH],
 		[specify prefix directory for himpp-hi3518v100 package.])],
-		[], [with_hi3518v100mpp=no])
+		[], [with_hi3518v100=no])
 
 AC_MSG_CHECKING([for hi3518v100 mpp library])
-case $with_hi3518v100mpp in
+case $with_hi3518v100 in
  yes)
-   hi3518v100mpppfx="$ac_sysroot/usr" ;;
+   hi3518v100pfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3518v100mpppfx=`echo "$with_hi3518v100mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3518v100pfx=`echo "$with_hi3518v100" | sed -e "$sed_quote_subst"` ;;
  *)
-   AC_MSG_RESULT([$with_hi3518v100mpp])
-   AC_MSG_ERROR([hi3518v100mpp must be an absolute path."])
+   AC_MSG_RESULT([$with_hi3518v100])
+   AC_MSG_ERROR([hi3518v100 must be an absolute path."])
    ;;
 esac
-if test "x$with_hi3518v100mpp" != xno; then
-  hi3518v100mppinc="-I$hi3518v100mpppfx/include/hi3518v100mpp"
-  hi3518v100mpplib="-L$hi3518v100mpppfx/lib \ 
+if test "x$with_hi3518v100" != xno; then
+  hi3518v100inc="-I$hi3518v100pfx/include/hi3518v100mpp"
+  hi3518v100lib="-L$hi3518v100pfx/lib \ 
     -lmpi -lresampler -laec -lvqev2 -lanr -lVoiceEngine \
     -lisp -l_hiae -l_hiawb -l_hiaf -lpthread"
-  AC_CHECK_LIBRARY([${hi3518v100mppinc}], $[{hi3518v100mpplib}],
+  AC_CHECK_LIBRARY([${hi3518v100inc}], $[{hi3518v100lib}],
     [AC_LANG_PROGRAM(
       [#include <hi_comm_sys.h>
        #include <mpi_sys.h>],
       [HI_MPI_SYS_Init();
        HI_MPI_SYS_Exit();])
-    ], [have_hi3518v100mpp=yes], [have_hi3518v100mpp=no]
+    ], [have_hi3518v100=yes], [have_hi3518v100=no]
   )
-  if test x$have_hi3518v100mpp = xyes; then
-    HI3518V100MPP_CPPFLAGS=$hi3518v100mppinc
-    HI3518V100MPP_LDFLAGS=$hi3518v100mpplib
-    AC_DEFINE(HAVE_HI3518V100MPP_SUPPORT, 1, [support Hi3518v100 MPP])
-    AC_SUBST(HI3518V100MPP_CPPFLAGS)
-    AC_SUBST(HI3518V100MPP_LDFLAGS)
+  if test x$have_hi3518v100 = xyes; then
+    HI3518V100_CPPFLAGS=$hi3518v100inc
+    HI3518V100_LDFLAGS=$hi3518v100lib
+    AC_DEFINE(HAVE_HI3518V100_SUPPORT, 1, [support Hi3518v100 MPP])
+    AC_SUBST(HI3518V100_CPPFLAGS)
+    AC_SUBST(HI3518V100_LDFLAGS)
   fi
 else
-  have_hi3518v100mpp=no
+  have_hi3518v100=no
 fi
-AC_MSG_RESULT([$have_hi3518v100mpp])
-AM_CONDITIONAL([ENABLE_HI3518V100MPP], [test x$have_hi3518v100mpp = xyes])
+AC_MSG_RESULT([$have_hi3518v100])
+AM_CONDITIONAL([ENABLE_HI3518V100], [test x$have_hi3518v100 = xyes])
 
 
 dnl check for hi3518v200 mpp library
-AC_ARG_WITH(hi3518v200mpp,
-	[AS_HELP_STRING([--with-hi3518v200mpp=PATH],
+AC_ARG_WITH(hi3518v200,
+	[AS_HELP_STRING([--with-hi3518v200=PATH],
 		[specify prefix directory for himpp-hi3518v200 package.])],
-		[], [with_hi3518v200mpp=no])
+		[], [with_hi3518v200=no])
 
 AC_MSG_CHECKING([for hi3518v200 mpp library])
-case $with_hi3518v200mpp in
+case $with_hi3518v200 in
  yes)
-   hi3518v200mpppfx="$ac_sysroot/usr" ;;
+   hi3518v200pfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3518v200mpppfx=`echo "$with_hi3518v200mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3518v200pfx=`echo "$with_hi3518v200" | sed -e "$sed_quote_subst"` ;;
  *)
-   AC_MSG_RESULT([$with_hi3518v200mpp])
-   AC_MSG_ERROR([hi3518v200mpp must be an absolute path."])
+   AC_MSG_RESULT([$with_hi3518v200])
+   AC_MSG_ERROR([hi3518v200 must be an absolute path."])
    ;;
 esac
-if test "x$with_hi3518v200mpp" != xno; then
-  hi3518v200mppinc="-I$hi3518v200mpppfx/include/hi3518v200mpp"
-  hi3518v200mpplib="-L$hi3518v200mpppfx/lib \ 
+if test "x$with_hi3518v200" != xno; then
+  hi3518v200inc="-I$hi3518v200pfx/include/hi3518v200mpp"
+  hi3518v200lib="-L$hi3518v200pfx/lib \ 
     -lmpi -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lVoiceEngine \
     -lisp -l_hiae -l_hiawb -l_hiaf -l_hidefog -lpthread"
-  AC_CHECK_LIBRARY([${hi3518v200mppinc}], $[{hi3518v200mpplib}],
+  AC_CHECK_LIBRARY([${hi3518v200inc}], $[{hi3518v200lib}],
     [AC_LANG_PROGRAM(
       [#include <hi_comm_sys.h>
        #include <mpi_sys.h>],
       [HI_MPI_SYS_Init();
        HI_MPI_SYS_Exit();])
-    ], [have_hi3518v200mpp=yes], [have_hi3518v200mpp=no]
+    ], [have_hi3518v200=yes], [have_hi3518v200=no]
   )
-  if test x$have_hi3518v200mpp = xyes; then
-    HI3518V200MPP_CPPFLAGS=$hi3518v200mppinc
-    HI3518V200MPP_LDFLAGS=$hi3518v200mpplib
-    AC_DEFINE(HAVE_HI3518V200MPP_SUPPORT, 1, [support Hi3518v200 MPP])
-    AC_SUBST(HI3518V200MPP_CPPFLAGS)
-    AC_SUBST(HI3518V200MPP_LDFLAGS)
+  if test x$have_hi3518v200 = xyes; then
+    HI3518V200_CPPFLAGS=$hi3518v200inc
+    HI3518V200_LDFLAGS=$hi3518v200lib
+    AC_DEFINE(HAVE_HI3518V200_SUPPORT, 1, [support Hi3518v200 MPP])
+    AC_SUBST(HI3518V200_CPPFLAGS)
+    AC_SUBST(HI3518V200_LDFLAGS)
   fi
 else
-  have_hi3518v200mpp=no
+  have_hi3518v200=no
 fi
-AC_MSG_RESULT([$have_hi3518v200mpp])
-AM_CONDITIONAL([ENABLE_HI3518V200MPP], [test x$have_hi3518v200mpp = xyes])
+AC_MSG_RESULT([$have_hi3518v200])
+AM_CONDITIONAL([ENABLE_HI3518V200], [test x$have_hi3518v200 = xyes])
 
 
 dnl check for hi3520v100 mpp library
-AC_ARG_WITH(hi3520v100mpp,
-	[AS_HELP_STRING([--with-hi3520v100mpp=PATH],
+AC_ARG_WITH(hi3520v100,
+	[AS_HELP_STRING([--with-hi3520v100=PATH],
 		[specify prefix directory for himpp-hi3520v100 package.])],
-		[], [with_hi3520v100mpp=no])
+		[], [with_hi3520v100=no])
 
 AC_MSG_CHECKING([for hi3520v100 mpp library])
-case $with_hi3520v100mpp in
+case $with_hi3520v100 in
  yes)
-   hi3520v100mpppfx="$ac_sysroot/usr" ;;
+   hi3520v100pfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3520v100mpppfx=`echo "$with_hi3520v100mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3520v100pfx=`echo "$with_hi3520v100" | sed -e "$sed_quote_subst"` ;;
  *)
-   AC_MSG_RESULT([$with_hi3520v100mpp])
-   AC_MSG_ERROR([hi3520v100mpp must be an absolute path."])
+   AC_MSG_RESULT([$with_hi3520v100])
+   AC_MSG_ERROR([hi3520v100 must be an absolute path."])
    ;;
 esac
-if test "x$with_hi3520v100mpp" != xno; then
-  hi3520v100mppinc="-I$hi3520v100mpppfx/include/hi3520v100mpp"
-  hi3520v100mpplib="-L$hi3520v100mpppfx/lib \ 
+if test "x$with_hi3520v100" != xno; then
+  hi3520v100inc="-I$hi3520v100pfx/include/hi3520v100mpp"
+  hi3520v100lib="-L$hi3520v100pfx/lib \ 
     -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lpthread"
-  AC_CHECK_LIBRARY([${hi3520v100mppinc}], $[{hi3520v100mpplib}],
+  AC_CHECK_LIBRARY([${hi3520v100inc}], $[{hi3520v100lib}],
     [AC_LANG_PROGRAM(
       [#include <hi_comm_sys.h>
        #include <mpi_sys.h>],
       [HI_MPI_SYS_Init();
        HI_MPI_SYS_Exit();])
-    ], [have_hi3520v100mpp=yes], [have_hi3520v100mpp=no]
+    ], [have_hi3520v100=yes], [have_hi3520v100=no]
   )
-  if test x$have_hi3520v100mpp = xyes; then
-    HI3520V100MPP_CPPFLAGS=$hi3520v100mppinc
-    HI3520V100MPP_LDFLAGS=$hi3520v100mpplib
-    AC_DEFINE(HAVE_HI3520V100MPP_SUPPORT, 1, [support Hi3520 MPP])
-    AC_SUBST(HI3520V100MPP_CPPFLAGS)
-    AC_SUBST(HI3520V100MPP_LDFLAGS)
+  if test x$have_hi3520v100 = xyes; then
+    HI3520V100_CPPFLAGS=$hi3520v100inc
+    HI3520V100_LDFLAGS=$hi3520v100lib
+    AC_DEFINE(HAVE_HI3520V100_SUPPORT, 1, [support Hi3520 MPP])
+    AC_SUBST(HI3520V100_CPPFLAGS)
+    AC_SUBST(HI3520V100_LDFLAGS)
   fi
 else
-  have_hi3520v100mpp=no
+  have_hi3520v100=no
 fi
-AC_MSG_RESULT([$have_hi3520v100mpp])
-AM_CONDITIONAL([ENABLE_HI3520V100MPP], [test x$have_hi3520v100mpp = xyes])
+AC_MSG_RESULT([$have_hi3520v100])
+AM_CONDITIONAL([ENABLE_HI3520V100], [test x$have_hi3520v100 = xyes])
 
 dnl check for hi3520dv200 mpp library
-AC_ARG_WITH(hi3520dv200mpp,
-	[AS_HELP_STRING([--with-hi3520dv200mpp=PATH],
+AC_ARG_WITH(hi3520dv200,
+	[AS_HELP_STRING([--with-hi3520dv200=PATH],
 		[specify prefix directory for himpp-hi3520dv200 package.])],
-		[], [with_hi3520dv200mpp=no])
+		[], [with_hi3520dv200=no])
 
 AC_MSG_CHECKING([for hi3520dv200 mpp library])
-case $with_hi3520dv200mpp in
+case $with_hi3520dv200 in
  yes)
-   hi3520dv200mpppfx="$ac_sysroot/usr" ;;
+   hi3520dv200pfx="$ac_sysroot/usr" ;;
  no|'')
    ;;
  /*)
-   hi3520dv200mpppfx=`echo "$with_hi3520dv200mpp" | sed -e "$sed_quote_subst"` ;;
+   hi3520dv200pfx=`echo "$with_hi3520dv200" | sed -e "$sed_quote_subst"` ;;
  *)
-   AC_MSG_RESULT([$with_hi3520dv200mpp])
-   AC_MSG_ERROR([hi3520dv200mpp must be an absolute path."])
+   AC_MSG_RESULT([$with_hi3520dv200])
+   AC_MSG_ERROR([hi3520dv200 must be an absolute path."])
    ;;
 esac
-if test "x$with_hi3520dv200mpp" != xno; then
-  hi3520dv200mppinc="-I$hi3520dv200mpppfx/include/hi3520dv200mpp"
-  hi3520dv200mpplib="-L$hi3520dv200mpppfx/lib \
+if test "x$with_hi3520dv200" != xno; then
+  hi3520dv200inc="-I$hi3520dv200pfx/include/hi3520dv200mpp"
+  hi3520dv200lib="-L$hi3520dv200pfx/lib \
     -lmpi -lresampler -laec -lanr -ljpeg -lhdmi -lVoiceEngine -lvqev2 -lpthread"
-  AC_CHECK_LIBRARY([${hi3520dv200mppinc}], $[{hi3520dv200mpplib}],
+  AC_CHECK_LIBRARY([${hi3520dv200inc}], $[{hi3520dv200lib}],
     [AC_LANG_PROGRAM(
       [#include <hi_comm_sys.h>
        #include <mpi_sys.h>],
       [HI_MPI_SYS_Init();
        HI_MPI_SYS_Exit();])
-    ], [have_hi3520dv200mpp=yes], [have_hi3520dv200mpp=no]
+    ], [have_hi3520dv200=yes], [have_hi3520dv200=no]
   )
-  if test x$have_hi3520dv200mpp = xyes; then
-    HI3520DV200MPP_CPPFLAGS=$hi3520dv200mppinc
-    HI3520DV200MPP_LDFLAGS=$hi3520dv200mpplib
-    AC_DEFINE(HAVE_HI3520DV200MPP_SUPPORT, 1, [support Hi3520dv200 MPP])
-    AC_SUBST(HI3520DV200MPP_CPPFLAGS)
-    AC_SUBST(HI3520DV200MPP_LDFLAGS)
+  if test x$have_hi3520dv200 = xyes; then
+    HI3520DV200_CPPFLAGS=$hi3520dv200inc
+    HI3520DV200_LDFLAGS=$hi3520dv200lib
+    AC_DEFINE(HAVE_HI3520DV200_SUPPORT, 1, [support Hi3520dv200 MPP])
+    AC_SUBST(HI3520DV200_CPPFLAGS)
+    AC_SUBST(HI3520DV200_LDFLAGS)
   fi
 else
-  have_hi3520dv200mpp=no
+  have_hi3520dv200=no
 fi
-AC_MSG_RESULT([$have_hi3520dv200mpp])
-AM_CONDITIONAL([ENABLE_HI3520DV200MPP], [test x$have_hi3520dv200mpp = xyes])
+AC_MSG_RESULT([$have_hi3520dv200])
+AM_CONDITIONAL([ENABLE_HI3520DV200], [test x$have_hi3520dv200 = xyes])
 
 
 dnl check for libev library
@@ -316,7 +316,6 @@ src/Makefile
 src/rtsp-server/Makefile
 src/dbus/Makefile
 src/platform/Makefile
-src/platform/hi3518v100mpp/Makefile
-src/platform/hi3518v200mpp/Makefile
-src/platform/hi3520v100mpp/Makefile
+src/common/Makefile
+src/platform/hi3518v200/Makefile
 ])

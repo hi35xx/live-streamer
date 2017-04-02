@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
@@ -27,26 +28,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <unordered_map>
 
-class DynamicRTSPServer: public RTSPServerSupportingHTTPStreaming {
+class DynamicRTSPServer: public RTSPServerSupportingHTTPStreaming
+{
 public:
-  static DynamicRTSPServer* createNew(UsageEnvironment& env, Port ourPort,
-				      UserAuthenticationDatabase* authDatabase,
-				      unsigned reclamationTestSeconds = 65);
+	static DynamicRTSPServer* createNew(UsageEnvironment& env, Port ourPort,
+	                                    UserAuthenticationDatabase* authDatabase,
+	                                    unsigned reclamationTestSeconds = 65);
 
-  void addStreamPath(const std::string &path, const std::string &location);
+	void addStreamPath(const std::string &path, const std::string &location);
 
 protected:
-  DynamicRTSPServer(UsageEnvironment& env, int ourSocket, Port ourPort,
-		    UserAuthenticationDatabase* authDatabase, unsigned reclamationTestSeconds);
-  // called only by createNew();
-  virtual ~DynamicRTSPServer();
+	DynamicRTSPServer(UsageEnvironment& env, int ourSocket, Port ourPort,
+	                  UserAuthenticationDatabase* authDatabase, unsigned reclamationTestSeconds);
+	// called only by createNew();
+	virtual ~DynamicRTSPServer();
 
 protected: // redefined virtual functions
-  virtual ServerMediaSession*
-  lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession);
-
-private:
-  std::unordered_map<std::string, std::string> fStreamDirMap;
+	virtual ServerMediaSession*
+	lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession);
 };
 
 #endif

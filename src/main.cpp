@@ -43,10 +43,8 @@
 
 #include <ipcam-runtime.h>
 
-#if defined(HAVE_HI3518V100MPP_SUPPORT) \
-	|| defined(HAVE_HI3518V200MPP_SUPPORT) \
-	|| defined(HAVE_HI3520V100MPP_SUPPORT) \
-	|| defined(HAVE_HI3520DV200MPP_SUPPORT)
+#if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
+	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
 #include <himpp-media.h>
 #endif
 
@@ -54,94 +52,50 @@ ev::default_loop mainloop;
 
 static const char *IPCAM_SERVER_NAME = "ipcam.Media";
 
-static const char* sensor_type = "ov9712";
 static int rtsp_port = 554;
 static DBusBusType bus_type = DBUS_BUS_SYSTEM;
-static std::list<std::string> stream_dirs;
-
-static void list_supported_sensors(void)
-{
-	std::cout << "RTSP/RTP stream server\n";
-	std::cout << "Supported sensor:\n";
-#if defined(HAVE_HI3518V100MPP_SUPPORT)
-	for (auto s : himpp_video_sensor_map) {
-		HimppVideoSensor &sensor = s.second;
-		ISP_IMAGE_ATTR_S *attr = sensor;
-		std::string resolution = "["
-			+ std::to_string(attr->u16Width) + "x" 
-			+ std::to_string(attr->u16Height) + "@"
-			+ std::to_string(attr->u16FrameRate)
-			+ "]";
-		printf("  %-10s %-16s: %s\n",
-		       sensor.getSensorName().c_str(),
-		       resolution.c_str(),
-		       sensor.getModulePath().c_str());
-	}
-#endif
-#if defined(HAVE_HI3518V200MPP_SUPPORT)
-	for (auto s : himpp_video_sensor_map) {
-		HimppVideoSensor &sensor = s.second;
-		ISP_PUB_ATTR_S *attr = sensor;
-		std::string resolution = "["
-			+ std::to_string(attr->stWndRect.u32Width) + "x" 
-			+ std::to_string(attr->stWndRect.u32Height) + "@"
-			+ std::to_string(attr->f32FrameRate)
-			+ "]";
-		printf("  %-10s %-16s: %s\n",
-		       sensor.getSensorName().c_str(),
-		       resolution.c_str(),
-		       sensor.getModulePath().c_str());
-	}
-#endif
-	std::cout << std::endl;
-}
 
 static void display_usage(char *cmd)
 {
 	const char *usage = \
 		"RTSP/RTP stream server\n"
-		"Options:\n"
+		"Common Options:\n"
 		"  -h, --help                  Show help options\n"
-		"  -B  --background            Run daemon in the background\n"
+		"  -B, --background            Run daemon in the background\n"
 		"      --system                Use system message bus\n"
 		"      --session               Use session message bus\n"
+		"  -v, --version               Show version information\n"
+		"  -s, --syslog                Log output to syslog instead of stdout\n"
 		"  -p, --rtsp-port=PORT        RTSP port\n"
-		"  -F, --file-stream=PATH:LOC  Add path for file streams\n"
-		"  -S, --sensor=SENSOR_TYPE    Choose video sensor type\n"
-		"  -l, --list-sensor           List supported video sensors\n"
 		"\n";
 	std::cout << "Usage: " << cmd << " [options]...\n";
 	std::cout << usage;
+	std::cout << "Platform Options:\n";
+#if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
+	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
+#endif
+	std::cout << std::endl;
 }
 
-static const char *optString = "Bh?p:S:lF:";
+static const char *optString = "Bh?vp:s";
 static const struct option longOpts[] = {
+	{ "help",        no_argument,        NULL,   'h' },
 	{ "background",  required_argument,  NULL,   'B' },
+	{ "version",     no_argument,        NULL,   'v' },
 	{ "system",      no_argument,        NULL,    0  },
 	{ "session",     no_argument,        NULL,    0  },
 	{ "port",        required_argument,  NULL,   'p' },
-	{ "sensor",	     required_argument,  NULL,   'S' },
-	{ "list-sensor", no_argument,        NULL,   'l' },
-	{ "file-stream", no_argument,        NULL,   'F' },
-	{ "help",        no_argument,        NULL,   'h' },
+	{ "syslog",      no_argument,        NULL,   's' },
 	{ NULL,          no_argument,        NULL,    0  }
 };
+
+bool _terminated = false;
 
 static void sigterm_handler(ev::sig &w, int revents)
 {
 	std::cout << std::endl;
+	_terminated = true;
 	mainloop.break_loop(ev::ALL);
-}
-
-std::vector<std::string> split(const std::string &s, char delim)
-{
-	std::vector<std::string> sv;
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, delim)) {
-		sv.push_back(item);
-	}
-	return sv;
 }
 
 static DBus::Ev::BusDispatcher dispatcher;
@@ -150,10 +104,11 @@ int main(int argc, char *argv[])
 {
 	int opt = 0;
 	int longIndex;
+	std::unordered_map<std::string, std::string> plat_args;
 
 	setlocale(LC_ALL, "");
 
-	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
 	while (opt != -1) {
 		switch (opt) {
 		case 'B':
@@ -163,23 +118,19 @@ int main(int argc, char *argv[])
 		case 'p':
 			rtsp_port = strtoul(optarg, NULL, 0);
 			break;
-		case 'S':
-			sensor_type = optarg;
-			break;
-		case 'l':
-			list_supported_sensors();
-			return 0;
-		case 'F':
-			stream_dirs.push_back(optarg);
-			break;
 		case 'h':
 			display_usage(argv[0]);
 			return 0;
+		case 'v':
+			std::cout << PACKAGE_STRING << std::endl;
+			return 0;
+		case 's':
+			break;
 		case 0:
 			if (strcmp(longOpts[longIndex].name, "system") == 0)
-					bus_type = DBUS_BUS_SYSTEM;
+				bus_type = DBUS_BUS_SYSTEM;
 			else if(strcmp(longOpts[longIndex].name, "session") == 0)
-					bus_type = DBUS_BUS_SESSION;
+				bus_type = DBUS_BUS_SESSION;
 			break;
 		default:
 			display_usage(argv[0]);
@@ -219,8 +170,6 @@ int main(int argc, char *argv[])
 	authDB->addUserRecord("username1", "password1");
 #endif
 
-	OutPacketBuffer::increaseMaxSizeTo(512 * 1024);
-
 	// Create the RTSP server
 	DynamicRTSPServer *rtspServer;
 	portNumBits rtspServerPortNum = rtsp_port;
@@ -245,23 +194,9 @@ int main(int argc, char *argv[])
 
 	IpcamRuntime *runtime = new IpcamRuntime(mainloop, rtspServer, &conn);
 
-	std::list<std::string>::const_iterator it;
-	for (it = stream_dirs.begin(); it != stream_dirs.end(); it++) {
-		std::vector<std::string> sv = split(*it, ':');
-		if (sv.size() != 2)
-			continue;
-		*env << "  add stream path " 
-			<< sv[0].c_str() << " => "
-			<< sv[1].c_str() << "\n";
-		rtspServer->addStreamPath(sv[0], sv[1]);
-	}
-
-#if defined(HAVE_HI3518V100MPP_SUPPORT) || defined(HAVE_HI3518V200MPP_SUPPORT)
-	Hi3518mppMedia hi3518media(runtime, sensor_type);
-#endif
-
-#if defined(HAVE_HI3520V100MPP_SUPPORT) || defined(HAVE_HI3520DV200MPP_SUPPORT)
-	Hi3520mppMedia hi3520media(runtime, sensor_type);
+#if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
+	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
+	HimppMedia himpp_media(runtime, plat_args);
 #endif
 
 	mainloop.run();

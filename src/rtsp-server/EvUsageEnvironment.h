@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*-  */
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
  * EvUsageEnvironment.h
  * Copyright (C) 2015 Watson Xu <watson@localhost.localdomain>
@@ -30,90 +30,71 @@
 class EvTaskScheduler: public TaskScheduler
 {
 public:
-    static EvTaskScheduler* createNew(ev::default_loop& loop);
-    virtual ~EvTaskScheduler();
-    virtual TaskToken scheduleDelayedTask(int64_t microseconds, TaskFunc* proc,
-                                          void* clientData);
-    virtual void unscheduleDelayedTask(TaskToken& prevTask);
-    virtual void setBackgroundHandling(int socketNum, int conditionSet,
-                                       BackgroundHandlerProc* handlerProc,
-                                       void* clientData);
-    virtual void moveSocketHandling(int oldSocketNum, int newSocketNum);
-    virtual void doEventLoop(char volatile* watchVariable = NULL);
-    virtual EventTriggerId createEventTrigger(TaskFunc* eventHandlerProc);
-    virtual void deleteEventTrigger(EventTriggerId eventTriggerId);
-    virtual void triggerEvent(EventTriggerId eventTriggerId, void* clientData = NULL);
-    virtual void internalError();
+	static EvTaskScheduler* createNew(ev::default_loop& loop);
+	virtual ~EvTaskScheduler();
+	virtual TaskToken scheduleDelayedTask(int64_t microseconds, TaskFunc* proc,
+	                                      void* clientData);
+	virtual void unscheduleDelayedTask(TaskToken& prevTask);
+	virtual void setBackgroundHandling(int socketNum, int conditionSet,
+	                                   BackgroundHandlerProc* handlerProc,
+	                                   void* clientData);
+	virtual void moveSocketHandling(int oldSocketNum, int newSocketNum);
+	virtual void doEventLoop(char volatile* watchVariable = NULL);
+	virtual EventTriggerId createEventTrigger(TaskFunc* eventHandlerProc);
+	virtual void deleteEventTrigger(EventTriggerId eventTriggerId);
+	virtual void triggerEvent(EventTriggerId eventTriggerId, void* clientData = NULL);
+	virtual void internalError();
 
 protected:
-    EvTaskScheduler(ev::default_loop& loop);
+	EvTaskScheduler(ev::default_loop& loop);
 
 private:
-    ev::loop_ref& fMainLoop;
+	struct DelayedTask : public ev::timer
+	{
+		DelayedTask(ev::loop_ref& loop, uint64_t usec, TaskFunc* proc, void* data);
+		TaskToken token() { return (TaskToken)fToken; }
 
-    struct DelayedTaskWatcher : public ev::timer
-    {
-        DelayedTaskWatcher(ev::loop_ref& loop)
-            : timer(loop), fCallback(NULL), fData(NULL)
-        {
-            do {
-                fToken = ++tokenCounter;
-            } while (fToken == 0);
-        }
-        void setHandler(TaskFunc* cb, void* data)
-        {
-            fCallback = cb;
-            fData = data;
-        }
-        TaskToken token() { return (TaskToken)fToken; }
-        TaskFunc* fCallback;
-        void* fData;
+		TaskFunc*		fCallback;
+		void*			fData;
+		long			fToken;
+		static long		tokenCounter;
+	};
+	struct BackgroundHandling : public ev::io
+	{
+		BackgroundHandling(ev::loop_ref& loop, int fd, int events,
+		                   BackgroundHandlerProc* proc, void* data);
 
-        long fToken;
-        static long tokenCounter;
-    };
-    struct SocketIoWatcher : public ev::io
-    {
-        SocketIoWatcher(ev::loop_ref& loop)
-            : io(loop), fCallback(NULL), fData(NULL) {}
-        void setHandler(BackgroundHandlerProc* cb, void* data)
-        {
-            fCallback = cb;
-            fData = data;
-        }
-        BackgroundHandlerProc* fCallback;
-        void* fData;
-    };
-    struct EventTriggerWatcher : public ev::async
-    {
-        EventTriggerWatcher(ev::loop_ref& loop)
-            : async(loop), fCallback(NULL), fData(NULL)
-        {
-            do {
-                fTriggerId = ++triggerCounter;
-            } while (fTriggerId == 0);
-        }
-        void setHandler(TaskFunc* cb) { fCallback = cb; }
-        void setClientData(void* clientData) { fData = clientData; }
-        EventTriggerId triggerId() { return (EventTriggerId)fTriggerId; }
-        TaskFunc* fCallback;
-        void* fData;
-        uint32_t fTriggerId;
+		BackgroundHandlerProc* fCallback;
+		void* fData;
+	};
+	struct EventTrigger : public ev::async
+	{
+		EventTrigger(ev::loop_ref& loop, TaskFunc* proc);
 
-        static uint32_t triggerCounter;
-    };
+		void setClientData(void* clientData) { fData = clientData; }
+		EventTriggerId triggerId() { return (EventTriggerId)fTriggerId; }
 
-    void delayed_task_thunk(ev::timer& w, int revents);
-    void socket_io_thunk(ev::io& w, int revents);
-    void event_trigger_thunk(ev::async& w, int revents);
+		TaskFunc*		fCallback;
+		void*			fData;
+		uint32_t		fTriggerId;
+		static uint32_t	triggerCounter;
+	};
 
-    typedef std::unordered_map<int, std::unique_ptr<SocketIoWatcher>> SocketIoMap;
-    typedef std::unordered_map<TaskToken, std::unique_ptr<DelayedTaskWatcher>> DelayedTaskMap;
-    typedef std::unordered_map<EventTriggerId, std::unique_ptr<EventTriggerWatcher>> EventTriggerMap;
-    SocketIoMap    fSocketMap;
-    DelayedTaskMap fDelayedTaskMap;
-    EventTriggerMap fEventTriggerMap;
+	void delayed_task_thunk(ev::timer& w, int revents);
+	void background_handling_thunk(ev::io& w, int revents);
+	void event_trigger_thunk(ev::async& w, int revents);
 
+	typedef std::unique_ptr<DelayedTask> DelayedTaskPtr;
+	typedef std::unique_ptr<BackgroundHandling> BackgroundHandlingPtr;
+	typedef std::unique_ptr<EventTrigger> EventTriggerPtr;
+	typedef std::unordered_map<int, BackgroundHandlingPtr> BackgroundHandlingMap;
+	typedef std::unordered_map<TaskToken, DelayedTaskPtr> DelayedTaskMap;
+	typedef std::unordered_map<EventTriggerId, EventTriggerPtr> EventTriggerMap;
+
+	ev::loop_ref&			fMainLoop;
+	BackgroundHandlingMap	fBackgroundHandlingMap;
+	DelayedTaskMap			fDelayedTaskMap;
+	EventTriggerMap			fEventTriggerMap;
 };
 
 #endif // __EV_USAGE_ENVIRONMENT_H__

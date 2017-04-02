@@ -21,96 +21,104 @@
 
 #include <MediaSink.hh>
 #include <OnDemandServerMediaSubsession.hh>
-#include <ipcam-media-iface.h>
+#include <media-stream.h>
 
 using namespace Ipcam::Media;
 
 class LiveH264VideoServerMediaSubsession: public OnDemandServerMediaSubsession
 {
 public:
-  static LiveH264VideoServerMediaSubsession*
-  createNew(UsageEnvironment& env, IH264VideoStream& stream);
+	static LiveH264VideoServerMediaSubsession*
+		createNew(UsageEnvironment& env, H264VideoStreamSource* stream);
 
-  // Used to implement "getAuxSDPLine()":
-  void checkForAuxSDPLine1();
-  void afterPlayingDummy1();
+	// Used to implement "getAuxSDPLine()":
+	void checkForAuxSDPLine1();
+	void afterPlayingDummy1();
 
-  void startStream(unsigned clientSessionId, void* streamToken,
-                   TaskFunc* rtcpRRHandler,
-                   void* rtcpRRHandlerClientData,
-                   unsigned short& rtpSeqNum,
-                   unsigned& rtpTimestamp,
-                   ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
-                   void* serverRequestAlternativeByteHandlerClientData);
-  void pauseStream(unsigned clientSessionId, void* streamToken);
+	void startStream(unsigned clientSessionId, void* streamToken,
+	                 TaskFunc* rtcpRRHandler,
+	                 void* rtcpRRHandlerClientData,
+	                 unsigned short& rtpSeqNum,
+	                 unsigned& rtpTimestamp,
+	                 ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+	                 void* serverRequestAlternativeByteHandlerClientData);
+	void pauseStream(unsigned clientSessionId, void* streamToken);
 
 protected:
-  LiveH264VideoServerMediaSubsession(UsageEnvironment& env, IH264VideoStream& stream);
-      // called only by createNew();
-  virtual ~LiveH264VideoServerMediaSubsession();
+	LiveH264VideoServerMediaSubsession(UsageEnvironment& env, H264VideoStreamSource* stream);
+	// called only by createNew();
+	virtual ~LiveH264VideoServerMediaSubsession();
 
-  void setDoneFlag() { fDoneFlag = ~0; }
+	void setDoneFlag() { fDoneFlag = ~0; }
 
 protected: // redefined virtual functions
-  virtual char const* getAuxSDPLine(RTPSink* rtpSink,
-				    FramedSource* inputSource);
+	virtual char const* getAuxSDPLine(RTPSink* rtpSink,
+	                                  FramedSource* inputSource);
 
-  virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
-                                              unsigned& estBitrate);
-  virtual void closeStreamSource(FramedSource *inputSource);
-  virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
-                                    unsigned char rtpPayloadTypeIfDynamic,
-                                    FramedSource* inputSource);
+	virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+	                                            unsigned& estBitrate);
+	virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+	                                  unsigned char rtpPayloadTypeIfDynamic,
+	                                  FramedSource* inputSource);
 
 private:
-  IH264VideoStream &fVideoStream;
-  FramedFilter *fStreamSource;
-  char* fAuxSDPLine;
-  char fDoneFlag; // used when setting up "fAuxSDPLine"
-  RTPSink* fDummyRTPSink; // ditto
+	H264VideoStreamSource* fVideoStreamSource;
+	char* fAuxSDPLine;
+	char fDoneFlag; // used when setting up "fAuxSDPLine"
+	RTPSink* fDummyRTPSink; // ditto
 };
 
 
 class LiveJPEGVideoServerMediaSubsession: public OnDemandServerMediaSubsession
 {
 public:
-  static LiveJPEGVideoServerMediaSubsession*
-    createNew(UsageEnvironment& env, IJPEGVideoStream& stream);
+	static LiveJPEGVideoServerMediaSubsession*
+		createNew(UsageEnvironment& env, JPEGVideoStreamSource* stream);
+
+	void startStream(unsigned clientSessionId, void* streamToken,
+	                 TaskFunc* rtcpRRHandler,
+	                 void* rtcpRRHandlerClientData,
+	                 unsigned short& rtpSeqNum,
+	                 unsigned& rtpTimestamp,
+	                 ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+	                 void* serverRequestAlternativeByteHandlerClientData);
+	void pauseStream(unsigned clientSessionId, void* streamToken);
 
 protected:
-  LiveJPEGVideoServerMediaSubsession(UsageEnvironment& env, IJPEGVideoStream& stream);
-  virtual ~LiveJPEGVideoServerMediaSubsession();
+	LiveJPEGVideoServerMediaSubsession(UsageEnvironment& env, JPEGVideoStreamSource* stream);
+	virtual ~LiveJPEGVideoServerMediaSubsession();
 
 private:
-  virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
-                                              unsigned& estBitrate);
-  virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
-                                    unsigned char rtpPayloadTypeIfDynamic,
-                                    FramedSource* inputSource);
+	virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+	                                            unsigned& estBitrate);
+	virtual void closeStreamSource(FramedSource* inputSource);
+	virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+	                                  unsigned char rtpPayloadTypeIfDynamic,
+	                                  FramedSource* inputSource);
 private:
-  IJPEGVideoStream &fVideoStream;
+	JPEGVideoStreamSource*	fVideoStreamSource;
 };
 
 
 class LiveAudioServerMediaSubsession: public OnDemandServerMediaSubsession
 {
 public:
-  static LiveAudioServerMediaSubsession*
-  createNew(UsageEnvironment& env, IAudioStream& stream);
+	static LiveAudioServerMediaSubsession*
+	createNew(UsageEnvironment& env, AudioStreamSource* stream);
 
 protected:
-  LiveAudioServerMediaSubsession(UsageEnvironment& env, IAudioStream& stream);
-  virtual ~LiveAudioServerMediaSubsession();
+	LiveAudioServerMediaSubsession(UsageEnvironment& env, AudioStreamSource* stream);
+	virtual ~LiveAudioServerMediaSubsession();
 
 protected: // redefined virtual functions
-  virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
-                                              unsigned& estBitrate);
-  virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
-                                    unsigned char rtpPayloadTypeIfDynamic,
-                                    FramedSource* inputSource);
+	virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+	                                            unsigned& estBitrate);
+	virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+	                                  unsigned char rtpPayloadTypeIfDynamic,
+	                                  FramedSource* inputSource);
 
 private:
-  IAudioStream &fAudioStream;
+	AudioStreamSource* fAudioStreamSource;
 };
 
 #endif //__LIVE_STREAM_INPUT_HH

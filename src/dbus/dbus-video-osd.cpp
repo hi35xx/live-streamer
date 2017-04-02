@@ -31,187 +31,187 @@ namespace DBus {
 #define OSD_INTERFACE	   "ipcam.Media.OSD"
 
 #define DEFINE_PROP(prop, get, set) \
-    _prop_handler.emplace(std::piecewise_construct, \
-        std::forward_as_tuple(prop), \
-        std::forward_as_tuple(get, set))
+	_prop_handler.emplace(std::piecewise_construct, \
+		std::forward_as_tuple(prop), \
+		std::forward_as_tuple(get, set))
 
 VideoOSD::VideoOSD
-(IpcamRuntime &runtime, std::string obj_path, IVideoOSD *video_osd)
+(IpcamRuntime &runtime, std::string obj_path, Ipcam::Media::VideoOSD* video_osd)
   : IpcamBase(runtime, obj_path),
-    _video_osd(runtime, video_osd)
+    _video_osd(video_osd)
 {
-    assert(video_osd != NULL);
+	assert(video_osd != NULL);
 
 	// Handler of ipcam.Media.OSD
 	DEFINE_PROP(OSD_INTERFACE ".Type",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_video_osd.getType());
-        },
+		{
+			value.writer().append_uint32((uint32_t)_video_osd->getType());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setType((IpcamVideoOSD::OSDType)(uint32_t)value);
-        });
+		{
+			_video_osd->setType((OSDType)(uint32_t)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".Visible",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_bool(_video_osd.getVisible());
-        },
+		{
+			value.writer().append_bool(_video_osd->getVisible());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setVisible((bool)value);
-        });
+		{
+			_video_osd->setVisible((bool)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".Size",
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-			IVideoOSD::Size size = _video_osd.getSize();
+		{
+			Ipcam::Media::Size size = _video_osd->getSize();
 			DBus::Struct<uint32_t, uint32_t> s;
 			DBus::MessageIter mi = value.writer();
 			s._1 = size.w;
 			s._2 = size.h;
-            mi << s;
-        }),
+			mi << s;
+		}),
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
+		{
 			DBus::Struct<uint32_t, uint32_t> s = value;
-			IVideoOSD::Size size(s._1, s._2);
-			_video_osd.setSize(size);
-        }));
+			Ipcam::Media::Size size(s._1, s._2);
+			_video_osd->setSize(size);
+		}));
 	DEFINE_PROP(OSD_INTERFACE ".Position",
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-			IVideoOSD::Position pos = _video_osd.getPosition();
+		{
+			Ipcam::Media::Position pos = _video_osd->getPosition();
 			DBus::Struct<int32_t, int32_t> s;
 			DBus::MessageIter mi = value.writer();
 			s._1 = pos.x;
 			s._2 = pos.y;
-            mi << s;
-        }),
+			mi << s;
+		}),
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
+		{
 			DBus::Struct<int32_t, int32_t> s = value;
-			IVideoOSD::Position pos(s._1, s._2);
-			_video_osd.setPosition(pos);
-        }));
+			Ipcam::Media::Position pos(s._1, s._2);
+			_video_osd->setPosition(pos);
+		}));
 	DEFINE_PROP(OSD_INTERFACE ".BackgroundColor",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_video_osd.getBackgroundColor());
-        },
+		{
+			value.writer().append_uint32((uint32_t)_video_osd->getBackgroundColor());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setBackgroundColor((uint32_t)value);
-        });
+		{
+			_video_osd->setBackgroundColor((uint32_t)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".BackgroundAlpha",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_video_osd.getBackgroundAlpha());
-        },
+		{
+			value.writer().append_uint32((uint32_t)_video_osd->getBackgroundAlpha());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setBackgroundAlpha((uint32_t)value);
-        });
+		{
+			_video_osd->setBackgroundAlpha((uint32_t)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".ForegroundAlpha",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32((uint32_t)_video_osd.getForegroundAlpha());
-        },
+		{
+			value.writer().append_uint32((uint32_t)_video_osd->getForegroundAlpha());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setForegroundAlpha((uint32_t)value);
-        });
+		{
+			_video_osd->setForegroundAlpha((uint32_t)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".InvertColor",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_bool((uint32_t)_video_osd.getInvertColor());
-        },
+		{
+			value.writer().append_bool((uint32_t)_video_osd->getInvertColor());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setInvertColor((bool)value);
-        });
+		{
+			_video_osd->setInvertColor((bool)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".Text",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_string(_video_osd.getText().c_str());
-        },
+		{
+			value.writer().append_string(_video_osd->getText().c_str());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
+		{
 			std::string s = value;
-            _video_osd.setText(s);
-        });
+			_video_osd->setText(s);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".FontName",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_string(_video_osd.getFontName().c_str());
-        },
+		{
+			value.writer().append_string(_video_osd->getFontName().c_str());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
+		{
 			std::string s = value;
-            _video_osd.setFontName(s);
-        });
+			_video_osd->setFontName(s);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".FontColor",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_uint32(_video_osd.getFontColor());
-        },
+		{
+			value.writer().append_uint32(_video_osd->getFontColor());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
-            _video_osd.setFontColor((uint32_t)value);
-        });
+		{
+			_video_osd->setFontColor((uint32_t)value);
+		});
 	DEFINE_PROP(OSD_INTERFACE ".ImagePath",
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)
-        {
-            value.writer().append_string(_video_osd.getImagePath().c_str());
-        },
+		{
+			value.writer().append_string(_video_osd->getImagePath().c_str());
+		},
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, const DBus::Variant &value)
-        {
+		{
 			std::string s = value;
-            _video_osd.setImagePath(s);
-        });
+			_video_osd->setImagePath(s);
+		});
 }
 
 void VideoOSD::do_property_get
 (DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value)
 {
-    value.clear();
+	value.clear();
 
-    auto iter = _prop_handler.find(interface.name() + "." + property);
-    if (iter == _prop_handler.end())
-        throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Get(interface, property, value);
+	auto iter = _prop_handler.find(interface.name() + "." + property);
+	if (iter == _prop_handler.end())
+		throw DBus::ErrorFailed("Requested interface or property not found");
+	iter->second.Get(interface, property, value);
 }
 
 void VideoOSD::do_property_set
 (DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value)
 {
-    auto iter = _prop_handler.find(interface.name() + "." + property);
-    if (iter == _prop_handler.end())
-        throw DBus::ErrorFailed("Requested interface or property not found");
-    iter->second.Set(interface, property, value);
+	auto iter = _prop_handler.find(interface.name() + "." + property);
+	if (iter == _prop_handler.end())
+		throw DBus::ErrorFailed("Requested interface or property not found");
+	iter->second.Set(interface, property, value);
 }
 
 } // namespace DBus

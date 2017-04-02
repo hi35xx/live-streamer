@@ -89,18 +89,18 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = live-streamer$(EXEEXT)
-@ENABLE_HI3518V100MPP_TRUE@am__append_1 = $(HI3518V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3518v100mpp
-@ENABLE_HI3518V100MPP_TRUE@am__append_2 = $(HI3518V100MPP_LDFLAGS)
-@ENABLE_HI3518V100MPP_TRUE@am__append_3 = $(builddir)/platform/hi3518v100mpp/libhi3518v100mpp.la
-@ENABLE_HI3518V200MPP_TRUE@am__append_4 = $(HI3518V200MPP_CPPFLAGS) -I$(srcdir)/platform/hi3518v200mpp
-@ENABLE_HI3518V200MPP_TRUE@am__append_5 = $(HI3518V200MPP_LDFLAGS)
-@ENABLE_HI3518V200MPP_TRUE@am__append_6 = $(builddir)/platform/hi3518v200mpp/libhi3518v200mpp.la
-@ENABLE_HI3520V100MPP_TRUE@am__append_7 = $(HI3520V100MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
-@ENABLE_HI3520V100MPP_TRUE@am__append_8 = $(HI3520V100MPP_LDFLAGS)
-@ENABLE_HI3520V100MPP_TRUE@am__append_9 = $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
-@ENABLE_HI3520DV200MPP_TRUE@am__append_10 = $(HI3520DV200MPP_CPPFLAGS) -I$(srcdir)/platform/hi3520v100mpp
-@ENABLE_HI3520DV200MPP_TRUE@am__append_11 = $(HI3520DV200MPP_LDFLAGS)
-@ENABLE_HI3520DV200MPP_TRUE@am__append_12 = $(builddir)/platform/hi3520v100mpp/libhi3520v100mpp.la
+@ENABLE_HI3518V100_TRUE@am__append_1 = $(HI3518V100_CPPFLAGS) -I$(srcdir)/platform/hi3518v100
+@ENABLE_HI3518V100_TRUE@am__append_2 = $(HI3518V100_LDFLAGS)
+@ENABLE_HI3518V100_TRUE@am__append_3 = $(builddir)/platform/hi3518v100/libhi3518v100.la
+@ENABLE_HI3518V200_TRUE@am__append_4 = $(HI3518V200_CPPFLAGS) -I$(srcdir)/platform/hi3518v200
+@ENABLE_HI3518V200_TRUE@am__append_5 = $(HI3518V200_LDFLAGS)
+@ENABLE_HI3518V200_TRUE@am__append_6 = $(builddir)/platform/hi3518v200/libhi3518v200.la
+@ENABLE_HI3520V100_TRUE@am__append_7 = $(HI3520V100_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520V100_TRUE@am__append_8 = $(HI3520V100_LDFLAGS)
+@ENABLE_HI3520V100_TRUE@am__append_9 = $(builddir)/platform/hi3520v100/libhi3520v100.la
+@ENABLE_HI3520DV200_TRUE@am__append_10 = $(HI3520DV200_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520DV200_TRUE@am__append_11 = $(HI3520DV200_LDFLAGS)
+@ENABLE_HI3520DV200_TRUE@am__append_12 = $(builddir)/platform/hi3520v100/libhi3520v100.la
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -117,11 +117,10 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_live_streamer_OBJECTS = live_streamer-main.$(OBJEXT) \
-	live_streamer-ipcam-media-iface.$(OBJEXT) \
-	live_streamer-ipcam-runtime.$(OBJEXT) \
-	live_streamer-ipcam-video-osd.$(OBJEXT)
+	live_streamer-ipcam-runtime.$(OBJEXT)
 live_streamer_OBJECTS = $(am_live_streamer_OBJECTS)
-live_streamer_DEPENDENCIES = $(builddir)/dbus/libdbus-iface.la \
+live_streamer_DEPENDENCIES = $(builddir)/common/libcommon.la \
+	$(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
 	$(am__append_6) $(am__append_9) $(am__append_12)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -290,14 +289,14 @@ FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
 FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
-HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
-HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
-HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
-HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
-HI3520DV200MPP_CPPFLAGS = @HI3520DV200MPP_CPPFLAGS@
-HI3520DV200MPP_LDFLAGS = @HI3520DV200MPP_LDFLAGS@
-HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
-HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
+HI3518V100_CPPFLAGS = @HI3518V100_CPPFLAGS@
+HI3518V100_LDFLAGS = @HI3518V100_LDFLAGS@
+HI3518V200_CPPFLAGS = @HI3518V200_CPPFLAGS@
+HI3518V200_LDFLAGS = @HI3518V200_LDFLAGS@
+HI3520DV200_CPPFLAGS = @HI3520DV200_CPPFLAGS@
+HI3520DV200_LDFLAGS = @HI3520DV200_LDFLAGS@
+HI3520V100_CPPFLAGS = @HI3520V100_CPPFLAGS@
+HI3520V100_LDFLAGS = @HI3520V100_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -403,24 +402,22 @@ AM_CPPFLAGS = \
 	$(FREETYPE_CFLAGS) \
 	$(FONTCONFIG_CFLAGS) \
 	$(SDL_CFLAGS) \
-	-I$(srcdir) -I$(srcdir)/rtsp-server \
+	-I$(srcdir) -I$(srcdir)/common \
+	-I$(srcdir)/rtsp-server \
 	-I$(srcdir)/dbus -I$(builddir)/dbus
 
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall
 SUBDIRS = \
+	common \
 	rtsp-server \
 	dbus \
 	platform
 
 live_streamer_SOURCES = \
 	main.cpp \
-	ipcam-media-iface.cpp \
-	ipcam-media-iface.h \
 	ipcam-runtime.cpp \
-	ipcam-runtime.h \
-	ipcam-video-osd.cpp \
-	ipcam-video-osd.h
+	ipcam-runtime.h
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
 	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
@@ -428,7 +425,8 @@ live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
 	$(am__append_8) $(am__append_11)
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS) $(am__append_1) \
 	$(am__append_4) $(am__append_7) $(am__append_10)
-live_streamer_LDADD = $(builddir)/dbus/libdbus-iface.la \
+live_streamer_LDADD = $(builddir)/common/libcommon.la \
+	$(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
 	$(am__append_6) $(am__append_9) $(am__append_12)
 all: all-recursive
@@ -524,9 +522,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-media-iface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-runtime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-ipcam-video-osd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/live_streamer-main.Po@am__quote@
 
 .cpp.o:
@@ -564,20 +560,6 @@ live_streamer-main.obj: main.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-main.obj `if test -f 'main.cpp'; then $(CYGPATH_W) 'main.cpp'; else $(CYGPATH_W) '$(srcdir)/main.cpp'; fi`
 
-live_streamer-ipcam-media-iface.o: ipcam-media-iface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-media-iface.o -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-media-iface.Tpo -c -o live_streamer-ipcam-media-iface.o `test -f 'ipcam-media-iface.cpp' || echo '$(srcdir)/'`ipcam-media-iface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-media-iface.Tpo $(DEPDIR)/live_streamer-ipcam-media-iface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-media-iface.cpp' object='live_streamer-ipcam-media-iface.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-media-iface.o `test -f 'ipcam-media-iface.cpp' || echo '$(srcdir)/'`ipcam-media-iface.cpp
-
-live_streamer-ipcam-media-iface.obj: ipcam-media-iface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-media-iface.obj -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-media-iface.Tpo -c -o live_streamer-ipcam-media-iface.obj `if test -f 'ipcam-media-iface.cpp'; then $(CYGPATH_W) 'ipcam-media-iface.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-media-iface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-media-iface.Tpo $(DEPDIR)/live_streamer-ipcam-media-iface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-media-iface.cpp' object='live_streamer-ipcam-media-iface.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-media-iface.obj `if test -f 'ipcam-media-iface.cpp'; then $(CYGPATH_W) 'ipcam-media-iface.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-media-iface.cpp'; fi`
-
 live_streamer-ipcam-runtime.o: ipcam-runtime.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-runtime.o -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-runtime.Tpo -c -o live_streamer-ipcam-runtime.o `test -f 'ipcam-runtime.cpp' || echo '$(srcdir)/'`ipcam-runtime.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-runtime.Tpo $(DEPDIR)/live_streamer-ipcam-runtime.Po
@@ -591,20 +573,6 @@ live_streamer-ipcam-runtime.obj: ipcam-runtime.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-runtime.cpp' object='live_streamer-ipcam-runtime.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-runtime.obj `if test -f 'ipcam-runtime.cpp'; then $(CYGPATH_W) 'ipcam-runtime.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-runtime.cpp'; fi`
-
-live_streamer-ipcam-video-osd.o: ipcam-video-osd.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-video-osd.o -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo -c -o live_streamer-ipcam-video-osd.o `test -f 'ipcam-video-osd.cpp' || echo '$(srcdir)/'`ipcam-video-osd.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo $(DEPDIR)/live_streamer-ipcam-video-osd.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-video-osd.cpp' object='live_streamer-ipcam-video-osd.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-video-osd.o `test -f 'ipcam-video-osd.cpp' || echo '$(srcdir)/'`ipcam-video-osd.cpp
-
-live_streamer-ipcam-video-osd.obj: ipcam-video-osd.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT live_streamer-ipcam-video-osd.obj -MD -MP -MF $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo -c -o live_streamer-ipcam-video-osd.obj `if test -f 'ipcam-video-osd.cpp'; then $(CYGPATH_W) 'ipcam-video-osd.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-video-osd.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/live_streamer-ipcam-video-osd.Tpo $(DEPDIR)/live_streamer-ipcam-video-osd.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ipcam-video-osd.cpp' object='live_streamer-ipcam-video-osd.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(live_streamer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o live_streamer-ipcam-video-osd.obj `if test -f 'ipcam-video-osd.cpp'; then $(CYGPATH_W) 'ipcam-video-osd.cpp'; else $(CYGPATH_W) '$(srcdir)/ipcam-video-osd.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

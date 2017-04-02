@@ -20,7 +20,7 @@
 #ifndef _DBUS_VIDEO_OSD_H_
 #define _DBUS_VIDEO_OSD_H_
 
-#include "ipcam-video-osd.h"
+#include "video-osd.h"
 #include "dbus-ipcam-base.h"
 #include "video-osd-server-glue.h"
 
@@ -29,17 +29,17 @@ using namespace Ipcam::Media;
 namespace DBus {
 
 class VideoOSD:
-  public ipcam::Media::OSD_adaptor,
-  public IpcamBase
+	public ipcam::Media::OSD_adaptor,
+	public IpcamBase
 {
 public:
-	VideoOSD(IpcamRuntime& runtime, std::string obj_path, IVideoOSD *video_osd);
+	VideoOSD(IpcamRuntime& runtime, std::string obj_path, Ipcam::Media::VideoOSD* video_osd);
 	void do_property_get
 		(DBus::InterfaceAdaptor &interface, const std::string &property, DBus::Variant &value);
 	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 protected:
-	IpcamVideoOSD _video_osd;
+	Ipcam::Media::VideoOSD* _video_osd;
 };
 
 } // namespace DBus

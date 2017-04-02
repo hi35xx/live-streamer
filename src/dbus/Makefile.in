@@ -103,7 +103,8 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libdbus_iface_la_LIBADD =
+libdbus_iface_la_DEPENDENCIES =  \
+	$(top_builddir)/src/common/libcommon.la
 am__objects_1 =
 am_libdbus_iface_la_OBJECTS = dbusxx-libev-integration.lo \
 	$(am__objects_1) dbus-ipcam-base.lo dbus-audio-source.lo \
@@ -259,14 +260,14 @@ FREETYPE_CFLAGS = @FREETYPE_CFLAGS@
 FREETYPE_LIBS = @FREETYPE_LIBS@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
-HI3518V100MPP_CPPFLAGS = @HI3518V100MPP_CPPFLAGS@
-HI3518V100MPP_LDFLAGS = @HI3518V100MPP_LDFLAGS@
-HI3518V200MPP_CPPFLAGS = @HI3518V200MPP_CPPFLAGS@
-HI3518V200MPP_LDFLAGS = @HI3518V200MPP_LDFLAGS@
-HI3520DV200MPP_CPPFLAGS = @HI3520DV200MPP_CPPFLAGS@
-HI3520DV200MPP_LDFLAGS = @HI3520DV200MPP_LDFLAGS@
-HI3520V100MPP_CPPFLAGS = @HI3520V100MPP_CPPFLAGS@
-HI3520V100MPP_LDFLAGS = @HI3520V100MPP_LDFLAGS@
+HI3518V100_CPPFLAGS = @HI3518V100_CPPFLAGS@
+HI3518V100_LDFLAGS = @HI3518V100_LDFLAGS@
+HI3518V200_CPPFLAGS = @HI3518V200_CPPFLAGS@
+HI3518V200_LDFLAGS = @HI3518V200_LDFLAGS@
+HI3520DV200_CPPFLAGS = @HI3520DV200_CPPFLAGS@
+HI3520DV200_LDFLAGS = @HI3520DV200_LDFLAGS@
+HI3520V100_CPPFLAGS = @HI3520V100_CPPFLAGS@
+HI3520V100_LDFLAGS = @HI3520V100_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -365,7 +366,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src -I$(srcdir) -I$(builddir) \
+	-I$(top_srcdir)/src -I$(top_srcdir)/src/common \
+	-I$(srcdir) -I$(builddir) \
 	$(DBUSXX_CFLAGS)
 
 AM_CFLAGS = -Wall
@@ -396,6 +398,9 @@ libdbus_iface_la_SOURCES = \
 	dbus-video-source.h \
 	dbus-video-encoder.cpp \
 	dbus-video-encoder.h
+
+libdbus_iface_la_LIBADD = \
+	$(top_builddir)/src/common/libcommon.la
 
 CLEANFILES = $(BUILT_SOURCES)
 dbuspolicydir = $(sysconfdir)/dbus-1/system.d

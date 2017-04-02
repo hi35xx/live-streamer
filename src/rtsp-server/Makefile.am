@@ -4,7 +4,7 @@ AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(localedir)"\" \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
-	-I$(top_srcdir)/src -I$(srcdir) \
+	-I$(top_srcdir)/src -I$(top_srcdir)/src/common -I$(srcdir) \
 	$(LIVE555_CPPFLAGS) \
 	$(DBUSXX_CFLAGS)
 
