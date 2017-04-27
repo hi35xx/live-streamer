@@ -89,18 +89,20 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = live-streamer$(EXEEXT)
-@ENABLE_HI3518V100_TRUE@am__append_1 = $(HI3518V100_CPPFLAGS) -I$(srcdir)/platform/hi3518v100
-@ENABLE_HI3518V100_TRUE@am__append_2 = $(HI3518V100_LDFLAGS)
-@ENABLE_HI3518V100_TRUE@am__append_3 = $(builddir)/platform/hi3518v100/libhi3518v100.la
-@ENABLE_HI3518V200_TRUE@am__append_4 = $(HI3518V200_CPPFLAGS) -I$(srcdir)/platform/hi3518v200
-@ENABLE_HI3518V200_TRUE@am__append_5 = $(HI3518V200_LDFLAGS)
-@ENABLE_HI3518V200_TRUE@am__append_6 = $(builddir)/platform/hi3518v200/libhi3518v200.la
-@ENABLE_HI3520V100_TRUE@am__append_7 = $(HI3520V100_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
-@ENABLE_HI3520V100_TRUE@am__append_8 = $(HI3520V100_LDFLAGS)
-@ENABLE_HI3520V100_TRUE@am__append_9 = $(builddir)/platform/hi3520v100/libhi3520v100.la
-@ENABLE_HI3520DV200_TRUE@am__append_10 = $(HI3520DV200_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
-@ENABLE_HI3520DV200_TRUE@am__append_11 = $(HI3520DV200_LDFLAGS)
-@ENABLE_HI3520DV200_TRUE@am__append_12 = $(builddir)/platform/hi3520v100/libhi3520v100.la
+@ENABLE_JSONCPP_TRUE@am__append_1 = $(JSONCPP_CPPFLAGS)
+@ENABLE_JSONCPP_TRUE@am__append_2 = $(JSONCPP_LIBS)
+@ENABLE_HI3518V100_TRUE@am__append_3 = $(HI3518V100_CPPFLAGS) -I$(srcdir)/platform/hi3518v100
+@ENABLE_HI3518V100_TRUE@am__append_4 = $(HI3518V100_LDFLAGS)
+@ENABLE_HI3518V100_TRUE@am__append_5 = $(builddir)/platform/hi3518v100/libhi3518v100.la
+@ENABLE_HI3518V200_TRUE@am__append_6 = $(HI3518V200_CPPFLAGS) -I$(srcdir)/platform/hi3518v200
+@ENABLE_HI3518V200_TRUE@am__append_7 = $(HI3518V200_LDFLAGS)
+@ENABLE_HI3518V200_TRUE@am__append_8 = $(builddir)/platform/hi3518v200/libhi3518v200.la
+@ENABLE_HI3520V100_TRUE@am__append_9 = $(HI3520V100_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520V100_TRUE@am__append_10 = $(HI3520V100_LDFLAGS)
+@ENABLE_HI3520V100_TRUE@am__append_11 = $(builddir)/platform/hi3520v100/libhi3520v100.la
+@ENABLE_HI3520DV200_TRUE@am__append_12 = $(HI3520DV200_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520DV200_TRUE@am__append_13 = $(HI3520DV200_LDFLAGS)
+@ENABLE_HI3520DV200_TRUE@am__append_14 = $(builddir)/platform/hi3520v100/libhi3520v100.la
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -121,8 +123,8 @@ am_live_streamer_OBJECTS = live_streamer-main.$(OBJEXT) \
 live_streamer_OBJECTS = $(am_live_streamer_OBJECTS)
 live_streamer_DEPENDENCIES = $(builddir)/common/libcommon.la \
 	$(builddir)/dbus/libdbus-iface.la \
-	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
-	$(am__append_6) $(am__append_9) $(am__append_12)
+	$(builddir)/rtsp-server/librtsp-server.la $(am__append_5) \
+	$(am__append_8) $(am__append_11) $(am__append_14)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -302,6 +304,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JSONCPP_CFLAGS = @JSONCPP_CFLAGS@
+JSONCPP_LIBS = @JSONCPP_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBEV_LDFLAGS = @LIBEV_LDFLAGS@
@@ -421,14 +425,15 @@ live_streamer_SOURCES = \
 
 live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
 	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
-	$(LIBEV_LDFLAGS) -ldl $(am__append_2) $(am__append_5) \
-	$(am__append_8) $(am__append_11)
+	$(LIBEV_LDFLAGS) -ldl $(am__append_2) $(am__append_4) \
+	$(am__append_7) $(am__append_10) $(am__append_13)
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS) $(am__append_1) \
-	$(am__append_4) $(am__append_7) $(am__append_10)
+	$(am__append_3) $(am__append_6) $(am__append_9) \
+	$(am__append_12)
 live_streamer_LDADD = $(builddir)/common/libcommon.la \
 	$(builddir)/dbus/libdbus-iface.la \
-	$(builddir)/rtsp-server/librtsp-server.la $(am__append_3) \
-	$(am__append_6) $(am__append_9) $(am__append_12)
+	$(builddir)/rtsp-server/librtsp-server.la $(am__append_5) \
+	$(am__append_8) $(am__append_11) $(am__append_14)
 all: all-recursive
 
 .SUFFIXES:

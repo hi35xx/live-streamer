@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(live-streamer, 1.9.2)
+AC_INIT(live-streamer, 1.9.3)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -31,6 +31,13 @@ PKG_CHECK_MODULES(FREETYPE, [freetype2])
 PKG_CHECK_MODULES(FONTCONFIG, [fontconfig])
 
 PKG_CHECK_MODULES(SDL, [sdl SDL_ttf SDL_image])
+
+PKG_CHECK_MODULES(JSONCPP, [jsoncpp],
+	[have_jsoncpp=yes], [have_jsoncpp=no])
+if test "x$have_jsoncpp" = "xyes"; then
+	AC_DEFINE([HAVE_JSONCPP_SUPPORT], [1], [jsoncpp support])
+fi
+AM_CONDITIONAL([ENABLE_JSONCPP], [ test "x$have_jsoncpp" = "xyes" ])
 
 
 # --------------------- #

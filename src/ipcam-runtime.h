@@ -28,6 +28,10 @@
 #include <audio-source.h>
 #include <audio-encoder.h>
 
+#ifdef HAVE_JSONCPP_SUPPORT
+#include <json/json.h>
+#endif
+
 using namespace Ipcam::Media;
 
 class RTSPServer;
@@ -50,7 +54,7 @@ typedef ServerMediaSubsession* RTSPSubstream;
 class IpcamRuntime
 {
 public:
-	IpcamRuntime(ev::default_loop &loop, RTSPServer *rtspServer, DBus::Connection *conn);
+	IpcamRuntime(std::string config_file, ev::default_loop &loop, RTSPServer *rtspServer, DBus::Connection *conn);
 	~IpcamRuntime();
 
 	RTSPStream addRTSPStream(const std::string& path, VideoStreamSource* video, AudioStreamSource* audio);
@@ -61,11 +65,23 @@ public:
 
 	ev::default_loop &mainloop() { return _loop; }
 	DBus::Connection &dbus_conn() { return *_dbus_connection; }
+#ifdef HAVE_JSONCPP_SUPPORT
+	Json::Value &config_root() { return _config_root; }
+	void LoadConfig();
+	void SaveConfig();
+#endif
 
 private:
 	ev::default_loop&		_loop;
 	RTSPServer*				_rtsp_server;
 	DBus::Connection*		_dbus_connection;
+#ifdef HAVE_JSONCPP_SUPPORT
+	Json::Value				_config_root;
+	std::string				_config_name;
+	bool					_config_dirty;
+	ev::timer				_config_timer;
+	void config_timer_handler(ev::timer& w, int revents);
+#endif
 
 	typedef std::list<ServerMediaSession*> IpcamStreamList;
 	typedef std::list<std::unique_ptr<DBus::AudioSource>>	IpcamAudioSourceList;

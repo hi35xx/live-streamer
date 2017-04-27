@@ -52,6 +52,7 @@ ev::default_loop mainloop;
 
 static const char *IPCAM_SERVER_NAME = "ipcam.Media";
 
+static std::string config_file;
 static int rtsp_port = 554;
 static DBusBusType bus_type = DBUS_BUS_SYSTEM;
 
@@ -64,6 +65,7 @@ static void display_usage(char *cmd)
 		"  -B, --background            Run daemon in the background\n"
 		"      --system                Use system message bus\n"
 		"      --session               Use session message bus\n"
+		"  -c, --configure=FILE        Configuration file\n"
 		"  -v, --version               Show version information\n"
 		"  -s, --syslog                Log output to syslog instead of stdout\n"
 		"  -p, --rtsp-port=PORT        RTSP port\n"
@@ -77,11 +79,12 @@ static void display_usage(char *cmd)
 	std::cout << std::endl;
 }
 
-static const char *optString = "Bh?vp:s";
+static const char *optString = "Bh?vc:p:s";
 static const struct option longOpts[] = {
 	{ "help",        no_argument,        NULL,   'h' },
 	{ "background",  required_argument,  NULL,   'B' },
 	{ "version",     no_argument,        NULL,   'v' },
+	{ "configure",   required_argument,  NULL,   'c' },
 	{ "system",      no_argument,        NULL,    0  },
 	{ "session",     no_argument,        NULL,    0  },
 	{ "port",        required_argument,  NULL,   'p' },
@@ -132,6 +135,9 @@ int main(int argc, char *argv[])
 		case 'v':
 			std::cout << PACKAGE_STRING << std::endl;
 			return 0;
+		case 'c':
+			config_file = optarg;
+			break;
 		case 's':
 			break;
 		case 0:
@@ -205,11 +211,15 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	IpcamRuntime *runtime = new IpcamRuntime(mainloop, rtspServer, &conn);
+	IpcamRuntime *runtime = new IpcamRuntime(config_file, mainloop, rtspServer, &conn);
 
 #if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
 	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
 	HimppMedia himpp_media(runtime, plat_args);
+#endif
+
+#ifdef HAVE_JSONCPP_SUPPORT
+	runtime->LoadConfig();
 #endif
 
 	mainloop.run();

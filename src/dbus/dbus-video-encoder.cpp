@@ -125,6 +125,29 @@ void VideoEncoder::do_property_set
 	iter->second.Set(interface, property, value);
 }
 
+#ifdef HAVE_JSONCPP_SUPPORT
+void VideoEncoder::LoadConfig()
+{
+	IpcamBase::LoadConfig();
+
+	Json::Value& root = _runtime.config_root();
+	// Load OSD configuration according the config
+	for (int i = 0; i < 8; i++) {
+		std::string opath(path() + "/OSD/" + std::to_string(i));
+		if (!root.isMember(opath))
+			continue;
+
+		VideoOSDTable::iterator oit = _osds.find(i);
+		if (oit == _osds.end()) {
+			uint32_t index = CreateOSD();
+			oit = _osds.find(index);
+		}
+		VideoOSD& o = oit->second;
+		o.LoadConfig();
+	}
+}
+#endif
+
 uint32_t VideoEncoder::CreateOSD()
 {
 	uint32_t index = 0;

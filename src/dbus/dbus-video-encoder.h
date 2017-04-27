@@ -28,6 +28,8 @@ using namespace Ipcam::Media;
 
 namespace DBus {
 
+typedef std::unordered_map<uint32_t, VideoOSD> VideoOSDTable;
+
 class VideoEncoder : 
 	public ipcam::Media::VideoEncoder_adaptor,
 	public ipcam::Media::VideoEncoder::RateControl_adaptor,
@@ -42,13 +44,18 @@ public:
 	void do_property_set
 		(DBus::InterfaceAdaptor &interface, const std::string &property, const DBus::Variant &value);
 
+#ifdef HAVE_JSONCPP_SUPPORT
+	void LoadConfig();
+#endif
+
 	uint32_t CreateOSD();
 	void DeleteOSD(const uint32_t& index);
 	std::map<uint32_t, Path> GetOSDs();
 protected:
 	Ipcam::Media::VideoEncoder* _video_encoder;
 private:
-	std::map<uint32_t, VideoOSD> _osds;
+	VideoOSDTable _osds;
+	VideoOSD& NewOSD(const uint32_t index);
 };
 
 class H264VideoEncoder : 

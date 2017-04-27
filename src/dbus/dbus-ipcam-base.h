@@ -35,6 +35,10 @@ public:
 	IpcamBase(IpcamRuntime &runtime, const Path &path);
 	virtual ~IpcamBase();
 
+#ifdef HAVE_JSONCPP_SUPPORT
+	virtual void LoadConfig();
+#endif
+
 protected:
 	virtual void do_property_get(InterfaceAdaptor &interface, const std::string &property, Variant &value) = 0;
 	virtual void do_property_set(InterfaceAdaptor &interface, const std::string &property, const Variant &value) = 0;

@@ -21,6 +21,7 @@
 #include <config.h>
 #endif
 
+#include <fstream>
 #include <RTSPServer.hh>
 #include <ServerMediaSession.hh>
 #include <FramedFilter.hh>
@@ -41,13 +42,41 @@ const char *AUDIO_SOURCE_SERVER_PATH = "/ipcam/Media/AudioSource";
 const char *AUDIO_ENCODER_SERVER_PATH = "/ipcam/Media/AudioEncoder";
 
 IpcamRuntime::IpcamRuntime
-(ev::default_loop &loop, RTSPServer *rtspServer, DBus::Connection *conn)
-	: _loop(loop), _rtsp_server(rtspServer), _dbus_connection(conn)
+(std::string config_name, ev::default_loop &loop, RTSPServer *rtspServer, DBus::Connection *conn)
+  : _loop(loop), _rtsp_server(rtspServer), _dbus_connection(conn)
+#ifdef HAVE_JSONCPP_SUPPORT
+    , _config_name(config_name), _config_dirty(false), _config_timer(loop)
+#endif
 {
+#ifdef HAVE_JSONCPP_SUPPORT
+	if (_config_name.size() > 0) {
+		std::ifstream ifs(config_name.c_str());
+		if (ifs.is_open()) {
+			Json::CharReaderBuilder rbuilder;
+			rbuilder["collectComments"] = true;
+			std::string errs;
+			if (!Json::parseFromStream(rbuilder, ifs, &_config_root, &errs))
+				fprintf(stderr, "%s", errs.c_str());
+		}
+	}
+#endif
 }
 
 IpcamRuntime::~IpcamRuntime()
 {
+#ifdef HAVE_JSONCPP_SUPPORT
+	if (_config_dirty && _config_name.size() > 0) {
+		std::ofstream ofs(_config_name.c_str());
+		if (ofs.is_open()) {
+			Json::StreamWriterBuilder wbuilder;
+			wbuilder["commentStyle"] = "All";
+			wbuilder["indentation"] = "  ";
+			std::unique_ptr<Json::StreamWriter> writer(wbuilder.newStreamWriter());
+			writer->write(_config_root, &ofs);
+		}
+		_config_dirty = false;
+	}
+#endif
 }
 
 RTSPStream IpcamRuntime::addRTSPStream
@@ -135,3 +164,40 @@ void IpcamRuntime::addVideoEncoder(VideoEncoder* video_encoder)
 		break;
 	}
 }
+
+#ifdef HAVE_JSONCPP_SUPPORT
+void IpcamRuntime::LoadConfig()
+{
+	for (auto &asrc : _audio_source_list)
+		asrc->LoadConfig();
+	for (auto &aenc : _audio_encoder_list)
+		aenc->LoadConfig();
+	for (auto &vsrc : _video_source_list)
+		vsrc->LoadConfig();
+	for (auto &venc : _video_encoder_list)
+		venc->LoadConfig();
+}
+
+void IpcamRuntime::config_timer_handler(ev::timer &w, int revents)
+{
+	if (_config_dirty && _config_name.size() > 0) {
+		std::ofstream ofs(_config_name.c_str());
+		if (ofs.is_open()) {
+			Json::StreamWriterBuilder wbuilder;
+			wbuilder["commentStyle"] = "All";
+			wbuilder["indentation"] = "  ";
+			std::unique_ptr<Json::StreamWriter> writer(wbuilder.newStreamWriter());
+			writer->write(_config_root, &ofs);
+		}
+		_config_dirty = false;
+	}
+}
+
+void IpcamRuntime::SaveConfig()
+{
+	_config_dirty = true;
+	_config_timer.set(20.0, 0);
+	_config_timer.set<IpcamRuntime, &IpcamRuntime::config_timer_handler>(this);
+	_config_timer.start();
+}
+#endif
