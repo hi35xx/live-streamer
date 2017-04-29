@@ -692,6 +692,64 @@ static HIMPP_SENSOR_CONFIG smartsens_sc1135_sensor_config = {
 };
 
 /***************************************************************************
+ * SmartSens SC1145
+ ***************************************************************************/
+
+static combo_dev_attr_t smartsens_sc1145_combo_dev_attr = {
+	.input_mode = INPUT_MODE_CMOS_18V
+};
+
+static ISP_PUB_ATTR_S smartsens_sc1145_pub_attr = {
+	.stWndRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1280,
+		.u32Height      = 720,
+	},
+	.f32FrameRate       = 30,
+	.enBayer            = BAYER_BGGR
+};
+
+static VI_DEV_ATTR_S smartsens_sc1145_dev_attr = {
+	.enIntfMode     = VI_MODE_DIGITAL_CAMERA,
+	.enWorkMode     = VI_WORK_MODE_1Multiplex,
+	.au32CompMask   = { 0xFFC0000, 0x0 },
+	.enScanMode     = VI_SCAN_PROGRESSIVE,
+	.s32AdChnId     = { -1, -1, -1, -1 },
+	.enDataSeq      = VI_INPUT_DATA_YUYV,
+	.stSynCfg       = {
+		.enVsync        = VI_VSYNC_PULSE,
+		.enVsyncNeg     = VI_VSYNC_NEG_HIGH,
+		.enHsync        = VI_HSYNC_VALID_SINGNAL,
+		.enHsyncNeg     = VI_HSYNC_NEG_HIGH,
+		.enVsyncValid   = VI_VSYNC_NORM_PULSE,
+		.enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
+		.stTimingBlank  = {
+			.u32HsyncHfb = 0, .u32HsyncAct = 1280, .u32HsyncHbb = 0,
+			.u32VsyncVfb = 0,   .u32VsyncVact = 720, .u32VsyncVbb = 0,
+			.u32VsyncVbfb = 0,  .u32VsyncVbact = 0,  .u32VsyncVbbb = 0
+		}
+	},
+	.enDataPath         = VI_PATH_ISP,
+	.enInputDataType    = VI_DATA_TYPE_RGB,
+	.bDataRev           = HI_FALSE,
+	.stDevRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1280,
+		.u32Height      = 720
+	}
+};
+
+static HIMPP_SENSOR_CONFIG smartsens_sc1145_sensor_config = {
+	.name               = "sc1145",
+	.module_path        = "libsns_sc1145.so",
+	.combo_dev_attr     = &smartsens_sc1145_combo_dev_attr,
+	.isp_pub_attr       = &smartsens_sc1145_pub_attr,
+	.vi_dev_attr        = &smartsens_sc1145_dev_attr
+};
+
+/***************************************************************************
  * SmartSens SC2135
  ***************************************************************************/
 
@@ -826,6 +884,7 @@ public:
 		addSensor(omnivision_ov9752_sensor_config);
 		addSensor(panasonic_mn34222_sensor_config);
 		addSensor(smartsens_sc1135_sensor_config);
+		addSensor(smartsens_sc1145_sensor_config);
 		addSensor(smartsens_sc2135_sensor_config);
 		addSensor(sony_imx222_sensor_config);
 #undef addSensor
