@@ -167,7 +167,14 @@ void LiveH264VideoServerMediaSubsession::checkForAuxSDPLine1()
 		// Signal the event loop that we're done:
 		setDoneFlag();
 	} else if (fDummyRTPSink != NULL && (dasl = fDummyRTPSink->auxSDPLine()) != NULL) {
-		fAuxSDPLine = strDup(dasl);
+		char framerate[32], dimension[32];
+		Resolution res = fVideoStreamSource->resolution();
+		sprintf(framerate, "a=framerate:%d\r\n", fVideoStreamSource->framerate());
+		sprintf(dimension, "a=x-dimensions:%d,%d\r\n", res.width(), res.height());
+		fAuxSDPLine = new char[strlen(dasl) + strlen(framerate) + strlen(dimension) + 1];
+		if (fAuxSDPLine != NULL) {
+			sprintf(fAuxSDPLine, "%s%s%s", dasl, framerate, dimension);
+		}
 		fDummyRTPSink = NULL;
 
 		// Signal the event loop that we're done:
