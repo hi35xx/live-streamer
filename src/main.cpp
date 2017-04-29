@@ -86,6 +86,14 @@ static const struct option longOpts[] = {
 	{ "session",     no_argument,        NULL,    0  },
 	{ "port",        required_argument,  NULL,   'p' },
 	{ "syslog",      no_argument,        NULL,   's' },
+#if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
+	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
+	{ "vsrc",        required_argument,  NULL,    0  },
+	{ "venc",        required_argument,  NULL,    0  },
+	{ "asrc",        required_argument,  NULL,    0  },
+	{ "aenc",        required_argument,  NULL,    0  },
+	{ "stream",      required_argument,  NULL,    0  },
+#endif
 	{ NULL,          no_argument,        NULL,    0  }
 };
 
@@ -104,11 +112,11 @@ int main(int argc, char *argv[])
 {
 	int opt = 0;
 	int longIndex;
-	std::unordered_map<std::string, std::string> plat_args;
+	std::vector<std::pair<std::string, std::string>> plat_args;
 
 	setlocale(LC_ALL, "");
 
-	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
+	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	while (opt != -1) {
 		switch (opt) {
 		case 'B':
@@ -127,10 +135,15 @@ int main(int argc, char *argv[])
 		case 's':
 			break;
 		case 0:
-			if (strcmp(longOpts[longIndex].name, "system") == 0)
+			if (strcmp(longOpts[longIndex].name, "system") == 0) {
 				bus_type = DBUS_BUS_SYSTEM;
-			else if(strcmp(longOpts[longIndex].name, "session") == 0)
+			} else if(strcmp(longOpts[longIndex].name, "session") == 0) {
 				bus_type = DBUS_BUS_SESSION;
+			} else {
+				plat_args.emplace_back(std::string(longOpts[longIndex].name),
+				                       std::string(optarg));
+			}
+
 			break;
 		default:
 			display_usage(argv[0]);
@@ -212,4 +225,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-

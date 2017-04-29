@@ -30,17 +30,22 @@ using namespace Ipcam::Media;
 
 class HimppMedia;
 
+typedef std::vector<std::pair<std::string, std::string>> PlatformArguments;
+
 class HimppMedia
 {
 public:
-	HimppMedia(IpcamRuntime* runtime, std::unordered_map<std::string, std::string>& args);
+	HimppMedia(IpcamRuntime* runtime, PlatformArguments& args);
 	~HimppMedia();
 
 private:
-	typedef std::shared_ptr<MediaElement>	MediaElementSPtr;
-	std::list<MediaElementSPtr>	_elements;
+	typedef std::unique_ptr<MediaElement>	MediaElementUPtr;
+	typedef std::unordered_map<std::string, MediaElementUPtr> MediaElementMap;
+	MediaElementMap				_elements;
 	IpcamRuntime*				_runtime;
 	HimppSysctl					_sysctl;
+
+	MediaElement* buildElementPipe(const std::string& description);
 };
 
 #endif // _HIMPP_MEDIA_H_

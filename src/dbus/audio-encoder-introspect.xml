@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/ipcam/Media/AudioEncoder">
   <interface name="ipcam.Media.AudioEncoder">
-    <property name="Encoding" type="u" access="readwrite"/>
+    <property name="Encoding" type="u" access="read"/>
     <property name="Bitrate" type="u" access="readwrite"/>
     <property name="SampleRate" type="u" access="readwrite"/>
   </interface>

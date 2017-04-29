@@ -105,7 +105,7 @@ class HimppAencChan :
 	public AudioStreamSource
 {
 public:
-	HimppAencChan(HimppAudioElement* source, AENC_CHN chnid);
+	HimppAencChan(HimppAudioElement* source, AudioEncodingType encoding, AENC_CHN chnid);
 	~HimppAencChan();
 
 	// implementation of HimppElement
@@ -126,7 +126,6 @@ public:
 
 	// implementation of AudioEncoder
 	AudioEncodingType	getEncoding();
-	void				setEncoding(AudioEncodingType value);
 	uint32_t			getBitrate();
 	void				setBitrate(uint32_t value);
 

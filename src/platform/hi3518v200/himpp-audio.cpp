@@ -263,9 +263,10 @@ void HimppAiChan::doDisableElement()
 
 extern ev::default_loop mainloop;
 
-HimppAencChan::HimppAencChan(HimppAudioElement* source, AENC_CHN chnid)
+HimppAencChan::HimppAencChan
+(HimppAudioElement* source, AudioEncodingType encoding, AENC_CHN chnid)
   : AudioElement(AUDIO_ELEMENT(source)), HimppAudioElement(source),
-    _io(mainloop), _chnid(chnid), _encoding(G711A), _bitrate(64)
+    _io(mainloop), _chnid(chnid), _encoding(encoding), _bitrate(64)
 {
 }
 
@@ -369,21 +370,6 @@ void HimppAencChan::pause()
 AudioEncodingType HimppAencChan::getEncoding()
 {
 	return _encoding;
-}
-
-void HimppAencChan::setEncoding(AudioEncodingType encoding)
-{
-	switch (encoding) {
-	case ADPCM:
-	case LPCM:
-	case G711A:
-	case G711U:
-	case G726:
-		_encoding = encoding;
-		break;
-	default:
-		throw IpcamError("Audio encoding type not supported");
-	}
 }
 
 uint32_t HimppAencChan::getBitrate()
