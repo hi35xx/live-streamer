@@ -150,6 +150,18 @@ void HimppViDev::doEnableElement()
 	HI_S32 s32Ret;
 	VI_DEV_ATTR_S *dev_attr;
 
+	VI_MOD_PARAM_S param;
+	if ((s32Ret = HI_MPI_VI_GetModParam(&param)) == HI_SUCCESS) {
+		param.bLumaExtendEn = HI_TRUE;
+		param.bContrastModeEn = HI_TRUE;
+		if ((s32Ret = HI_MPI_VI_SetModParam(&param)) != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_VI_SetModParam failed [%#x]\n", s32Ret);
+		}
+	}
+	else {
+		HIMPP_PRINT("HI_MPI_VI_SetModParam failed [%#x]\n", s32Ret);
+	}
+
 	dev_attr = HIMPP_VIDEO_ISP(source())->videoInputConfig();
 	if ((s32Ret = HI_MPI_VI_SetDevAttr(_devid, dev_attr)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VI_SetDevAttr %d failed [%#x]\n", _devid, s32Ret);
