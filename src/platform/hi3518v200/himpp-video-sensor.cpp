@@ -646,7 +646,7 @@ static ISP_PUB_ATTR_S smartsens_sc1135_pub_attr = {
 		.s32X           = 0,
 		.s32Y           = 0,
 		.u32Width       = 1280,
-		.u32Height      = 720,
+		.u32Height      = 960,
 	},
 	.f32FrameRate       = 30,
 	.enBayer            = BAYER_BGGR
@@ -668,7 +668,7 @@ static VI_DEV_ATTR_S smartsens_sc1135_dev_attr = {
 		.enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
 		.stTimingBlank  = {
 			.u32HsyncHfb = 0, .u32HsyncAct = 1280, .u32HsyncHbb = 0,
-			.u32VsyncVfb = 0,   .u32VsyncVact = 720, .u32VsyncVbb = 0,
+			.u32VsyncVfb = 0,   .u32VsyncVact = 960, .u32VsyncVbb = 0,
 			.u32VsyncVbfb = 0,  .u32VsyncVbact = 0,  .u32VsyncVbbb = 0
 		}
 	},
@@ -679,7 +679,7 @@ static VI_DEV_ATTR_S smartsens_sc1135_dev_attr = {
 		.s32X           = 0,
 		.s32Y           = 0,
 		.u32Width       = 1280,
-		.u32Height      = 720
+		.u32Height      = 960
 	}
 };
 
