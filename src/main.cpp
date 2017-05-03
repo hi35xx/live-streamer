@@ -21,6 +21,7 @@
 #include <config.h>
 #endif
 
+#include <syslog.h>
 #include <locale.h>
 #include <string>
 #include <sstream>
@@ -63,11 +64,11 @@ static void display_usage(char *cmd)
 		"Common Options:\n"
 		"  -h, --help                  Show help options\n"
 		"  -B, --background            Run daemon in the background\n"
+		"  -S, --syslog                Log output to syslog instead of stdout\n"
 		"      --system                Use system message bus\n"
 		"      --session               Use session message bus\n"
 		"  -c, --configure=FILE        Configuration file\n"
-		"  -v, --version               Show version information\n"
-		"  -s, --syslog                Log output to syslog instead of stdout\n"
+		"      --version               Show version information\n"
 		"  -p, --rtsp-port=PORT        RTSP port\n"
 		"\n";
 	std::cout << "Usage: " << cmd << " [options]...\n";
@@ -75,20 +76,32 @@ static void display_usage(char *cmd)
 	std::cout << "Platform Options:\n";
 #if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
 	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
+	const char *plat_options = \
+		"  -vsrc VIDEOSOURCE           Add video source\n"
+		"  -venc VIDEOENCODER          Add video encoder\n"
+		"  -asrc AUDIOSOURCE           Add audio source\n"
+		"  -aenc AUDIOENCODER          Add audio encoder\n"
+		"  -stream PATH:[VENC],[AENC]  Add RTSP stream\n"
+		"Example:\n"
+		"  -vsrc \"isp0:sensor=ar0130|videv0|vichn0|vpgrp0|vpchn0\"\n"
+		"  -venc \"vpchn0|vechn0:encoding=H264,resolution=720P,framerate=25\"\n"
+		"  -asrc \"acodec0|aidev0|aichn0\"\n"
+		"  -aenc \"aichn0|aechn0:encoding=G711A\"\n"
+		"  -stream 0:vechn0,aechn0\n";
+	std::cout << plat_options;
 #endif
-	std::cout << std::endl;
 }
 
-static const char *optString = "Bh?vc:p:s";
-static const struct option longOpts[] = {
+static const char *optstr = "Bh?c:p:S";
+static const struct option longopts[] = {
 	{ "help",        no_argument,        NULL,   'h' },
 	{ "background",  required_argument,  NULL,   'B' },
-	{ "version",     no_argument,        NULL,   'v' },
+	{ "version",     no_argument,        NULL,    0  },
 	{ "configure",   required_argument,  NULL,   'c' },
 	{ "system",      no_argument,        NULL,    0  },
 	{ "session",     no_argument,        NULL,    0  },
 	{ "port",        required_argument,  NULL,   'p' },
-	{ "syslog",      no_argument,        NULL,   's' },
+	{ "syslog",      no_argument,        NULL,   'S' },
 #if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
 	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
 	{ "vsrc",        required_argument,  NULL,    0  },
@@ -102,6 +115,20 @@ static const struct option longOpts[] = {
 
 bool _terminated = false;
 
+static void redirect_io_to_syslog(FILE **pfp)
+{
+	cookie_io_functions_t io_funcs = {
+		.read = [](void*, char*, size_t) -> ssize_t { return 0; },
+		.write = [](void* cookie, const char* buf, size_t size) -> ssize_t {
+			syslog(LOG_INFO, "%.*s", (int)size, buf);
+			return size;
+		},
+		.seek = [](void*, off64_t*, int) -> int { return 0; },
+		.close = [](void*) -> int { return 0; }
+	};
+	setvbuf(*pfp = fopencookie(NULL, "w", io_funcs), NULL, _IOLBF, 1024);
+}
+
 static void sigterm_handler(ev::sig &w, int revents)
 {
 	std::cout << std::endl;
@@ -113,15 +140,14 @@ static DBus::Ev::BusDispatcher dispatcher;
 
 int main(int argc, char *argv[])
 {
-	int opt = 0;
-	int longIndex;
+	bool to_syslog = false;
 	std::vector<std::pair<std::string, std::string>> plat_args;
 
 	setlocale(LC_ALL, "");
 
-	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
-	while (opt != -1) {
-		switch (opt) {
+	int c, loptind = 0;
+	while ((c = getopt_long_only(argc, argv, optstr, longopts, &loptind)) != -1) {
+		switch (c) {
 		case 'B':
 			if (fork() != 0)
 				return 0;
@@ -132,30 +158,35 @@ int main(int argc, char *argv[])
 		case 'h':
 			display_usage(argv[0]);
 			return 0;
-		case 'v':
-			std::cout << PACKAGE_STRING << std::endl;
-			return 0;
 		case 'c':
 			config_file = optarg;
 			break;
-		case 's':
+		case 'S':
+			to_syslog = true;
 			break;
 		case 0:
-			if (strcmp(longOpts[longIndex].name, "system") == 0) {
+			if (strcmp(longopts[loptind].name, "version") == 0) {
+				std::cout << PACKAGE_STRING << std::endl;
+				return 0;
+			} else if (strcmp(longopts[loptind].name, "system") == 0) {
 				bus_type = DBUS_BUS_SYSTEM;
-			} else if(strcmp(longOpts[longIndex].name, "session") == 0) {
+			} else if (strcmp(longopts[loptind].name, "session") == 0) {
 				bus_type = DBUS_BUS_SESSION;
 			} else {
-				plat_args.emplace_back(std::string(longOpts[longIndex].name),
+				plat_args.emplace_back(std::string(longopts[loptind].name),
 				                       std::string(optarg));
 			}
-
 			break;
 		default:
 			display_usage(argv[0]);
 			return -1;
 		}
-		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	}
+
+	if (to_syslog) {
+		openlog(PACKAGE_NAME, LOG_CONS, LOG_USER);
+		redirect_io_to_syslog(&stdout);
+		redirect_io_to_syslog(&stderr);
 	}
 
 	/* install SIGINT handler */
@@ -232,6 +263,10 @@ int main(int argc, char *argv[])
 
 	env->reclaim();
 	delete scheduler;
+
+	if (to_syslog) {
+		closelog();
+	}
 
 	return 0;
 }
