@@ -38,6 +38,7 @@
     <property name="MinIris" type="u" access="readwrite"/>
     <property name="MaxIris" type="u" access="readwrite"/>
     <property name="ExposureTime" type="u" access="readwrite"/>
+    <property name="Compensation" type="u" access="readwrite"/>
     <property name="Gain" type="u" access="readwrite"/>
     <property name="Iris" type="u" access="readwrite"/>
   </interface>

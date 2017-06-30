@@ -88,6 +88,8 @@ public:
 			void				setMinIris(uint32_t value);
 			uint32_t			getMaxIris();
 			void				setMaxIris(uint32_t value);
+			uint32_t			getCompensation();
+			void				setCompensation(uint32_t value);
 			uint32_t			getExposureTime();
 			void				setExposureTime(uint32_t value);
 			uint32_t			getGain();
@@ -106,6 +108,7 @@ public:
 			uint32_t			_min_iris;
 			uint32_t			_max_iris;
 			uint32_t			_exp_time;
+			uint32_t			_compensation;
 			uint32_t			_gain;
 			uint32_t			_iris;
 		};

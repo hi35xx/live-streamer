@@ -360,6 +360,17 @@ VideoSource::VideoSource
 		{
 			_video_source->imaging().exposure().setExposureTime((uint32_t)value);
 		});
+	DEFINE_PROP(EXPOSURE_INTERFACE ".Compensation", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32(_video_source->imaging().exposure().getCompensation());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_video_source->imaging().exposure().setCompensation((uint32_t)value);
+		});
 	DEFINE_PROP(EXPOSURE_INTERFACE ".Gain", 
 		[this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)

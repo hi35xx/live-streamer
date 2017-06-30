@@ -124,6 +124,8 @@ public:
 			virtual void			setMaxIris(uint32_t value);
 			virtual uint32_t		getExposureTime();
 			virtual void			setExposureTime(uint32_t value);
+			virtual uint32_t		getCompensation();
+			virtual void			setCompensation(uint32_t value);
 			virtual uint32_t		getGain();
 			virtual void			setGain(uint32_t value);
 			virtual uint32_t		getIris();
@@ -316,6 +318,8 @@ public:
 			virtual void			setMinIris(uint32_t value);
 			virtual uint32_t		getMaxIris();
 			virtual void			setMaxIris(uint32_t value);
+			virtual uint32_t		getCompensation();
+			virtual void			setCompensation(uint32_t value);
 			virtual uint32_t		getExposureTime();
 			virtual void			setExposureTime(uint32_t value);
 			virtual uint32_t		getGain();

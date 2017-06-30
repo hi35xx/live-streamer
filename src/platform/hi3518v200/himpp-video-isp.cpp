@@ -253,6 +253,7 @@ void HimppVideoISP::doEnableElement()
 		exp_attr.stAuto.stExpTimeRange.u32Max = _imaging._exposure._max_exp_time;
 		exp_attr.stAuto.stAGainRange.u32Min = _imaging._exposure._min_gain;
 		exp_attr.stAuto.stAGainRange.u32Max = _imaging._exposure._max_gain;
+		exp_attr.stAuto.u8Compensation = _imaging._exposure._compensation;
 
 		switch (_imaging._antiflicker._mode) {
 		case ANTIFLICKER_OFF:
@@ -299,6 +300,7 @@ void HimppVideoISP::doEnableElement()
 		wdr_attr.bEnable = \
 			(_imaging._widedynamicrange._mode == WDR_ON) ?
 				HI_TRUE : HI_FALSE;
+		wdr_attr.stAuto.u8Strength = _imaging._widedynamicrange._level;
 		if (HI_MPI_ISP_SetDRCAttr(_isp_dev, &wdr_attr) != HI_SUCCESS)
 			fprintf(stderr, "HI_MPI_ISP_SetDRCAttr failed\n");
 	}
@@ -581,6 +583,26 @@ uint32_t HimppVideoISP::Imaging::Exposure::getMaxIris(void)
 	return _max_iris;
 }
 
+uint32_t HimppVideoISP::Imaging::Exposure::getCompensation(void)
+{
+	return _compensation;
+}
+
+void HimppVideoISP::Imaging::Exposure::setCompensation(uint32_t value)
+{
+	HimppVideoISP& isp = dynamic_cast<HimppVideoISP&>(imaging().videoSource());
+	if (isp.is_enabled()) {
+		ISP_EXPOSURE_ATTR_S exp_attr;
+		if (HI_MPI_ISP_GetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
+			throw IpcamError("get exposure attr failed");
+
+		exp_attr.stAuto.u8Compensation = (HI_U8)value;
+		if (HI_MPI_ISP_SetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
+			throw IpcamError("set exposure attr failed");
+	}
+	_compensation = value;
+}
+
 void HimppVideoISP::Imaging::Exposure::setExposureTime(uint32_t value)
 {
 	HimppVideoISP& isp = dynamic_cast<HimppVideoISP&>(imaging().videoSource());
@@ -822,7 +844,7 @@ void HimppVideoISP::Imaging::WideDynamicRange::setLevel(uint32_t value)
 		if (HI_MPI_ISP_GetDRCAttr(isp.ispDev(), &wdr_attr) != HI_SUCCESS)
 			throw IpcamError("get WDR attr failed");
 
-		//wdr_attr.bEnable = (value == WDR_ON) ? HI_TRUE : HI_FALSE;
+		wdr_attr.stAuto.u8Strength = (HI_U8)value;
 		if (HI_MPI_ISP_SetDRCAttr(isp.ispDev(), &wdr_attr) != HI_SUCCESS)
 			throw IpcamError("get WDR attr failed");
 	}

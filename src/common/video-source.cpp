@@ -194,6 +194,16 @@ void VideoSource::Imaging::Exposure::setMaxExposureTime(uint32_t value)
 	throw IpcamError(property_not_implemented);
 }
 
+uint32_t VideoSource::Imaging::Exposure::getCompensation()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::Exposure::setCompensation(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
 uint32_t VideoSource::Imaging::Exposure::getMinGain()
 {
 	throw IpcamError(property_not_implemented);
@@ -849,6 +859,20 @@ void DefaultVideoSource::Imaging::Exposure::setMaxGain(uint32_t value)
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
 	if (source == NULL) throw IpcamError(property_not_implemented);
 	source->imaging().exposure().setMaxGain(value);
+}
+
+uint32_t DefaultVideoSource::Imaging::Exposure::getCompensation()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().exposure().getCompensation();
+}
+
+void DefaultVideoSource::Imaging::Exposure::setCompensation(uint32_t value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().exposure().setCompensation(value);
 }
 
 uint32_t DefaultVideoSource::Imaging::Exposure::getMinIris()
