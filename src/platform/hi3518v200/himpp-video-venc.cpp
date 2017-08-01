@@ -344,12 +344,17 @@ static void calc_crop_cfg(Resolution& in, Resolution& out, VENC_CROP_CFG_S& crop
 
 void HimppVencChan::setResolution(Resolution value)
 {
+	Resolution in = HIMPP_VIDEO_ELEMENT(source())->resolution();
+	// Sanity check
+	if ((value.width() > in.width()) || (value.height() > in.height())) {
+		throw IpcamError("Resolution must not larger than input");
+	}
+
 	if (is_enabled()) {
 		Resolution oldres = _resolution;
 		doDisableElement();
 		try {
 			_resolution = value;
-			Resolution in = HIMPP_VIDEO_ELEMENT(source())->resolution();
 			doEnableElement();
 		} catch (IpcamError& e) {
 			_resolution = oldres;
@@ -386,8 +391,6 @@ uint32_t HimppVencChan::getFramerate()
 {
 	return _framerate;
 }
-
-#define ROUNDUP_16(x)		(((x) + 15) & 0xfffffff0)
 
 void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 {
@@ -477,9 +480,9 @@ void HimppVencChan::prepareChnAttr(VENC_CHN_ATTR_S &attr)
 	switch (_encoding) {
 	case H264:
 		attr.stVeAttr.enType = PT_H264;
-		attr.stVeAttr.stAttrH264e.u32MaxPicWidth = ROUNDUP_16(_resolution.width());
-		attr.stVeAttr.stAttrH264e.u32MaxPicHeight = ROUNDUP_16(_resolution.height());
-		attr.stVeAttr.stAttrH264e.u32BufSize = _resolution.width() * _resolution.height();
+		attr.stVeAttr.stAttrH264e.u32MaxPicWidth = ROUNDUP16(_resolution.width());
+		attr.stVeAttr.stAttrH264e.u32MaxPicHeight = ROUNDUP16(_resolution.height());
+		attr.stVeAttr.stAttrH264e.u32BufSize = ROUNDUP64(_resolution.width()) * ROUNDUP64(_resolution.height());
 		attr.stVeAttr.stAttrH264e.u32PicWidth = _resolution.width();
 		attr.stVeAttr.stAttrH264e.u32PicHeight = _resolution.height();
 		attr.stVeAttr.stAttrH264e.u32Profile = _h264profile;
@@ -489,18 +492,18 @@ void HimppVencChan::prepareChnAttr(VENC_CHN_ATTR_S &attr)
 		break;
 	case MJPEG:
 		attr.stVeAttr.enType = PT_MJPEG;
-		attr.stVeAttr.stAttrMjpeg.u32MaxPicWidth = ROUNDUP_16(_resolution.width());
-		attr.stVeAttr.stAttrMjpeg.u32MaxPicHeight = ROUNDUP_16(_resolution.height());
-		attr.stVeAttr.stAttrMjpeg.u32BufSize = _resolution.width() * _resolution.height();
+		attr.stVeAttr.stAttrMjpeg.u32MaxPicWidth = ROUNDUP16(_resolution.width());
+		attr.stVeAttr.stAttrMjpeg.u32MaxPicHeight = ROUNDUP16(_resolution.height());
+		attr.stVeAttr.stAttrMjpeg.u32BufSize = ROUNDUP64(_resolution.width()) * ROUNDUP64(_resolution.height());
 		attr.stVeAttr.stAttrMjpeg.u32PicWidth = _resolution.width();
 		attr.stVeAttr.stAttrMjpeg.u32PicHeight = _resolution.height();
 		attr.stVeAttr.stAttrMjpeg.bByFrame = HI_TRUE;
 		break;
 	case JPEG:
 		attr.stVeAttr.enType = PT_JPEG;
-		attr.stVeAttr.stAttrJpeg.u32MaxPicWidth = ROUNDUP_16(_resolution.width());
-		attr.stVeAttr.stAttrJpeg.u32MaxPicHeight = ROUNDUP_16(_resolution.height());
-		attr.stVeAttr.stAttrJpeg.u32BufSize = _resolution.width() * _resolution.height() * 2;
+		attr.stVeAttr.stAttrJpeg.u32MaxPicWidth = ROUNDUP16(_resolution.width());
+		attr.stVeAttr.stAttrJpeg.u32MaxPicHeight = ROUNDUP16(_resolution.height());
+		attr.stVeAttr.stAttrJpeg.u32BufSize = ROUNDUP64(_resolution.width()) * ROUNDUP64(_resolution.height());
 		attr.stVeAttr.stAttrJpeg.u32PicWidth = _resolution.width();
 		attr.stVeAttr.stAttrJpeg.u32PicHeight = _resolution.height();
 		attr.stVeAttr.stAttrJpeg.bByFrame = HI_TRUE;
