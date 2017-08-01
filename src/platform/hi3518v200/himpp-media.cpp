@@ -102,11 +102,20 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
 		}
 	}
 
+	HI_S32 s32Ret;
+	HI_U32 online_mode = 0;
+	if ((s32Ret = HI_MPI_SYS_GetViVpssMode(&online_mode)) != HI_SUCCESS) {
+		HIMPP_PRINT("HI_MPI_SYS_GetViVpssMode failed [%#x]\n", s32Ret);
+		online_mode = 0;
+	}
+
 	for (auto &e : _elements) {
 		HimppViDev* videv = dynamic_cast<HimppViDev*>(e.second.get());
 		if (videv) {
+			HI_U32 blkcnt = online_mode ? 4 : 8;
+
 			Resolution dim = HIMPP_VIDEO_ELEMENT(videv)->resolution();
-			_sysctl.addVideoBuffer(dim.width() * dim.height() * 3 / 2, 8);
+			_sysctl.addVideoBuffer(dim.width() * dim.height() * 3 / 2, blkcnt);
 		}
 	}
 	_sysctl.addVideoBuffer(196 * 4, 2);

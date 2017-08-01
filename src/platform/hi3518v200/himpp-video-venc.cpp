@@ -530,7 +530,7 @@ void HimppVencChan::doEnableElement()
 		throw IpcamError("Failed to create VENC channel");
 	}
 
-	if ((s32Ret = HI_MPI_VENC_SetMaxStreamCnt(_chnid, 4)) != HI_SUCCESS) {
+	if ((s32Ret = HI_MPI_VENC_SetMaxStreamCnt(_chnid, 2)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VENC_SetMaxStreamCnt %d failed [%#x]\n",
 					_chnid, s32Ret);
 	}
