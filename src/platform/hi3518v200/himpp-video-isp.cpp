@@ -426,7 +426,7 @@ HimppVideoISP::Imaging::Exposure::Exposure(Imaging& imaging)
     _min_exp_time(2), _max_exp_time(80000),
     _min_gain(1024), _max_gain(80000),
     _min_iris(0), _max_iris(0),
-    _exp_time(512), _gain(2048), _iris(0)
+    _exp_time(512), _compensation(56), _gain(2048), _iris(0)
 {
 }
 
