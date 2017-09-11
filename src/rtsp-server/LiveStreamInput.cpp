@@ -58,7 +58,13 @@ LiveH264StreamSource::LiveH264StreamSource
 : FramedSource(env), StreamSink(streamsource)
 {
 	source()->attach(this);
-	play();
+	try {
+		play();
+	}
+	catch (IpcamError& e) {
+		source()->detach(this);
+		handleClosure();
+	}
 }
 
 LiveH264StreamSource::~LiveH264StreamSource()
