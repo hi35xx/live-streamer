@@ -18,19 +18,101 @@
  */
 
 #include <mpi_sys.h>
-
 #include <himpp-common.h>
 #include "himpp-video-vpss.h"
 
-
 HimppVpssGroup::HimppVpssGroup(HimppVideoElement* source, VPSS_GRP grp)
-: VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
-DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)), _grpid(grp)
+  : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
+    DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
+    _imaging(*this), _grpid(grp), _isp(NULL)
 {
 }
 
 HimppVpssGroup::~HimppVpssGroup()
 {
+}
+
+void HimppVpssGroup::timeout_handler(ev::timer& w, int revents)
+{
+	NrParamTable &nrtable = _imaging.noisereduction().getParamTable();
+	if (nrtable.size() == 0)
+		return;
+
+	// get ISO value from ISP module
+	uint32_t iso;
+	try {
+		VideoSource::Imaging::Exposure &vs_exp = _isp->imaging().exposure();
+		auto isp_exp = dynamic_cast<HimppVideoISP::Imaging::Exposure*>(&vs_exp);
+		if (isp_exp == NULL)
+			throw IpcamError("Exposure interface not implemented");
+
+		// get ExpStateInfo
+		HimppVideoISP::Imaging::Exposure::StateInfo exp_state;
+		isp_exp->getStateInfo(exp_state);
+
+		iso = exp_state.ISO;
+	}
+	catch (IpcamError &e) {
+		HIMPP_PRINT("Get ExpStateInfo failed: %s\n", e.what());
+		return;
+	}
+
+	NrParamTableItem nritem = nrtable.back();
+	for (auto& item : nrtable) {
+		if (iso < item._1) {
+			nritem = item;
+			break;
+		}
+	}
+	setNRStrength(nritem._2, nritem._3);
+}
+
+void HimppVpssGroup::enableNR(bool enable)
+{
+	HI_S32 s32Ret = HI_FAILURE;
+	VPSS_GRP_ATTR_S grpattr;
+
+	// enable/disable noise reduction
+	if ((s32Ret = HI_MPI_VPSS_GetGrpAttr(groupId(), &grpattr)) == HI_SUCCESS) {
+		grpattr.bNrEn = enable ? HI_TRUE : HI_FALSE;
+		if ((s32Ret = HI_MPI_VPSS_SetGrpAttr(groupId(), &grpattr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to disable noise reduction");
+		}
+	} else {
+		throw IpcamError("Failed to get vpss group attributes");
+	}
+}
+
+void HimppVpssGroup::enableAutoNR(bool enable)
+{
+	// start the timer
+	if (_isp) {
+		if (enable) {
+			_timer.set(1.0, 0.1);
+			_timer.set<HimppVpssGroup, &HimppVpssGroup::timeout_handler>(this);
+			_timer.start();
+		} else {
+			_timer.stop();
+		}
+	} else {
+		throw IpcamError("Auto NR need the ISP instance");
+	}
+}
+
+void HimppVpssGroup::setNRStrength(int32_t YSFStr, int32_t YTFStr)
+{
+	HI_S32 s32Ret = HI_FAILURE;
+	VPSS_NR_PARAM_U nrparam;
+	if ((s32Ret = HI_MPI_VPSS_GetNRParam(_grpid, &nrparam)) == HI_SUCCESS) {
+		nrparam.stNRParam_V1.s32YSFStr = YSFStr;
+		nrparam.stNRParam_V1.s32YTFStr = YTFStr;
+		if ((s32Ret = HI_MPI_VPSS_SetNRParam(_grpid, &nrparam)) != HI_SUCCESS) {
+			throw IpcamError("Failed to set NR strength");
+		}
+	}
+	else {
+		throw IpcamError("Failed to get NR strength");
+	}
 }
 
 void HimppVpssGroup::doEnableElement()
@@ -45,7 +127,7 @@ void HimppVpssGroup::doEnableElement()
 	attr.u32MaxH = dim.height();
 	attr.bDciEn = HI_FALSE;
 	attr.bIeEn = HI_FALSE;
-	attr.bNrEn = HI_TRUE;
+	attr.bNrEn = HI_FALSE;
 	attr.bHistEn = HI_FALSE;
 	attr.enDieMode = VPSS_DIE_MODE_NODIE;
 	attr.enPixFmt = HIMPP_PIXEL_FORMAT;
@@ -71,6 +153,46 @@ void HimppVpssGroup::doEnableElement()
 		goto err_stop_grp;
 	}
 
+	// Find the isp instance from the source element chain
+	for (VideoElement *e = this; e != NULL; e = VIDEO_ELEMENT(e->source())) {
+		HimppVideoISP *isp = dynamic_cast<HimppVideoISP*>(e);
+		if (isp) {
+			_isp = isp;
+			break;
+		}
+	}
+
+	// initialize noise reduction
+	try {
+		int32_t YSFStr, YTFStr;
+		Imaging::NoiseReduction &nr = dynamic_cast<Imaging::NoiseReduction&>(_imaging.noisereduction());
+		switch (nr.getMode()) {
+		case VNR_OFF:
+			{
+				enableNR(false);
+			}
+			break;
+		case VNR_MANUAL:
+			{
+				enableNR(true);
+				uint32_t level = nr.getLevel();
+				NrParamTableItem item = nr.getParamTable().at(level);
+				YSFStr = item._2;
+				YTFStr = item._3;
+				setNRStrength(YSFStr, YTFStr);
+			}
+			break;
+		case VNR_AUTO:
+			{
+				enableNR(true);
+				enableAutoNR(true);
+			}
+			break;
+		}
+	} catch (IpcamError& e) {
+		HIMPP_PRINT("Failed to initialize NoiseReduction");
+	}
+
 	return;
 
 	err_stop_grp:
@@ -85,6 +207,10 @@ void HimppVpssGroup::doDisableElement()
 {
 	HimppVideoElement* src = HIMPP_VIDEO_ELEMENT(source());
 	HI_S32 s32Ret;
+
+	if (_isp && _imaging.noisereduction().getMode() == VNR_AUTO) {
+		enableAutoNR(false);
+	}
 
 	MPP_CHN_S dst_chn;
 	dst_chn.enModId = HI_ID_VPSS;
@@ -108,6 +234,133 @@ void HimppVpssGroup::doDisableElement()
 	}
 }
 
+VideoSource::Imaging& HimppVpssGroup::imaging()
+{
+	return _imaging;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoISP::Imaging::NoiseReduction
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVpssGroup::Imaging::NoiseReduction::NoiseReduction(Imaging &imaging)
+  : DefaultVideoSource::Imaging::NoiseReduction(dynamic_cast<DefaultVideoSource::Imaging&>(imaging)),
+    _mode(VNR_OFF), _level(0)
+{
+}
+
+HimppVpssGroup::Imaging::NoiseReduction::~NoiseReduction()
+{
+}
+
+VNRMode HimppVpssGroup::Imaging::NoiseReduction::getMode()
+{
+	return _mode;
+}
+
+void HimppVpssGroup::Imaging::NoiseReduction::setMode(VNRMode value)
+{
+	HimppVpssGroup &group = dynamic_cast<HimppVpssGroup&>(imaging().videoSource());
+
+	if (_mode == value)
+		return;
+
+	if (group.is_enabled()) {
+		switch (value) {
+		case VNR_OFF:
+			// stop the auto NR timer if necessary
+			if (_mode == VNR_AUTO) {
+				group.enableAutoNR(false);
+			}
+			// disable noise reduction
+			group.enableNR(false);
+			break;
+		case VNR_MANUAL:
+			// stop the auto NR timer if necessary
+			if (_mode == VNR_AUTO) {
+				group.enableAutoNR(false);
+			}
+			// enable noise reduction
+			group.enableNR(true);
+			if (_level < _param_table.size()) {
+				uint32_t tabsize = _param_table.size();
+				if (tabsize > 0) {
+					uint32_t lvl = _level < tabsize ? _level : tabsize - 1;
+					NrParamTableItem &item = _param_table.at(lvl);
+					group.setNRStrength(item._2, item._3);
+				}
+			}
+			break;
+		case VNR_AUTO:
+			// enable noise reduction
+			group.enableNR(true);
+			group.enableAutoNR(true);
+			break;
+		}
+	}
+	_mode = value;
+}
+
+uint32_t HimppVpssGroup::Imaging::NoiseReduction::getLevel()
+{
+	return _level;
+}
+
+void HimppVpssGroup::Imaging::NoiseReduction::setLevel(uint32_t value)
+{
+	HimppVpssGroup &group = dynamic_cast<HimppVpssGroup&>(imaging().videoSource());
+
+	uint32_t tabsize = _param_table.size();
+	if (group.is_enabled() && (_mode == VNR_MANUAL) && (tabsize > 0)) {
+		uint32_t lvl = value < tabsize ? value : tabsize - 1;
+		NrParamTableItem &item = _param_table.at(lvl);
+		group.setNRStrength(item._2, item._3);
+	}
+	_level = value;
+}
+
+NrParamTable& HimppVpssGroup::Imaging::NoiseReduction::getParamTable()
+{
+	return _param_table;
+}
+
+void ::HimppVpssGroup::Imaging::NoiseReduction::setParamTable(NrParamTable& value)
+{
+	if (value.size() == 0) {
+		throw IpcamError("NR table should not be empty");
+	}
+
+	HimppVpssGroup &group = dynamic_cast<HimppVpssGroup&>(imaging().videoSource());
+	if (group.is_enabled() && _mode == VNR_MANUAL) {
+		uint32_t lvl = _level < value.size() ? _level : value.size() - 1;
+		NrParamTableItem &item = value.at(lvl);
+		group.setNRStrength(item._2, item._3);
+	}
+
+	_param_table = value;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVideoISP::Imaging::NoiseReduction
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVpssGroup::Imaging::Imaging(HimppVpssGroup& group)
+  : DefaultVideoSource::Imaging(dynamic_cast<HimppVpssGroup&>(group)),
+    _noisereduction(*this)
+{
+}
+
+HimppVpssGroup::Imaging::~Imaging()
+{
+}
+
+VideoSource::Imaging::NoiseReduction& HimppVpssGroup::Imaging::noisereduction()
+{
+	return _noisereduction;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVpssChan
 //////////////////////////////////////////////////////////////////////////////
 
 HimppVpssChan::HimppVpssChan(HimppVideoElement* source, VPSS_CHN chn)

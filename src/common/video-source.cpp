@@ -437,6 +437,49 @@ void VideoSource::Imaging::Gamma::setCurveData(GammaCurveData& value)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// VideoSource::Imaging::NoiseReduction
+//////////////////////////////////////////////////////////////////////////////
+
+VideoSource::Imaging::NoiseReduction::NoiseReduction(Imaging& imaging)
+  : _imaging(imaging)
+{
+}
+
+VideoSource::Imaging::NoiseReduction::~NoiseReduction()
+{
+}
+
+VNRMode VideoSource::Imaging::NoiseReduction::getMode()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::NoiseReduction::setMode(VNRMode value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+uint32_t VideoSource::Imaging::NoiseReduction::getLevel()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::NoiseReduction::setLevel(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+NrParamTable& VideoSource::Imaging::NoiseReduction::getParamTable()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::NoiseReduction::setParamTable(NrParamTable& value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // VideoSource::Imaging
 //////////////////////////////////////////////////////////////////////////////
 
@@ -565,6 +608,11 @@ VideoSource::Imaging::LDC& VideoSource::Imaging::ldc()
 }
 
 VideoSource::Imaging::Gamma& VideoSource::Imaging::gamma()
+{
+	throw IpcamError(interface_not_implemented);
+}
+
+VideoSource::Imaging::NoiseReduction& VideoSource::Imaging::noisereduction()
 {
 	throw IpcamError(interface_not_implemented);
 }
@@ -1152,6 +1200,61 @@ void DefaultVideoSource::Imaging::Gamma::setCurveData(GammaCurveData& value)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// DefaultVideoSource::Imaging::NoiseReduction
+//////////////////////////////////////////////////////////////////////////////
+
+DefaultVideoSource::Imaging::NoiseReduction::NoiseReduction(Imaging& imaging)
+  : VideoSource::Imaging::NoiseReduction(dynamic_cast<VideoSource::Imaging&>(imaging))
+{
+}
+
+DefaultVideoSource::Imaging::NoiseReduction::~NoiseReduction()
+{
+}
+
+VNRMode DefaultVideoSource::Imaging::NoiseReduction::getMode()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().noisereduction().getMode();
+}
+
+void DefaultVideoSource::Imaging::NoiseReduction::setMode(VNRMode value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().noisereduction().setMode(value);
+}
+
+uint32_t DefaultVideoSource::Imaging::NoiseReduction::getLevel()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().noisereduction().getLevel();
+}
+
+void DefaultVideoSource::Imaging::NoiseReduction::setLevel(uint32_t value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().noisereduction().setLevel(value);
+}
+
+NrParamTable& DefaultVideoSource::Imaging::NoiseReduction::getParamTable()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().noisereduction().getParamTable();
+}
+
+void DefaultVideoSource::Imaging::NoiseReduction::setParamTable(NrParamTable& value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().noisereduction().setParamTable(value);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // DefaultVideoSource::Imaging
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1330,6 +1433,13 @@ VideoSource::Imaging::Gamma& DefaultVideoSource::Imaging::gamma()
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
 	if (source == NULL) throw IpcamError(interface_not_implemented);
 	return source->imaging().gamma();
+}
+
+VideoSource::Imaging::NoiseReduction& DefaultVideoSource::Imaging::noisereduction()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
+	if (source == NULL) throw IpcamError(interface_not_implemented);
+	return source->imaging().noisereduction();
 }
 
 //////////////////////////////////////////////////////////////////////////////

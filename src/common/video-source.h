@@ -35,8 +35,12 @@ enum WhiteBalanceMode { AUTO_WB, MANUAL_WB };
 enum WDRMode { WDR_OFF, WDR_ON };
 enum LDCMode { LDC_OFF, LDC_ON };
 enum IrCutFilterMode { IRCUT_ON, IRCUT_OFF, IRCUT_AUTO };
+enum VNRMode { VNR_OFF, VNR_MANUAL, VNR_AUTO };	   // Video Noise Reduction Mode
 
 typedef std::vector<uint32_t> GammaCurveData;
+
+typedef DBus::Struct<uint32_t, int32_t, int32_t>	NrParamTableItem;
+typedef std::vector<NrParamTableItem>				NrParamTable;
 
 class VideoSource;
 class DefaultVideoSource;
@@ -200,6 +204,23 @@ public:
 		private:
 			Imaging& _imaging;
 		};
+		// NoiseReduction
+		class NoiseReduction
+		{
+		public:
+			NoiseReduction(Imaging& imaging);
+			virtual ~NoiseReduction();
+			virtual VNRMode			getMode();
+			virtual void			setMode(VNRMode value);
+			virtual uint32_t		getLevel();
+			virtual void			setLevel(uint32_t value);
+			virtual NrParamTable&	getParamTable();
+			virtual void			setParamTable(NrParamTable& value);
+
+			Imaging& imaging() { return _imaging; }
+		private:
+			Imaging& _imaging;
+		};
 
 	public:
 		Imaging(VideoSource& videosource);
@@ -230,6 +251,7 @@ public:
 		virtual WideDynamicRange&	widedynamicrange();
 		virtual LDC&				ldc();
 		virtual Gamma&				gamma();
+		virtual NoiseReduction&		noisereduction();
 
 		VideoSource& videoSource() { return _video_source; }
 	private:
@@ -368,6 +390,7 @@ public:
 			virtual uint32_t		getRatio();
 			virtual void			setRatio(uint32_t value);
 		};
+		// Gamma
 		class Gamma : public VideoSource::Imaging::Gamma
 		{
 		public:
@@ -375,6 +398,19 @@ public:
 			virtual ~Gamma();
 			virtual GammaCurveData&	getCurveData();
 			virtual void			setCurveData(GammaCurveData& value);
+		};
+		// NoiseReduction
+		class NoiseReduction : public VideoSource::Imaging::NoiseReduction
+		{
+		public:
+			NoiseReduction(Imaging& imaging);
+			virtual ~NoiseReduction();
+			virtual VNRMode			getMode();
+			virtual void			setMode(VNRMode value);
+			virtual uint32_t		getLevel();
+			virtual void			setLevel(uint32_t value);
+			virtual NrParamTable&	getParamTable();
+			virtual void			setParamTable(NrParamTable& value);
 		};
 
 	public:
@@ -406,6 +442,7 @@ public:
 		virtual VideoSource::Imaging::WideDynamicRange&	widedynamicrange();
 		virtual VideoSource::Imaging::LDC&				ldc();
 		virtual VideoSource::Imaging::Gamma&			gamma();
+		virtual VideoSource::Imaging::NoiseReduction&	noisereduction();
 	};
 
 public:

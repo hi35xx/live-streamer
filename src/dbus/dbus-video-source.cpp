@@ -38,6 +38,7 @@ namespace DBus {
 #define WDR_INTERFACE			"ipcam.Media.VideoSource.Imaging.WideDynamicRange"
 #define LDC_INTERFACE			"ipcam.Media.VideoSource.Imaging.LDC"
 #define GAMMA_INTERFACE			"ipcam.Media.VideoSource.Imaging.Gamma"
+#define NR_INTERFACE			"ipcam.Media.VideoSource.Imaging.NoiseReduction"
 
 #define DEFINE_PROP(prop, get, set) \
 	_prop_handler.emplace(std::piecewise_construct, \
@@ -520,6 +521,49 @@ VideoSource::VideoSource
 		{
 			std::vector<uint32_t> curve = value;
 			_video_source->imaging().gamma().setCurveData(curve);
+		});
+	// Handler of ipcam.Media.VideoSource.Imaging.NoiseReduction
+	DEFINE_PROP(NR_INTERFACE ".Mode", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			VNRMode mode = _video_source->imaging().noisereduction().getMode();
+			DBus::MessageIter mi = value.writer();
+			mi << (uint32_t)mode;
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			VNRMode mode = (VNRMode)(uint32_t)value;
+			_video_source->imaging().noisereduction().setMode(mode);
+		});
+	DEFINE_PROP(NR_INTERFACE ".Level", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			uint32_t level = _video_source->imaging().noisereduction().getLevel();
+			DBus::MessageIter mi = value.writer();
+			mi << (uint32_t)level;
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			uint32_t level = (uint32_t)value;
+			_video_source->imaging().noisereduction().setLevel(level);
+		});
+	DEFINE_PROP(NR_INTERFACE ".ParamTable", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			auto& table = _video_source->imaging().noisereduction().getParamTable();
+			DBus::MessageIter mi = value.writer();
+			mi << table;
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			NrParamTable table = value;
+			_video_source->imaging().noisereduction().setParamTable(table);
 		});
 }
 

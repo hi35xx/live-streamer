@@ -20,10 +20,13 @@
 #ifndef _HIMPP_VIDEO_VPSS_GROUP_H_
 #define _HIMPP_VIDEO_VPSS_GROUP_H_
 
+#include <ev++.h>
 #include <mpi_vpss.h>
 #include <media-common.h>
 #include <himpp-base.h>
 #include <video-source.h>
+
+#include <himpp-video-isp.h>
 
 class HimppVpssGroup;
 class HimppVpssChan;
@@ -34,8 +37,44 @@ class HimppVpssChan;
 class HimppVpssGroup : public HimppVideoElement, public DefaultVideoSource
 {
 public:
+	class Imaging : public DefaultVideoSource::Imaging
+	{
+	public:
+		// NoiseReduction
+		class NoiseReduction : public DefaultVideoSource::Imaging::NoiseReduction
+		{
+		public:
+			NoiseReduction(Imaging& imaging);
+			~NoiseReduction();
+			// implemention of Ipcam::Media::VideoSource::Imaging::NoiseReduction
+			VNRMode			getMode();
+			void			setMode(VNRMode value);
+			uint32_t		getLevel();
+			void			setLevel(uint32_t value);
+			NrParamTable&	getParamTable();
+			void			setParamTable(NrParamTable& value);
+		private:
+			VNRMode				_mode;
+			uint32_t			_level;
+			NrParamTable		_param_table;
+		};
+
+	public:
+		Imaging(HimppVpssGroup& group);
+		~Imaging();
+
+		// implementation of VideoSource::Imaging
+		VideoSource::Imaging::NoiseReduction&	noisereduction();
+
+	private:
+		NoiseReduction		_noisereduction;
+	};
+public:
 	HimppVpssGroup(HimppVideoElement* source, VPSS_GRP grpid);
 	~HimppVpssGroup();
+
+	// implementation of VideoSource
+	VideoSource::Imaging&   imaging();
 
 	VPSS_GRP groupId() { return _grpid; };
 
@@ -44,7 +83,16 @@ protected:
 	void doDisableElement();
 
 private:
+	void				timeout_handler(ev::timer& w, int revents);
+	void				enableNR(bool enable);
+	void				enableAutoNR(bool enable);
+	void				setNRStrength(int32_t YSFStr, int32_t YTFStr);
+
+private:
+	Imaging				_imaging;
 	VPSS_GRP			_grpid;
+	ev::timer			_timer;
+	HimppVideoISP*		_isp;
 };
 
 class HimppVpssChan : public HimppVideoElement, public DefaultVideoSource 

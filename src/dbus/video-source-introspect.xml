@@ -61,4 +61,9 @@
   <interface name="ipcam.Media.VideoSource.Imaging.Gamma">
     <property name="CurveData" type="au" access="readwrite"/>
   </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.NoiseReduction">
+    <property name="Mode" type="u" access="readwrite"/>
+    <property name="Level" type="u" access="readwrite"/>
+    <property name="ParamTable" type="a(uii)" access="readwrite"/>
+  </interface>
 </node>

@@ -24,7 +24,6 @@
 #include <dlfcn.h>
 #include <sys/prctl.h>
 
-#include <mpi_vi.h>
 #include <hi_comm_isp.h>
 #include <hi_ae_comm.h>
 #include <hi_af_comm.h>
@@ -244,18 +243,18 @@ void HimppVideoISP::doEnableElement()
 	// initialize Exposure
 	ISP_EXPOSURE_ATTR_S exp_attr;
 	if (HI_MPI_ISP_GetExposureAttr(_isp_dev, &exp_attr) == HI_SUCCESS) {
-		exp_attr.enOpType = (_imaging._exposure._mode == AUTO_EXPOSURE) ?
+		exp_attr.enOpType = (_imaging.exposure().getMode() == AUTO_EXPOSURE) ?
 			OP_TYPE_AUTO : OP_TYPE_MANUAL;
 
-		exp_attr.stAuto.enAEMode = (_imaging._exposure._priority == LOWNOISE_PRIORITY) ? \
+		exp_attr.stAuto.enAEMode = (_imaging.exposure().getPriority() == LOWNOISE_PRIORITY) ? \
 			AE_MODE_SLOW_SHUTTER : AE_MODE_FIX_FRAME_RATE;
-		exp_attr.stAuto.stExpTimeRange.u32Min = _imaging._exposure._min_exp_time;
-		exp_attr.stAuto.stExpTimeRange.u32Max = _imaging._exposure._max_exp_time;
-		exp_attr.stAuto.stAGainRange.u32Min = _imaging._exposure._min_gain;
-		exp_attr.stAuto.stAGainRange.u32Max = _imaging._exposure._max_gain;
-		exp_attr.stAuto.u8Compensation = _imaging._exposure._compensation;
+		exp_attr.stAuto.stExpTimeRange.u32Min = _imaging.exposure().getMinExposureTime();
+		exp_attr.stAuto.stExpTimeRange.u32Max = _imaging.exposure().getMaxExposureTime();
+		exp_attr.stAuto.stAGainRange.u32Min = _imaging.exposure().getMinGain();
+		exp_attr.stAuto.stAGainRange.u32Max = _imaging.exposure().getMaxGain();
+		exp_attr.stAuto.u8Compensation = _imaging.exposure().getCompensation();
 
-		switch (_imaging._antiflicker._mode) {
+		switch (_imaging.antiflicker().getMode()) {
 		case ANTIFLICKER_OFF:
 			exp_attr.stAuto.stAntiflicker.bEnable = HI_FALSE;
 			break;
@@ -268,10 +267,10 @@ void HimppVideoISP::doEnableElement()
 			exp_attr.stAuto.stAntiflicker.enMode = ISP_ANTIFLICKER_AUTO_MODE;
 			break;
 		}
-		exp_attr.stAuto.stAntiflicker.u8Frequency = _imaging._antiflicker._frequency;
+		exp_attr.stAuto.stAntiflicker.u8Frequency = _imaging.antiflicker().getFrequency();
 
-		exp_attr.stManual.u32ExpTime = _imaging._exposure._exp_time;
-		exp_attr.stManual.u32AGain = _imaging._exposure._gain;
+		exp_attr.stManual.u32ExpTime = _imaging.exposure().getExposureTime();
+		exp_attr.stManual.u32AGain = _imaging.exposure().getGain();
 
 		if (HI_MPI_ISP_SetExposureAttr(_isp_dev, &exp_attr) != HI_SUCCESS) {
 			fprintf(stderr, "HI_MPI_ISP_SetAEAttrEx failed\n");
@@ -281,15 +280,15 @@ void HimppVideoISP::doEnableElement()
 	// Initialize WhiteBalance
 	ISP_WB_ATTR_S wb_attr;
 	if (HI_MPI_ISP_GetWBAttr(_isp_dev, &wb_attr) == HI_SUCCESS) {
-		wb_attr.enOpType = (_imaging._whitebalance._mode == AUTO_WB) ?
+		wb_attr.enOpType = (_imaging.whitebalance().getMode() == AUTO_WB) ?
 			OP_TYPE_AUTO : OP_TYPE_MANUAL;
 
-		wb_attr.stAuto.u8BGStrength = (HI_U8)_imaging._whitebalance._cb_gain;
-		wb_attr.stAuto.u8RGStrength = (HI_U8)_imaging._whitebalance._cr_gain;
+		wb_attr.stAuto.u8BGStrength = (HI_U8)_imaging.whitebalance().getCbGain();
+		wb_attr.stAuto.u8RGStrength = (HI_U8)_imaging.whitebalance().getCrGain();
 
-		wb_attr.stManual.u16Rgain = (HI_U16)_imaging._whitebalance._r_gain;
-		wb_attr.stManual.u16Grgain = (HI_U16)_imaging._whitebalance._g_gain;
-		wb_attr.stManual.u16Bgain = (HI_U16)_imaging._whitebalance._b_gain;
+		wb_attr.stManual.u16Rgain = (HI_U16)_imaging.whitebalance().getRGain();
+		wb_attr.stManual.u16Grgain = (HI_U16)_imaging.whitebalance().getGGain();
+		wb_attr.stManual.u16Bgain = (HI_U16)_imaging.whitebalance().getBGain();
 		if (HI_MPI_ISP_SetWBAttr(_isp_dev, &wb_attr) != HI_SUCCESS)
 			fprintf(stderr, "HI_MPI_ISP_SetWBType failed\n");
 	}
@@ -298,20 +297,21 @@ void HimppVideoISP::doEnableElement()
 	ISP_DRC_ATTR_S wdr_attr;
 	if (HI_MPI_ISP_GetDRCAttr(_isp_dev, &wdr_attr) == HI_SUCCESS) {
 		wdr_attr.bEnable = \
-			(_imaging._widedynamicrange._mode == WDR_ON) ?
+			(_imaging.widedynamicrange().getMode() == WDR_ON) ?
 				HI_TRUE : HI_FALSE;
-		wdr_attr.stAuto.u8Strength = _imaging._widedynamicrange._level;
+		wdr_attr.stAuto.u8Strength = _imaging.widedynamicrange().getLevel();
 		if (HI_MPI_ISP_SetDRCAttr(_isp_dev, &wdr_attr) != HI_SUCCESS)
 			fprintf(stderr, "HI_MPI_ISP_SetDRCAttr failed\n");
 	}
 
 	// Initialize Gamma
 	ISP_GAMMA_ATTR_S gamma_attr;
-	if (_imaging._gamma._curve_data.size() == ARRAY_SIZE(gamma_attr.u16Table)) {
+	if (_imaging.gamma().getCurveData().size() == ARRAY_SIZE(gamma_attr.u16Table)) {
 		gamma_attr.bEnable = HI_TRUE;
 		gamma_attr.enCurveType = ISP_GAMMA_CURVE_USER_DEFINE;
-		for (unsigned i = 0; i < _imaging._gamma._curve_data.size(); i++) {
-			gamma_attr.u16Table[i] = _imaging._gamma._curve_data[i];
+		GammaCurveData &curve_data = _imaging.gamma().getCurveData();
+		for (unsigned i = 0; i < curve_data.size(); i++) {
+			gamma_attr.u16Table[i] = curve_data[i];
 		}
 	}
 	else {
@@ -654,6 +654,30 @@ void HimppVideoISP::Imaging::Exposure::setIris(uint32_t value)
 uint32_t HimppVideoISP::Imaging::Exposure::getIris(void)
 {
 	return _iris;
+}
+
+void HimppVideoISP::Imaging::Exposure::getStateInfo(StateInfo& state)
+{
+	HimppVideoISP& isp = dynamic_cast<HimppVideoISP&>(imaging().videoSource());
+	if (!isp.is_enabled()) {
+		throw IpcamError("ISP is not enabled");
+	}
+
+	ISP_EXP_INFO_S exp_info;
+	if (HI_MPI_ISP_QueryExposureInfo(isp.ispDev(), &exp_info) != HI_SUCCESS)
+		throw IpcamError("get exposure info failed");
+
+	state.ExposureTime = exp_info.u32ExpTime;
+	state.AGain = exp_info.u32AGain;
+	state.DGain = exp_info.u32DGain;
+	state.ISPDGain = exp_info.u32ISPDGain;
+	state.Exposure = exp_info.u32Exposure;
+	for (int i = 0; i < (int)ARRAY_SIZE(exp_info.u16AE_Hist5Value); i++) {
+		state.Histogram5[i] = exp_info.u16AE_Hist5Value[i];
+	}
+	state.AverageLuminance = exp_info.u8AveLum;
+	state.FrameRate = exp_info.u32Fps;
+	state.ISO = exp_info.u32ISO;
 }
 
 //////////////////////////////////////////////////////////////////////////////

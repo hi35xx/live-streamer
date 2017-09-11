@@ -28,6 +28,8 @@
 class HimppVideoSensor;
 class HimppVideoISP;
 
+struct hiVI_DEV_ATTR_S;
+
 #define HIMPP_VIDEO_ISP(o)		dynamic_cast<HimppVideoISP*>(o)
 
 typedef HI_VOID (*SENSOR_INIT_FUNC)(void);
@@ -60,14 +62,24 @@ public:
 			uint32_t			getFrequency();
 			void				setFrequency(uint32_t value);
 		private:
-			friend class HimppVideoISP;
-
 			AntiFlickerMode		_mode;
 			uint32_t			_frequency;
 		};
 		// Exposure
 		class Exposure : public DefaultVideoSource::Imaging::Exposure
 		{
+		public:
+			struct StateInfo {
+				uint32_t		ExposureTime;
+				uint32_t		AGain;
+				uint32_t		DGain;
+				uint32_t		ISPDGain;
+				uint32_t		Exposure;
+				uint32_t		Histogram5[5];
+				uint32_t		AverageLuminance;
+				uint32_t		FrameRate;
+				uint32_t		ISO;
+			};
 		public:
 			Exposure(Imaging& imaging);
 			~Exposure();
@@ -96,9 +108,9 @@ public:
 			void				setGain(uint32_t value);
 			uint32_t			getIris();
 			void				setIris(uint32_t value);
-		private:
-			friend class HimppVideoISP;
 
+			void				getStateInfo(StateInfo& info);
+		private:
 			ExposureMode		_mode;
 			ExposurePriority	_priority;
 			uint32_t			_min_exp_time;
@@ -132,8 +144,6 @@ public:
 			void				setBGain(uint32_t value);
 			uint32_t			getBGain();
 		private:
-			friend class HimppVideoISP;
-
 			WhiteBalanceMode	_mode;
 			uint32_t			_cb_gain;
 			uint32_t			_cr_gain;
@@ -153,8 +163,6 @@ public:
 			void				setLevel(uint32_t value);
 			uint32_t			getLevel();
 		private:
-			friend class HimppVideoISP;
-
 			WDRMode				_mode;
 			uint32_t			_level;
 		};
@@ -168,8 +176,6 @@ public:
 			void				setCurveData(GammaCurveData& value);
 			GammaCurveData&		getCurveData();
 		private:
-			friend class HimppVideoISP;
-
 			GammaCurveData		_curve_data;
 		};
 
@@ -185,8 +191,6 @@ public:
 		VideoSource::Imaging::Gamma&			gamma();
 
 	private:
-		friend class HimppVideoISP;
-
 		AntiFlicker			_antiflicker;
 		Exposure			_exposure;
 		WhiteBalance		_whitebalance;
@@ -203,7 +207,7 @@ public:
 	uint32_t				getFrameRate();
 	VideoSource::Imaging&   imaging();
 
-	VI_DEV_ATTR_S*			videoInputConfig();
+	hiVI_DEV_ATTR_S*		videoInputConfig();
 
 	ISP_DEV					ispDev() { return _isp_dev; }
 
