@@ -38,7 +38,7 @@ MediaElement::~MediaElement()
 {
 }
 
-void MediaElement::enable() throw(IpcamError)
+void MediaElement::enable()
 {
 	assert(_enable_count >= 0);
 
@@ -66,7 +66,7 @@ void MediaElement::enable() throw(IpcamError)
 	}
 }
 
-void MediaElement::disable() throw()
+void MediaElement::disable()
 {
 	assert(_enable_count > 0);
 

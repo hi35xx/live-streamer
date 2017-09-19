@@ -40,8 +40,8 @@ class MediaElement
 public:
 	virtual ~MediaElement();
 
-	virtual void enable() throw(IpcamError);	// enable streaming
-	virtual void disable() throw();				// disable streaming
+	virtual void enable();				// enable streaming
+	virtual void disable();				// disable streaming
 
 	bool is_enabled() { return (_enable_count > 0); }
 	inline MediaElement* source() { return _source; }
