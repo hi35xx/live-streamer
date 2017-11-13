@@ -121,10 +121,26 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
 	_sysctl.addVideoBuffer(196 * 4, 2);
 
 	_sysctl.enable();
+
+	// enable elements with MEFLAGS_INITIAL_ENABLED flag
+	for (auto &eit : _elements) {
+		MediaElement* e = eit.second.get();
+		if (e->flags() & MEFLAGS_INITIAL_ENABLED) {
+			e->enable();
+		}
+	}
 }
 
 HimppMedia::~HimppMedia()
 {
+	// disable elements with MEFLAGS_INITIAL_ENABLED flag
+	for (auto &eit : _elements) {
+		MediaElement* e = eit.second.get();
+		if (e->flags() & MEFLAGS_INITIAL_ENABLED) {
+			e->disable();
+		}
+	}
+
 	_sysctl.disable();
 	_elements.clear();
 }
@@ -155,8 +171,11 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			std::vector<std::string> vp = split(pdesc, ',');
 			for (auto it = vp.begin(); it != vp.end(); it++) {
 				std::size_t dpos = it->find('=');
-				if (dpos == std::string::npos) continue;
-				params.emplace(it->substr(0, dpos), it->substr(dpos + 1));
+				if (dpos == std::string::npos) {
+					params.emplace(*it, std::string());
+				} else {
+					params.emplace(it->substr(0, dpos), it->substr(dpos + 1));
+				}
 			}
 		}
 
@@ -263,6 +282,12 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 				std::cout << name << ": " << "encoding not specified, using default(G711A)" << std::endl;
 			}
 			last_element = add_element(name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
+		}
+
+		std::unordered_map<std::string, std::string>::iterator pit;
+		pit = params.find("enable");
+		if (pit != params.end()) {
+			last_element->flags() |= MEFLAGS_INITIAL_ENABLED;
 		}
 	}
 

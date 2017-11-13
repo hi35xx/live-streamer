@@ -34,6 +34,8 @@ class AudioElement;
 #define VIDEO_ELEMENT(o)	dynamic_cast<VideoElement*>(o)
 #define AUDIO_ELEMENT(o)	dynamic_cast<AudioElement*>(o)
 
+#define MEFLAGS_INITIAL_ENABLED		(1 << 0)
+
 // Base for A/V componments
 class MediaElement
 {
@@ -42,6 +44,8 @@ public:
 
 	virtual void enable();				// enable streaming
 	virtual void disable();				// disable streaming
+
+	uint32_t& flags() { return _flags; }
 
 	bool is_enabled() { return (_enable_count > 0); }
 	inline MediaElement* source() { return _source; }
@@ -55,6 +59,7 @@ protected:
 private:
 	MediaElement*		_source;
 	std::atomic<int>	_enable_count;
+	uint32_t			_flags;
 };
 
 // Base for video compoments

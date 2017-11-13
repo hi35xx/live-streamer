@@ -30,7 +30,7 @@ namespace Media {
 //////////////////////////////////////////////////////////////////////////////
 
 MediaElement::MediaElement(MediaElement* source)
-  : _source(source), _enable_count(0)
+  : _source(source), _enable_count(0), _flags(0)
 {
 }
 
