@@ -250,8 +250,8 @@ void HimppVideoISP::doEnableElement()
 			AE_MODE_SLOW_SHUTTER : AE_MODE_FIX_FRAME_RATE;
 		exp_attr.stAuto.stExpTimeRange.u32Min = _imaging.exposure().getMinExposureTime();
 		exp_attr.stAuto.stExpTimeRange.u32Max = _imaging.exposure().getMaxExposureTime();
-		exp_attr.stAuto.stAGainRange.u32Min = _imaging.exposure().getMinGain();
-		exp_attr.stAuto.stAGainRange.u32Max = _imaging.exposure().getMaxGain();
+		exp_attr.stAuto.stSysGainRange.u32Min = _imaging.exposure().getMinGain();
+		exp_attr.stAuto.stSysGainRange.u32Max = _imaging.exposure().getMaxGain();
 		exp_attr.stAuto.u8Compensation = _imaging.exposure().getCompensation();
 
 		switch (_imaging.antiflicker().getMode()) {
@@ -270,7 +270,7 @@ void HimppVideoISP::doEnableElement()
 		exp_attr.stAuto.stAntiflicker.u8Frequency = _imaging.antiflicker().getFrequency();
 
 		exp_attr.stManual.u32ExpTime = _imaging.exposure().getExposureTime();
-		exp_attr.stManual.u32AGain = _imaging.exposure().getGain();
+		exp_attr.stManual.u32ISPDGain = _imaging.exposure().getGain();
 
 		if (HI_MPI_ISP_SetExposureAttr(_isp_dev, &exp_attr) != HI_SUCCESS) {
 			fprintf(stderr, "HI_MPI_ISP_SetAEAttrEx failed\n");
@@ -424,11 +424,11 @@ uint32_t HimppVideoISP::Imaging::AntiFlicker::getFrequency()
 HimppVideoISP::Imaging::Exposure::Exposure(Imaging& imaging)
   : DefaultVideoSource::Imaging::Exposure(dynamic_cast<DefaultVideoSource::Imaging&>(imaging)),
     _mode(AUTO_EXPOSURE),
-    _priority(FRAMERATE_PRIORITY),
-    _min_exp_time(2), _max_exp_time(80000),
-    _min_gain(1024), _max_gain(80000),
+    _priority(LOWNOISE_PRIORITY),
+    _min_exp_time(2), _max_exp_time(200000),
+    _min_gain(1024), _max_gain(65536),
     _min_iris(0), _max_iris(0),
-    _exp_time(512), _compensation(56), _gain(2048), _iris(0)
+    _exp_time(8192), _compensation(56), _gain(16384), _iris(0)
 {
 }
 
@@ -525,7 +525,7 @@ void HimppVideoISP::Imaging::Exposure::setMinGain(uint32_t value)
 		if (HI_MPI_ISP_GetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("get exposure attr failed");
 
-		exp_attr.stAuto.stAGainRange.u32Min = value;
+		exp_attr.stAuto.stSysGainRange.u32Min = value;
 		if (HI_MPI_ISP_SetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("set exposure attr failed");
 	}
@@ -545,7 +545,7 @@ void HimppVideoISP::Imaging::Exposure::setMaxGain(uint32_t value)
 		if (HI_MPI_ISP_GetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("get exposure attr failed");
 
-		exp_attr.stAuto.stAGainRange.u32Max = value;
+		exp_attr.stAuto.stSysGainRange.u32Max = value;
 		if (HI_MPI_ISP_SetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("set exposure attr failed");
 	}
@@ -631,7 +631,7 @@ void HimppVideoISP::Imaging::Exposure::setGain(uint32_t value)
 		if (HI_MPI_ISP_GetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("get exposure attr failed");
 
-		exp_attr.stManual.u32AGain = value;
+		exp_attr.stManual.u32ISPDGain = value;
 		if (HI_MPI_ISP_SetExposureAttr(isp.ispDev(), &exp_attr) != HI_SUCCESS)
 			throw IpcamError("set exposure attr failed");
 	}
