@@ -121,6 +121,26 @@ void H264VideoEncoder::setGovLength(uint32_t value)
 	throw IpcamError(property_not_implemented);
 }
 
+void H264VideoEncoder::setFrameRefMode(FrameRefMode value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+H264VideoEncoder::FrameRefMode H264VideoEncoder::getFrameRefMode()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void H264VideoEncoder::setIntraRefresh(IntraRefreshParam value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+H264VideoEncoder::IntraRefreshParam H264VideoEncoder::getIntraRefresh()
+{
+	throw IpcamError(property_not_implemented);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // JPEGVideoEncoder
 //////////////////////////////////////////////////////////////////////////////

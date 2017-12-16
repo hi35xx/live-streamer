@@ -214,6 +214,49 @@ H264VideoEncoder::H264VideoEncoder
 			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
 			h264venc->setGovLength((uint32_t)value);
 		});
+	DEFINE_PROP(H264_INTERFACE ".FrameRefMode",
+		([this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			Ipcam::Media::H264VideoEncoder::FrameRefMode refmode = h264venc->getFrameRefMode();
+			DBus::Struct<uint32_t, uint32_t, bool> s;
+			s._1 = refmode.Base;
+			s._2 = refmode.Enhanced;
+			s._3 = refmode.EnablePred;
+			DBus::MessageIter mi = value.writer();
+			mi << s;
+		}),
+		([this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			DBus::Struct<uint32_t, uint32_t, bool> s = value;
+			Ipcam::Media::H264VideoEncoder::FrameRefMode refmode(s._1, s._2, s._3);
+			h264venc->setFrameRefMode(refmode);
+		}));
+	DEFINE_PROP(H264_INTERFACE ".IntraRefresh",
+		([this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			Ipcam::Media::H264VideoEncoder::IntraRefreshParam param = h264venc->getIntraRefresh();
+			DBus::Struct<bool, bool, uint32_t, uint32_t> s;
+			s._1 = param.EnableRefresh;
+			s._2 = param.EnableISlice;
+			s._3 = param.RefreshLineNum;
+			s._4 = param.ReqIQp;
+			DBus::MessageIter mi = value.writer();
+			mi << s;
+		}),
+		([this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			DBus::Struct<bool, bool, uint32_t, uint32_t> s = value;
+			Ipcam::Media::H264VideoEncoder::IntraRefreshParam param(s._1, s._2, s._3, s._4);
+			h264venc->setIntraRefresh(param);
+		}));
 }
 
 } // namespace DBus

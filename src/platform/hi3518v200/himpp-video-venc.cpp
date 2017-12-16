@@ -39,7 +39,10 @@ HimppVencChan::HimppVencChan
     _resolution(source->resolution()),
     _framerate(source->framerate()),
     _bitrate(2048),
-    _gop(30), _io(mainloop)
+    _gop(_framerate * 2),
+	_refmode(1, 0, true),
+	_intrarefresh(false, false, 11, 51),
+	_io(mainloop)
 {
 	_crop_cfg.bEnable = HI_FALSE;
 	_crop_cfg.stRect.u32Width = 0;
@@ -260,6 +263,68 @@ uint32_t HimppVencChan::getGovLength()
 	return _gop;
 }
 
+void HimppVencChan::setFrameRefMode(FrameRefMode value)
+{
+	if (is_enabled()) {
+		FrameRefMode oldval = _refmode;
+		doDisableElement();
+		try {
+			_refmode = value;
+			doEnableElement();
+		} catch (IpcamError& e) {
+			_refmode = oldval;
+			doEnableElement();
+			throw e;
+		}
+	}
+	_refmode = value;
+}
+
+H264VideoEncoder::FrameRefMode HimppVencChan::getFrameRefMode()
+{
+	if (is_enabled()) {
+		VENC_PARAM_REF_S stRefParam;
+		HI_S32 s32Ret;
+		if ((s32Ret = HI_MPI_VENC_GetRefParam(_chnid, &stRefParam)) == HI_SUCCESS) {
+			_refmode = FrameRefMode(stRefParam.u32Base, stRefParam.u32Enhance, stRefParam.bEnablePred);
+		} else {
+			HIMPP_PRINT("getSkipRefMode(%d) failed [%#x]\n", _chnid, s32Ret);
+		}
+	}
+	return _refmode;
+}
+
+void HimppVencChan::setIntraRefresh(IntraRefreshParam value)
+{
+	if (is_enabled()) {
+		IntraRefreshParam oldval = _intrarefresh;
+		doDisableElement();
+		try {
+			_intrarefresh = value;
+			doEnableElement();
+		} catch (IpcamError& e) {
+			_intrarefresh = oldval;
+			doEnableElement();
+			throw e;
+		}
+	}
+	_intrarefresh = value;
+}
+
+H264VideoEncoder::IntraRefreshParam HimppVencChan::getIntraRefresh()
+{
+	if (is_enabled()) {
+		VENC_PARAM_INTRA_REFRESH_S stIntraRefresh;
+		HI_S32 s32Ret;
+		if ((s32Ret = HI_MPI_VENC_GetIntraRefresh(_chnid, &stIntraRefresh)) == HI_SUCCESS) {
+			_intrarefresh = IntraRefreshParam (stIntraRefresh.bRefreshEnable, stIntraRefresh.bISliceEnable, stIntraRefresh.u32RefreshLineNum, stIntraRefresh.u32ReqIQp);
+		} else {
+			HIMPP_PRINT("getSkipRefMode(%d) failed [%#x]\n", _chnid, s32Ret);
+		}
+	}
+	return _intrarefresh;
+}
+
 void HimppVencChan::requestIDR()
 {
 	if (is_enabled()) {
@@ -372,19 +437,24 @@ Resolution HimppVencChan::getResolution()
 
 void HimppVencChan::setFramerate(uint32_t value)
 {
+	uint32_t newgop = ((_gop + _framerate / 2) / _framerate) * value;
 	if (is_enabled()) {
 		uint32_t oldval = _framerate;
+		uint32_t oldgop = _gop;
 		doDisableElement();
 		try {
 			_framerate = value;
+			_gop = newgop;
 			doEnableElement();
 		} catch (IpcamError& e) {
 			_framerate = oldval;
+			_gop = oldgop;
 			doEnableElement();
 			throw e;
 		}
 	}
 	_framerate = value;
+	_gop = newgop;
 }
 
 uint32_t HimppVencChan::getFramerate()
@@ -547,17 +617,34 @@ void HimppVencChan::doEnableElement()
 			}
 		}
 
-#if 0
-		VENC_PARAM_INTRA_REFRESH_S stIntraRefresh;
-		stIntraRefresh.bRefreshEnable = HI_TRUE;
-		stIntraRefresh.bISliceEnable = HI_FALSE;
-		stIntraRefresh.u32RefreshLineNum = _resolution.height() / (_gop * 8);
-		stIntraRefresh.u32ReqIQp = 50;
-		if ((s32Ret = HI_MPI_VENC_SetIntraRefresh(_chnid, &stIntraRefresh)) != HI_SUCCESS) {
-			HIMPP_PRINT("HI_MPI_VENC_SetIntraRefresh(%d) failed [%#x]\n",
-						_chnid, s32Ret);
+		VENC_PARAM_REF_S stRefParam;
+		if ((s32Ret = HI_MPI_VENC_GetRefParam(_chnid, &stRefParam)) == HI_SUCCESS) {
+			stRefParam.u32Base = _refmode.Base;
+			stRefParam.u32Enhance = _refmode.Enhanced;
+			stRefParam.bEnablePred = (HI_BOOL)_refmode.EnablePred;
+			if ((s32Ret = HI_MPI_VENC_SetRefParam(_chnid, &stRefParam)) != HI_SUCCESS) {
+				HIMPP_PRINT("HI_MPI_VENC_SetRefParam(%d) failed [%#x]\n",
+				            _chnid, s32Ret);
+			}
+		} else {
+			HIMPP_PRINT("HI_MPI_VENC_GetRefParam(%d) failed [%#x]\n",
+			            _chnid, s32Ret);
 		}
-#endif
+
+		VENC_PARAM_INTRA_REFRESH_S stIntraRefresh;
+		if ((s32Ret = HI_MPI_VENC_GetIntraRefresh(_chnid, &stIntraRefresh)) == HI_SUCCESS) {
+			stIntraRefresh.bRefreshEnable = (HI_BOOL)_intrarefresh.EnableRefresh;
+			stIntraRefresh.bISliceEnable = (HI_BOOL)_intrarefresh.EnableISlice;
+			stIntraRefresh.u32RefreshLineNum = _intrarefresh.RefreshLineNum;
+			stIntraRefresh.u32ReqIQp = _intrarefresh.ReqIQp;
+			if ((s32Ret = HI_MPI_VENC_SetIntraRefresh(_chnid, &stIntraRefresh)) != HI_SUCCESS) {
+				HIMPP_PRINT("HI_MPI_VENC_SetIntraRefresh(%d) failed [%#x]\n",
+				            _chnid, s32Ret);
+			}
+		} else {
+			HIMPP_PRINT("HI_MPI_VENC_GetIntraRefresh(%d) failed [%#x]\n",
+			            _chnid, s32Ret);
+		}
 	}
 
 	Resolution in = HIMPP_VIDEO_ELEMENT(source())->resolution();

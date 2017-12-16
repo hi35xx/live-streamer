@@ -13,6 +13,8 @@
   <interface name="ipcam.Media.VideoEncoder.H264">
     <property name="H264Profile" type="u" access="readwrite"/>
     <property name="GovLength" type="u" access="readwrite"/>
+    <property name="FrameRefMode" type="(uub)" access="readwrite"/>
+    <property name="IntraRefresh" type="(bbuu)" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoEncoder.OSD">
     <method name="CreateOSD">

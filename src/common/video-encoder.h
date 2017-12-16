@@ -65,12 +65,33 @@ protected:
 class H264VideoEncoder : public virtual VideoEncoder
 {
 public:
+	struct FrameRefMode {
+		uint32_t				Base;
+		uint32_t				Enhanced;
+		bool					EnablePred;
+		FrameRefMode(uint32_t base, uint32_t enhanced, bool enablepred)
+			: Base(base), Enhanced(enhanced), EnablePred(enablepred) {}
+	};
+	struct IntraRefreshParam {
+		bool					EnableRefresh;
+		bool					EnableISlice;
+		uint32_t				RefreshLineNum;
+		uint32_t				ReqIQp;
+		IntraRefreshParam(bool refresh_en, bool islice_en, uint32_t linenum, uint32_t reqiqp)
+			: EnableRefresh(refresh_en), EnableISlice(islice_en), RefreshLineNum(linenum), ReqIQp(reqiqp) {}
+	};
+public:
 	virtual ~H264VideoEncoder();
 
 	virtual H264Profile			getH264Profile();
 	virtual void				setH264Profile(H264Profile value);
 	virtual uint32_t			getGovLength();
 	virtual void				setGovLength(uint32_t value);
+
+	virtual void				setFrameRefMode(FrameRefMode value);
+	virtual FrameRefMode		getFrameRefMode();
+	virtual void				setIntraRefresh(IntraRefreshParam value);
+	virtual IntraRefreshParam	getIntraRefresh();
 
 protected:
 	H264VideoEncoder();
