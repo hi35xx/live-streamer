@@ -214,6 +214,32 @@ H264VideoEncoder::H264VideoEncoder
 			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
 			h264venc->setGovLength((uint32_t)value);
 		});
+	DEFINE_PROP(H264_INTERFACE ".MinQP",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			value.writer().append_uint32((uint32_t)h264venc->getMinQP());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			h264venc->setMinQP((uint32_t)value);
+		});
+	DEFINE_PROP(H264_INTERFACE ".MaxQP",
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			value.writer().append_uint32((uint32_t)h264venc->getMaxQP());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			Ipcam::Media::H264VideoEncoder* h264venc = H264_VIDEO_ENCODER(_video_encoder);
+			h264venc->setMaxQP((uint32_t)value);
+		});
 	DEFINE_PROP(H264_INTERFACE ".FrameRefMode",
 		([this](DBus::InterfaceAdaptor &interface,
 		   const std::string &property, DBus::Variant &value)

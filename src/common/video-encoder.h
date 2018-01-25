@@ -87,6 +87,10 @@ public:
 	virtual void				setH264Profile(H264Profile value);
 	virtual uint32_t			getGovLength();
 	virtual void				setGovLength(uint32_t value);
+	virtual uint32_t			getMinQP();
+	virtual void				setMinQP(uint32_t value);
+	virtual uint32_t			getMaxQP();
+	virtual void				setMaxQP(uint32_t value);
 
 	virtual void				setFrameRefMode(FrameRefMode value);
 	virtual FrameRefMode		getFrameRefMode();

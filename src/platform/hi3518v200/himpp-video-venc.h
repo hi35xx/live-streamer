@@ -75,6 +75,10 @@ public:
 	H264Profile			getH264Profile();
 	void				setGovLength(uint32_t value);
 	uint32_t			getGovLength();
+	void				setMinQP(uint32_t value);
+	uint32_t			getMinQP();
+	void				setMaxQP(uint32_t value);
+	uint32_t			getMaxQP();
 	void				setFrameRefMode(FrameRefMode value);
 	FrameRefMode		getFrameRefMode();
 	void				setIntraRefresh(IntraRefreshParam value);
@@ -103,6 +107,8 @@ private:
 	uint32_t					_framerate;
 	uint32_t					_bitrate;
 	uint32_t					_gop;
+	uint32_t					_min_qp;
+	uint32_t					_max_qp;
 	VENC_CROP_CFG_S				_crop_cfg;
 	FrameRefMode				_refmode;
 	IntraRefreshParam			_intrarefresh;

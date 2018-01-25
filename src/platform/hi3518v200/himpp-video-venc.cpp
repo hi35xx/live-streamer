@@ -40,6 +40,8 @@ HimppVencChan::HimppVencChan
     _framerate(source->framerate()),
     _bitrate(2048),
     _gop(_framerate * 2),
+    _min_qp(24),
+    _max_qp(40),
 	_refmode(1, 0, true),
 	_intrarefresh(false, false, 11, 51),
 	_io(mainloop)
@@ -250,7 +252,7 @@ void HimppVencChan::setGovLength(uint32_t value)
 			_gop = value;
 			doEnableElement();
 		} catch (IpcamError& e) {
-			_bitrate = oldval;
+			_gop = oldval;
 			doEnableElement();
 			throw e;
 		}
@@ -261,6 +263,50 @@ void HimppVencChan::setGovLength(uint32_t value)
 uint32_t HimppVencChan::getGovLength()
 {
 	return _gop;
+}
+
+void HimppVencChan::setMinQP(uint32_t value)
+{
+	if (is_enabled()) {
+		uint32_t oldval = _min_qp;
+		doDisableElement();
+		try {
+			_min_qp = value;
+			doEnableElement();
+		} catch (IpcamError& e) {
+			_min_qp = oldval;
+			doEnableElement();
+			throw e;
+		}
+	}
+	_min_qp = value;
+}
+
+uint32_t HimppVencChan::getMinQP()
+{
+	return _min_qp;
+}
+
+void HimppVencChan::setMaxQP(uint32_t value)
+{
+	if (is_enabled()) {
+		uint32_t oldval = _max_qp;
+		doDisableElement();
+		try {
+			_max_qp = value;
+			doEnableElement();
+		} catch (IpcamError& e) {
+			_max_qp = oldval;
+			doEnableElement();
+			throw e;
+		}
+	}
+	_max_qp = value;
+}
+
+uint32_t HimppVencChan::getMaxQP()
+{
+	return _max_qp;
 }
 
 void HimppVencChan::setFrameRefMode(FrameRefMode value)
@@ -486,8 +532,8 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 			attr.stAttrH264Vbr.u32StatTime = stattime;
 			attr.stAttrH264Vbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
 			attr.stAttrH264Vbr.fr32DstFrmRate = _framerate;
-			attr.stAttrH264Vbr.u32MinQp = 24;
-			attr.stAttrH264Vbr.u32MaxQp = 45;
+			attr.stAttrH264Vbr.u32MinQp = _min_qp;
+			attr.stAttrH264Vbr.u32MaxQp = _max_qp;
 			attr.stAttrH264Vbr.u32MaxBitRate = _bitrate;
 			break;
 		case FIXQP:

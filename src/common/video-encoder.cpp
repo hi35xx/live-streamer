@@ -121,6 +121,26 @@ void H264VideoEncoder::setGovLength(uint32_t value)
 	throw IpcamError(property_not_implemented);
 }
 
+void H264VideoEncoder::setMinQP(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+uint32_t H264VideoEncoder::getMinQP()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void H264VideoEncoder::setMaxQP(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+uint32_t H264VideoEncoder::getMaxQP()
+{
+	throw IpcamError(property_not_implemented);
+}
+
 void H264VideoEncoder::setFrameRefMode(FrameRefMode value)
 {
 	throw IpcamError(property_not_implemented);
