@@ -102,24 +102,7 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
 		}
 	}
 
-	HI_S32 s32Ret;
-	HI_U32 online_mode = 0;
-	if ((s32Ret = HI_MPI_SYS_GetViVpssMode(&online_mode)) != HI_SUCCESS) {
-		HIMPP_PRINT("HI_MPI_SYS_GetViVpssMode failed [%#x]\n", s32Ret);
-		online_mode = 0;
-	}
-
-	for (auto &e : _elements) {
-		HimppViDev* videv = dynamic_cast<HimppViDev*>(e.second.get());
-		if (videv) {
-			HI_U32 blkcnt = online_mode ? 4 : 8;
-
-			Resolution dim = HIMPP_VIDEO_ELEMENT(videv)->resolution();
-			_sysctl.addVideoBuffer(dim.width() * dim.height() * 3 / 2, blkcnt);
-		}
-	}
 	_sysctl.addVideoBuffer(196 * 4, 2);
-
 	_sysctl.enable();
 
 	// enable elements with MEFLAGS_INITIAL_ENABLED flag
@@ -191,6 +174,14 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
 			uint32_t index = std::stoul(name.substr(5));
 			last_element = add_element(name, HimppViDev(HIMPP_VIDEO_ELEMENT(last_element), index));
+			uint32_t vbcnt = 8;		// default value if 'vbcnt' option not present
+			auto pit = params.find("vbcnt");
+			if (pit != params.end()) {
+				int32_t val = std::stoi(pit->second);
+				if (val > 0) { vbcnt = val; }
+			}
+			Resolution dim = HIMPP_VIDEO_ELEMENT(last_element)->resolution();
+			_sysctl.addVideoBuffer(dim.width() * dim.height() * 3 / 2, vbcnt);
 		}
 		else if (name.compare(0, 5, "vichn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
