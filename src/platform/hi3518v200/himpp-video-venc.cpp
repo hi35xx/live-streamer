@@ -40,8 +40,8 @@ HimppVencChan::HimppVencChan
     _framerate(source->framerate()),
     _bitrate(2048),
     _gop(_framerate * 2),
-    _min_qp(24),
-    _max_qp(40),
+    _min_qp(16),
+    _max_qp(51),
 	_refmode(1, 0, true),
 	_intrarefresh(false, false, 11, 51),
 	_io(mainloop)

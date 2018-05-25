@@ -750,6 +750,64 @@ static HIMPP_SENSOR_CONFIG smartsens_sc1145_sensor_config = {
 };
 
 /***************************************************************************
+ * SmartSens SC1235
+ ***************************************************************************/
+
+static combo_dev_attr_t smartsens_sc1235_combo_dev_attr = {
+	.input_mode = INPUT_MODE_CMOS_18V
+};
+
+static ISP_PUB_ATTR_S smartsens_sc1235_pub_attr = {
+	.stWndRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1280,
+		.u32Height      = 960,
+	},
+	.f32FrameRate       = 30,
+	.enBayer            = BAYER_BGGR
+};
+
+static VI_DEV_ATTR_S smartsens_sc1235_dev_attr = {
+	.enIntfMode     = VI_MODE_DIGITAL_CAMERA,
+	.enWorkMode     = VI_WORK_MODE_1Multiplex,
+	.au32CompMask   = { 0xFFF0000, 0x0 },
+	.enScanMode     = VI_SCAN_PROGRESSIVE,
+	.s32AdChnId     = { -1, -1, -1, -1 },
+	.enDataSeq      = VI_INPUT_DATA_YUYV,
+	.stSynCfg       = {
+		.enVsync        = VI_VSYNC_PULSE,
+		.enVsyncNeg     = VI_VSYNC_NEG_HIGH,
+		.enHsync        = VI_HSYNC_VALID_SINGNAL,
+		.enHsyncNeg     = VI_HSYNC_NEG_HIGH,
+		.enVsyncValid   = VI_VSYNC_NORM_PULSE,
+		.enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
+		.stTimingBlank  = {
+			.u32HsyncHfb = 0, .u32HsyncAct = 1280, .u32HsyncHbb = 0,
+			.u32VsyncVfb = 0,   .u32VsyncVact = 960, .u32VsyncVbb = 0,
+			.u32VsyncVbfb = 0,  .u32VsyncVbact = 0,  .u32VsyncVbbb = 0
+		}
+	},
+	.enDataPath         = VI_PATH_ISP,
+	.enInputDataType    = VI_DATA_TYPE_RGB,
+	.bDataRev           = HI_FALSE,
+	.stDevRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1280,
+		.u32Height      = 960
+	}
+};
+
+static HIMPP_SENSOR_CONFIG smartsens_sc1235_sensor_config = {
+	.name               = "sc1235",
+	.module_path        = "libsns_sc1235.so",
+	.combo_dev_attr     = &smartsens_sc1235_combo_dev_attr,
+	.isp_pub_attr       = &smartsens_sc1235_pub_attr,
+	.vi_dev_attr        = &smartsens_sc1235_dev_attr
+};
+
+/***************************************************************************
  * SmartSens SC2135
  ***************************************************************************/
 
@@ -805,6 +863,64 @@ static HIMPP_SENSOR_CONFIG smartsens_sc2135_sensor_config = {
 	.combo_dev_attr     = &smartsens_sc2135_combo_dev_attr,
 	.isp_pub_attr       = &smartsens_sc2135_pub_attr,
 	.vi_dev_attr        = &smartsens_sc2135_dev_attr
+};
+
+/***************************************************************************
+ * SmartSens SC2235
+ ***************************************************************************/
+
+static combo_dev_attr_t smartsens_sc2235_combo_dev_attr = {
+	.input_mode = INPUT_MODE_CMOS_18V
+};
+
+static ISP_PUB_ATTR_S smartsens_sc2235_pub_attr = {
+	.stWndRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1920,
+		.u32Height      = 1080,
+	},
+	.f32FrameRate       = 20,
+	.enBayer            = BAYER_BGGR
+};
+
+static VI_DEV_ATTR_S smartsens_sc2235_dev_attr = {
+	.enIntfMode     = VI_MODE_DIGITAL_CAMERA,
+	.enWorkMode     = VI_WORK_MODE_1Multiplex,
+	.au32CompMask   = { 0x3FF0000, 0x0 },
+	.enScanMode     = VI_SCAN_PROGRESSIVE,
+	.s32AdChnId     = { -1, -1, -1, -1 },
+	.enDataSeq      = VI_INPUT_DATA_YUYV,
+	.stSynCfg       = {
+		.enVsync        = VI_VSYNC_PULSE,
+		.enVsyncNeg     = VI_VSYNC_NEG_HIGH,
+		.enHsync        = VI_HSYNC_VALID_SINGNAL,
+		.enHsyncNeg     = VI_HSYNC_NEG_HIGH,
+		.enVsyncValid   = VI_VSYNC_NORM_PULSE,
+		.enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
+		.stTimingBlank  = {
+			.u32HsyncHfb = 0, .u32HsyncAct = 1920, .u32HsyncHbb = 0,
+			.u32VsyncVfb = 0,   .u32VsyncVact = 1080, .u32VsyncVbb = 0,
+			.u32VsyncVbfb = 0,  .u32VsyncVbact = 0,  .u32VsyncVbbb = 0
+		}
+	},
+	.enDataPath         = VI_PATH_ISP,
+	.enInputDataType    = VI_DATA_TYPE_RGB,
+	.bDataRev           = HI_FALSE,
+	.stDevRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 1920,
+		.u32Height      = 1080
+	}
+};
+
+static HIMPP_SENSOR_CONFIG smartsens_sc2235_sensor_config = {
+	.name               = "sc2235",
+	.module_path        = "libsns_sc2235.so",
+	.combo_dev_attr     = &smartsens_sc2235_combo_dev_attr,
+	.isp_pub_attr       = &smartsens_sc2235_pub_attr,
+	.vi_dev_attr        = &smartsens_sc2235_dev_attr
 };
 
 /***************************************************************************
@@ -885,7 +1001,9 @@ public:
 		addSensor(panasonic_mn34222_sensor_config);
 		addSensor(smartsens_sc1135_sensor_config);
 		addSensor(smartsens_sc1145_sensor_config);
+		addSensor(smartsens_sc1235_sensor_config);
 		addSensor(smartsens_sc2135_sensor_config);
+		addSensor(smartsens_sc2235_sensor_config);
 		addSensor(sony_imx222_sensor_config);
 #undef addSensor
 	}
