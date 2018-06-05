@@ -224,15 +224,21 @@ RateCtrlMode HimppVencChan::getRcMode()
 void HimppVencChan::setBitrate(uint32_t value)
 {
 	if (is_enabled()) {
-		uint32_t oldval = _bitrate;
-		doDisableElement();
-		try {
-			_bitrate = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_bitrate = oldval;
-			doEnableElement();
-			throw e;
+		VENC_CHN_ATTR_S attr;
+		HI_S32 retval;
+
+		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to get venc chan attr");
+		}
+
+		switch (_rcmode) {
+		case CBR: attr.stRcAttr.stAttrH264Cbr.u32BitRate = value; break;
+		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MaxBitRate = value; break;
+		default: throw IpcamError("Cannot change Bitrate in current rc mode"); break;
+		}
+
+		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to set Bitrate");
 		}
 	}
 	_bitrate = value;
@@ -246,15 +252,22 @@ uint32_t HimppVencChan::getBitrate()
 void HimppVencChan::setGovLength(uint32_t value)
 {
 	if (is_enabled()) {
-		uint32_t oldval = _gop;
-		doDisableElement();
-		try {
-			_gop = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_gop = oldval;
-			doEnableElement();
-			throw e;
+		VENC_CHN_ATTR_S attr;
+		HI_S32 retval;
+
+		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to get venc chan attr");
+		}
+
+		switch (_rcmode) {
+		case CBR: attr.stRcAttr.stAttrH264Cbr.u32Gop = value; break;
+		case VBR: attr.stRcAttr.stAttrH264Vbr.u32Gop = value; break;
+		case FIXQP: attr.stRcAttr.stAttrH264FixQp.u32Gop = value; break;
+		default: throw IpcamError("Cannot change GovLength in current rc mode"); break;
+		}
+
+		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to set GovLength");
 		}
 	}
 	_gop = value;
@@ -268,15 +281,20 @@ uint32_t HimppVencChan::getGovLength()
 void HimppVencChan::setMinQP(uint32_t value)
 {
 	if (is_enabled()) {
-		uint32_t oldval = _min_qp;
-		doDisableElement();
-		try {
-			_min_qp = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_min_qp = oldval;
-			doEnableElement();
-			throw e;
+		VENC_CHN_ATTR_S attr;
+		HI_S32 retval;
+
+		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to get venc chan attr");
+		}
+
+		switch (_rcmode) {
+		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MinQp = value; break;
+		default: throw IpcamError("Cannot change MinQP in current rc mode"); break;
+		}
+
+		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to set MinQP");
 		}
 	}
 	_min_qp = value;
@@ -290,15 +308,20 @@ uint32_t HimppVencChan::getMinQP()
 void HimppVencChan::setMaxQP(uint32_t value)
 {
 	if (is_enabled()) {
-		uint32_t oldval = _max_qp;
-		doDisableElement();
-		try {
-			_max_qp = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_max_qp = oldval;
-			doEnableElement();
-			throw e;
+		VENC_CHN_ATTR_S attr;
+		HI_S32 retval;
+
+		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to get venc chan attr");
+		}
+
+		switch (_rcmode) {
+		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MaxQp = value; break;
+		default: throw IpcamError("Cannot change MaxQP in current rc mode"); break;
+		}
+
+		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			throw IpcamError("Failed to set MaxQP");
 		}
 	}
 	_max_qp = value;
@@ -312,15 +335,18 @@ uint32_t HimppVencChan::getMaxQP()
 void HimppVencChan::setFrameRefMode(FrameRefMode value)
 {
 	if (is_enabled()) {
-		FrameRefMode oldval = _refmode;
-		doDisableElement();
-		try {
-			_refmode = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_refmode = oldval;
-			doEnableElement();
-			throw e;
+		VENC_PARAM_REF_S stRefParam;
+		HI_S32 retval;
+		if ((retval = HI_MPI_VENC_GetRefParam(_chnid, &stRefParam)) != HI_SUCCESS) {
+			throw IpcamError("Failed GetRefParam");
+		}
+
+		stRefParam.u32Base = value.Base;
+		stRefParam.u32Enhance = value.Enhanced;
+		stRefParam.bEnablePred = (HI_BOOL)value.EnablePred;
+
+		if ((retval = HI_MPI_VENC_SetRefParam(_chnid, &stRefParam)) != HI_SUCCESS) {
+			throw IpcamError("Failed SetRefparam");
 		}
 	}
 	_refmode = value;
@@ -333,8 +359,6 @@ H264VideoEncoder::FrameRefMode HimppVencChan::getFrameRefMode()
 		HI_S32 s32Ret;
 		if ((s32Ret = HI_MPI_VENC_GetRefParam(_chnid, &stRefParam)) == HI_SUCCESS) {
 			_refmode = FrameRefMode(stRefParam.u32Base, stRefParam.u32Enhance, stRefParam.bEnablePred);
-		} else {
-			HIMPP_PRINT("getSkipRefMode(%d) failed [%#x]\n", _chnid, s32Ret);
 		}
 	}
 	return _refmode;
@@ -343,15 +367,19 @@ H264VideoEncoder::FrameRefMode HimppVencChan::getFrameRefMode()
 void HimppVencChan::setIntraRefresh(IntraRefreshParam value)
 {
 	if (is_enabled()) {
-		IntraRefreshParam oldval = _intrarefresh;
-		doDisableElement();
-		try {
-			_intrarefresh = value;
-			doEnableElement();
-		} catch (IpcamError& e) {
-			_intrarefresh = oldval;
-			doEnableElement();
-			throw e;
+		VENC_PARAM_INTRA_REFRESH_S stIntraRefresh;
+		HI_S32 retval;
+		if ((retval = HI_MPI_VENC_GetIntraRefresh(_chnid, &stIntraRefresh)) != HI_SUCCESS) {
+			throw IpcamError("Failed GetIntraRefresh");
+		}
+
+		stIntraRefresh.bRefreshEnable = (HI_BOOL)value.EnableRefresh;
+		stIntraRefresh.bISliceEnable = (HI_BOOL)value.EnableISlice;
+		stIntraRefresh.u32RefreshLineNum = value.RefreshLineNum;
+		stIntraRefresh.u32ReqIQp = value.ReqIQp;
+
+		if ((retval = HI_MPI_VENC_SetIntraRefresh(_chnid, &stIntraRefresh)) != HI_SUCCESS) {
+			throw IpcamError("Failed SetIntraRefresh");
 		}
 	}
 	_intrarefresh = value;
@@ -364,8 +392,6 @@ H264VideoEncoder::IntraRefreshParam HimppVencChan::getIntraRefresh()
 		HI_S32 s32Ret;
 		if ((s32Ret = HI_MPI_VENC_GetIntraRefresh(_chnid, &stIntraRefresh)) == HI_SUCCESS) {
 			_intrarefresh = IntraRefreshParam (stIntraRefresh.bRefreshEnable, stIntraRefresh.bISliceEnable, stIntraRefresh.u32RefreshLineNum, stIntraRefresh.u32ReqIQp);
-		} else {
-			HIMPP_PRINT("getSkipRefMode(%d) failed [%#x]\n", _chnid, s32Ret);
 		}
 	}
 	return _intrarefresh;
