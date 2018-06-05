@@ -233,7 +233,7 @@ void HimppVencChan::setBitrate(uint32_t value)
 
 		switch (_rcmode) {
 		case CBR: attr.stRcAttr.stAttrH264Cbr.u32BitRate = value; break;
-		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MaxBitRate = value; break;
+		case VBR: attr.stRcAttr.stAttrH264AVbr.u32MaxBitRate = value; break;
 		default: throw IpcamError("Cannot change Bitrate in current rc mode"); break;
 		}
 
@@ -261,7 +261,7 @@ void HimppVencChan::setGovLength(uint32_t value)
 
 		switch (_rcmode) {
 		case CBR: attr.stRcAttr.stAttrH264Cbr.u32Gop = value; break;
-		case VBR: attr.stRcAttr.stAttrH264Vbr.u32Gop = value; break;
+		case VBR: attr.stRcAttr.stAttrH264AVbr.u32Gop = value; break;
 		case FIXQP: attr.stRcAttr.stAttrH264FixQp.u32Gop = value; break;
 		default: throw IpcamError("Cannot change GovLength in current rc mode"); break;
 		}
@@ -281,19 +281,27 @@ uint32_t HimppVencChan::getGovLength()
 void HimppVencChan::setMinQP(uint32_t value)
 {
 	if (is_enabled()) {
-		VENC_CHN_ATTR_S attr;
+		VENC_RC_PARAM_S param;
 		HI_S32 retval;
 
-		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
-			throw IpcamError("Failed to get venc chan attr");
+		if ((retval = HI_MPI_VENC_GetRcParam(_chnid, &param)) != HI_SUCCESS) {
+			throw IpcamError("Failed GetRcParam");
 		}
 
 		switch (_rcmode) {
-		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MinQp = value; break;
-		default: throw IpcamError("Cannot change MinQP in current rc mode"); break;
+		case CBR:
+			param.stParamH264Cbr.u32MinQp = value;
+			param.stParamH264Cbr.u32MinIQp = value;
+			break;
+		case VBR:
+			param.stParamH264AVbr.u32MinQp = value;
+			param.stParamH264AVbr.u32MinIQp = MIN2(value, param.stParamH264AVbr.u32MaxStillQP);
+			break;
+		default:
+			throw IpcamError("Cannot change MinQP in current rc mode"); break;
 		}
 
-		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+		if ((retval = HI_MPI_VENC_SetRcParam(_chnid, &param)) != HI_SUCCESS) {
 			throw IpcamError("Failed to set MinQP");
 		}
 	}
@@ -308,19 +316,27 @@ uint32_t HimppVencChan::getMinQP()
 void HimppVencChan::setMaxQP(uint32_t value)
 {
 	if (is_enabled()) {
-		VENC_CHN_ATTR_S attr;
+		VENC_RC_PARAM_S param;
 		HI_S32 retval;
 
-		if ((retval = HI_MPI_VENC_GetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
-			throw IpcamError("Failed to get venc chan attr");
+		if ((retval = HI_MPI_VENC_GetRcParam(_chnid, &param)) != HI_SUCCESS) {
+			throw IpcamError("Failed GetRcParam");
 		}
 
 		switch (_rcmode) {
-		case VBR: attr.stRcAttr.stAttrH264Vbr.u32MaxQp = value; break;
-		default: throw IpcamError("Cannot change MaxQP in current rc mode"); break;
+		case CBR:
+			param.stParamH264Cbr.u32MaxQp = value;
+			param.stParamH264Cbr.u32MaxIQp = value;
+			break;
+		case VBR:
+			param.stParamH264AVbr.u32MaxQp = value;
+			param.stParamH264AVbr.u32MaxIQp = value;
+			break;
+		default:
+			throw IpcamError("Cannot change MaxQP in current rc mode"); break;
 		}
 
-		if ((retval = HI_MPI_VENC_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+		if ((retval = HI_MPI_VENC_SetRcParam(_chnid, &param)) != HI_SUCCESS) {
 			throw IpcamError("Failed to set MaxQP");
 		}
 	}
@@ -553,14 +569,12 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 			attr.stAttrH264Cbr.u32FluctuateLevel = 0;
 			break;
 		case VBR:
-			attr.enRcMode = VENC_RC_MODE_H264VBR;
-			attr.stAttrH264Vbr.u32Gop = _gop;
-			attr.stAttrH264Vbr.u32StatTime = stattime;
-			attr.stAttrH264Vbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrH264Vbr.fr32DstFrmRate = _framerate;
-			attr.stAttrH264Vbr.u32MinQp = _min_qp;
-			attr.stAttrH264Vbr.u32MaxQp = _max_qp;
-			attr.stAttrH264Vbr.u32MaxBitRate = _bitrate;
+			attr.enRcMode = VENC_RC_MODE_H264AVBR;
+			attr.stAttrH264AVbr.u32Gop = _gop;
+			attr.stAttrH264AVbr.u32StatTime = stattime;
+			attr.stAttrH264AVbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
+			attr.stAttrH264AVbr.fr32DstFrmRate = _framerate;
+			attr.stAttrH264AVbr.u32MaxBitRate = _bitrate;
 			break;
 		case FIXQP:
 			attr.enRcMode = VENC_RC_MODE_H264FIXQP;
@@ -715,6 +729,33 @@ void HimppVencChan::doEnableElement()
 			}
 		} else {
 			HIMPP_PRINT("HI_MPI_VENC_GetIntraRefresh(%d) failed [%#x]\n",
+			            _chnid, s32Ret);
+		}
+
+		VENC_RC_PARAM_S param;
+		if ((s32Ret = HI_MPI_VENC_GetRcParam(_chnid, &param)) == HI_SUCCESS) {
+			switch (_rcmode) {
+			case CBR:
+				param.stParamH264Cbr.u32MinQp = _min_qp;
+				param.stParamH264Cbr.u32MinIQp = _min_qp;
+				param.stParamH264Cbr.u32MaxQp = _max_qp;
+				param.stParamH264Cbr.u32MaxIQp = _max_qp;
+				break;
+			case VBR:
+				param.stParamH264AVbr.u32MinQp = _min_qp;
+				param.stParamH264AVbr.u32MinIQp = MIN2(_min_qp, param.stParamH264AVbr.u32MaxStillQP);
+				param.stParamH264AVbr.u32MaxQp = _max_qp;
+				param.stParamH264AVbr.u32MaxIQp = _max_qp;
+				break;
+			default:
+				throw IpcamError("Cannot change MinQP in current rc mode"); break;
+			}
+			if ((s32Ret = HI_MPI_VENC_SetRcParam(_chnid, &param)) != HI_SUCCESS) {
+				HIMPP_PRINT("HI_MPI_VENC_SetRcParam(%d) failed [%#x]\n",
+				            _chnid, s32Ret);
+			}
+		} else {
+			HIMPP_PRINT("HI_MPI_VENC_GetRcParam(%d) failed [%#x]\n",
 			            _chnid, s32Ret);
 		}
 	}
