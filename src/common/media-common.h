@@ -41,6 +41,7 @@ public:
 
 	uint32_t width() const { return _width; }
 	uint32_t height() const { return _height; }
+	bool valid() const { return (_width > 0) && (_height > 0); }
 
 private:
 	uint32_t _width;

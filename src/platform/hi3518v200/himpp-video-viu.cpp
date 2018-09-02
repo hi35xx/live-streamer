@@ -132,12 +132,60 @@ void HimppViDev::Imaging::setSaturation(uint32_t val)
 HimppViDev::HimppViDev(HimppVideoElement* source, VI_DEV devid)
   : VideoElement(VIDEO_ELEMENT(source)),
     HimppVideoElement(source), DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _imaging(*this), _devid(devid)
+    _imaging(*this), _devid(devid),
+	_resolution(0, 0), _framerate(0)
 {
 }
 
 HimppViDev::~HimppViDev()
 {
+}
+
+Resolution HimppViDev::resolution()
+{
+	if (_resolution.valid())
+		return _resolution;
+
+	return HIMPP_VIDEO_ELEMENT(source())->resolution();
+}
+
+uint32_t HimppViDev::framerate()
+{
+	return HIMPP_VIDEO_ELEMENT(source())->framerate();
+}
+
+uint32_t HimppViDev::getFrameRate()
+{
+	return framerate();
+}
+
+void HimppViDev::setFrameRate(uint32_t value)
+{
+	uint32_t ifr = HIMPP_VIDEO_ELEMENT(source())->framerate();
+	if (value > ifr)
+		throw IpcamError("FrameRate larger than input");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+	_framerate = value;
+}
+
+Resolution HimppViDev::getResolution()
+{
+	return resolution();
+}
+
+void HimppViDev::setResolution(Resolution value)
+{
+	Resolution ires = HIMPP_VIDEO_ELEMENT(source())->resolution();
+	if (value.width() > ires.width() || value.height() > ires.height())
+		throw IpcamError("Resolution larger than input");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+	_resolution = value;
 }
 
 VideoSource::Imaging& HimppViDev::imaging()
@@ -163,6 +211,15 @@ void HimppViDev::doEnableElement()
 	}
 
 	dev_attr = HIMPP_VIDEO_ISP(source())->videoInputConfig();
+	if (_resolution.valid()) {
+		RECT_S& rect = dev_attr->stDevRect;
+		uint32_t w = _resolution.width();
+		uint32_t h = _resolution.height();
+		rect.s32X = rect.s32X + (rect.u32Width - w) / 2;
+		rect.s32Y = rect.s32Y + (rect.u32Height - h) / 2;
+		rect.u32Width = w;
+		rect.u32Height = h;
+	}
 	if ((s32Ret = HI_MPI_VI_SetDevAttr(_devid, dev_attr)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VI_SetDevAttr %d failed [%#x]\n", _devid, s32Ret);
 		throw IpcamError("Failed to enable vi dev");
@@ -378,37 +435,83 @@ VideoSource::Imaging::LDC& HimppViChan::Imaging::ldc()
 HimppViChan::HimppViChan(HimppVideoElement* source, VI_CHN chnid)
   : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _imaging(*this), _chnid(chnid)
+    _imaging(*this), _chnid(chnid), _resolution(0, 0), _framerate(0)
 {
-	HimppViDev* videv = HIMPP_VI_DEV(source);
-	_mpp_chn.enModId = HI_ID_VIU;
-	_mpp_chn.s32DevId = videv->deviceId();
-	_mpp_chn.s32ChnId = _chnid;
+	HimppViDev* videv = NULL;
+	for (MediaElement* p = source; p; p = source->source()) {
+		if (HIMPP_VI_DEV(p)) {
+			videv = HIMPP_VI_DEV(p);
+			break;
+		}
+	}
+	if (videv) {
+		_mpp_chn.enModId = HI_ID_VIU;
+		_mpp_chn.s32DevId = videv->deviceId();
+		_mpp_chn.s32ChnId = _chnid;
+	}
 }
 
 HimppViChan::~HimppViChan()
 {
 }
 
+MPP_CHN_S* HimppViChan::bindSource()
+{
+	return &_mpp_chn;
+}
+
+Resolution HimppViChan::resolution()
+{
+	if (_resolution.valid())
+		return _resolution;
+
+	return HIMPP_VIDEO_ELEMENT(source())->resolution();
+}
+
+uint32_t HimppViChan::framerate()
+{
+	if (_framerate > 0)
+		return _framerate;
+
+	return HIMPP_VIDEO_ELEMENT(source())->framerate();
+}
+
+uint32_t HimppViChan::getFrameRate()
+{
+	return framerate();
+}
+
+void HimppViChan::setFrameRate(uint32_t value)
+{
+	if (_chnid < VIU_MAX_PHYCHN_NUM)
+		throw IpcamError("Cannot set framerate on physical channel");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+	_framerate = value;
+}
+
+Resolution HimppViChan::getResolution()
+{
+	return resolution();
+}
+
+void HimppViChan::setResolution(Resolution value)
+{
+	if (_chnid < VIU_MAX_PHYCHN_NUM)
+		throw IpcamError("Cannot set resolution on physical channel");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+	_resolution = value;
+}
+
 void HimppViChan::doEnableElement()
 {
 	HI_U32 s32Ret;
-	VI_CHN_ATTR_S   attr;
 	Resolution in_dim = HIMPP_VIDEO_ELEMENT(source())->resolution();
-
-	attr.stCapRect.s32X = 0;
-	attr.stCapRect.s32Y = 0;
-	attr.stCapRect.u32Width = in_dim.width();
-	attr.stCapRect.u32Height = in_dim.height();
-	attr.stDestSize.u32Width = in_dim.width();
-	attr.stDestSize.u32Height = in_dim.height();
-	attr.enCapSel = VI_CAPSEL_BOTH;
-	attr.enPixFormat = HIMPP_PIXEL_FORMAT;
-	attr.bMirror = (HI_BOOL)_imaging._mirror;
-	attr.bFlip = (HI_BOOL)_imaging._flip;
-	attr.s32SrcFrameRate = -1;
-	attr.s32DstFrameRate = -1;
-	attr.enCompressMode = COMPRESS_MODE_NONE;
 
 	HI_U32 online_mode = 0;
 	if ((s32Ret = HI_MPI_SYS_GetViVpssMode(&online_mode)) != HI_SUCCESS) {
@@ -416,41 +519,92 @@ void HimppViChan::doEnableElement()
 		online_mode = 0;
 	}
 
-	if ((s32Ret = HI_MPI_VI_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
-		HIMPP_PRINT("HI_MPI_VI_SetChnAttr %d failed [%#x]\n",
-					_chnid, s32Ret);
-		throw IpcamError("Failed to enable vi chn");
-	}
+	if (_chnid < VIU_MAX_PHYCHN_NUM) {
+		// Physical channel
+		VI_CHN_ATTR_S attr;
+		attr.stCapRect.s32X = 0;
+		attr.stCapRect.s32Y = 0;
+		attr.stCapRect.u32Width = in_dim.width();
+		attr.stCapRect.u32Height = in_dim.height();
+		attr.stDestSize.u32Width = in_dim.width();
+		attr.stDestSize.u32Height = in_dim.height();
+		attr.enCapSel = VI_CAPSEL_BOTH;
+		attr.enPixFormat = HIMPP_PIXEL_FORMAT;
+		attr.bMirror = (HI_BOOL)_imaging._mirror;
+		attr.bFlip = (HI_BOOL)_imaging._flip;
+		if (_framerate > 0) {
+			attr.s32SrcFrameRate = HIMPP_VIDEO_ELEMENT(source())->framerate();
+			attr.s32DstFrameRate = _framerate;
+		} else {
+			attr.s32SrcFrameRate = -1;
+			attr.s32DstFrameRate = -1;
+		}
+		attr.enCompressMode = COMPRESS_MODE_NONE;
 
-	// Rotate functionality in viu only available in offline mode
-	if (!online_mode) {
-		if ((s32Ret = HI_MPI_VI_SetRotate(_chnid, _imaging._rotate)) != HI_SUCCESS) {
-			HIMPP_PRINT("HI_MPI_VI_SetRotate %d failed [%#x]\n",
-						_chnid, s32Ret);
+		if ((s32Ret = HI_MPI_VI_SetChnAttr(_chnid, &attr)) != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_VI_SetChnAttr %d failed [%#x]\n",
+			            _chnid, s32Ret);
+			throw IpcamError("Failed to enable vi chn");
+		}
+
+		// Rotate/LDC functionality in viu only available in offline mode
+		if (!online_mode) {
+			if ((s32Ret = HI_MPI_VI_SetRotate(_chnid, _imaging._rotate)) != HI_SUCCESS) {
+				HIMPP_PRINT("HI_MPI_VI_SetRotate %d failed [%#x]\n",
+				            _chnid, s32Ret);
+			}
+
+			VI_LDC_ATTR_S ldc_attr;
+			ldc_attr.bEnable = (_imaging._ldc._ldc_mode == LDC_ON) ?
+				HI_TRUE : HI_FALSE;
+			ldc_attr.stAttr.enViewType = LDC_VIEW_TYPE_ALL;
+			ldc_attr.stAttr.s32CenterXOffset = 0;
+			ldc_attr.stAttr.s32CenterYOffset = 0;
+			ldc_attr.stAttr.s32Ratio = _imaging._ldc._ldc_ratio;
+
+			if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS) {
+				HIMPP_PRINT("HI_MPI_VI_SetLDCAttr %d failed [%#x]\n",
+				            _chnid, s32Ret);
+			}
+		}
+	}
+	else {	// Extended channel
+		if (online_mode)
+			throw IpcamError("Cannot create EXTCHN for online mode");
+
+		HimppViChan* phychan = HIMPP_VI_CHAN(source());
+		if (!phychan)
+			throw IpcamError("EXTCHN must bind to PHYCHN");
+
+		VI_EXT_CHN_ATTR_S extattr;
+		extattr.s32BindChn = phychan->channelId();
+		if (_resolution.valid()) {
+			extattr.stDestSize.u32Width = _resolution.width();
+			extattr.stDestSize.u32Height = _resolution.height();
+		} else {
+			extattr.stDestSize.u32Width = in_dim.width();
+			extattr.stDestSize.u32Height = in_dim.height();
+		}
+		if (_framerate > 0) {
+			extattr.s32SrcFrameRate = phychan->framerate();
+			extattr.s32DstFrameRate = _framerate;
+		} else {
+			extattr.s32SrcFrameRate = -1;
+			extattr.s32DstFrameRate = -1;
+		}
+		extattr.enPixFormat = HIMPP_PIXEL_FORMAT;
+		extattr.enCompressMode = COMPRESS_MODE_NONE;
+		if ((s32Ret = HI_MPI_VI_SetExtChnAttr(_chnid, &extattr)) != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_VI_SetExtChnAttr %d failed [%#x]\n",
+			            _chnid, s32Ret);
+			throw IpcamError("HI_MPI_VI_SetExtChnAttr() failed");
 		}
 	}
 
 	if ((s32Ret = HI_MPI_VI_EnableChn(_chnid)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VI_EnableChn %d failed [%#x]\n",
 					_chnid, s32Ret);
-		throw IpcamError("Failed to enable vi chn");
-	}
-
-	// LDC functionality in viu only available in offline mode
-	if (!online_mode && _chnid < VIU_MAX_PHYCHN_NUM) {
-		VI_LDC_ATTR_S ldc_attr;
-		ldc_attr.bEnable = (_imaging._ldc._ldc_mode == LDC_ON) ?
-			HI_TRUE : HI_FALSE;
-		ldc_attr.bEnable = HI_FALSE;
-		ldc_attr.stAttr.enViewType = LDC_VIEW_TYPE_ALL;
-		ldc_attr.stAttr.s32CenterXOffset = 0;
-		ldc_attr.stAttr.s32CenterYOffset = 0;
-		ldc_attr.stAttr.s32Ratio = _imaging._ldc._ldc_ratio;
-
-		if ((s32Ret = HI_MPI_VI_SetLDCAttr(_chnid, &ldc_attr)) != HI_SUCCESS) {
-			HIMPP_PRINT("HI_MPI_VI_SetLDCAttr %d failed [%#x]\n",
-						_chnid, s32Ret);
-		}
+		throw IpcamError("Failed to enable vichn");
 	}
 }
 
@@ -461,11 +615,6 @@ void HimppViChan::doDisableElement()
 		HIMPP_PRINT("HI_MPI_VI_DisableChn %d failed [%#x]\n",
 					_chnid, s32Ret);
 	}
-}
-
-MPP_CHN_S* HimppViChan::bindSource()
-{
-	return &_mpp_chn;
 }
 
 VideoSource::Imaging& HimppViChan::imaging()

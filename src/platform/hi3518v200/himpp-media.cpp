@@ -47,7 +47,7 @@ static std::vector<std::string> split(const std::string& s, char delim)
 
 HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
   : _runtime(runtime),
-    _sysctl(HIMPP_SYS_ALIGN_WIDTH, HIMPP_PIXEL_FORMAT)
+    _sysctl(HIMPP_SYS_ALIGN_WIDTH)
 {
 	for (auto arg : args) {
 		if (arg.first == "vsrc") {
@@ -128,16 +128,16 @@ HimppMedia::~HimppMedia()
 	_elements.clear();
 }
 
-#define add_element(name, constructor) ({					\
+#define add_element(var, name, constructor) ({				\
 	MediaElementMap::iterator it = _elements.find(name);	\
-	MediaElement* e;										\
-	if (it == _elements.end()) {							\
-		e = new constructor;								\
-		_elements.emplace(name, e);							\
+	bool needs_create = (it == _elements.end());			\
+	if (needs_create) {										\
+		var = new constructor;								\
+		_elements.emplace(name, var);						\
 	} else {												\
-		e = it->second.get();								\
+		var = it->second.get();								\
 	}														\
-	e;														\
+	needs_create;											\
 })
 
 MediaElement* HimppMedia::buildElementPipe(const std::string& description)
@@ -168,35 +168,68 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 				std::cout << name << ": " << "sensor must be specified" << std::endl;
 				break;
 			}
-			last_element = add_element(name, HimppVideoISP(HIMPP_VIDEO_ELEMENT(last_element), sensor_it->second));
+			add_element(last_element, name, HimppVideoISP(HIMPP_VIDEO_ELEMENT(last_element), sensor_it->second));
 		}
 		else if (name.compare(0, 5, "videv") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
 			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppViDev(HIMPP_VIDEO_ELEMENT(last_element), index));
-			uint32_t vbcnt = 8;		// default value if 'vbcnt' option not present
-			auto pit = params.find("vbcnt");
-			if (pit != params.end()) {
-				int32_t val = std::stoi(pit->second);
-				if (val > 0) { vbcnt = val; }
+			if (add_element(last_element, name, HimppViDev(HIMPP_VIDEO_ELEMENT(last_element), index))) {
+				std::unordered_map<std::string, std::string>::iterator pit;
+				if ((pit = params.find("resolution")) != params.end()) {
+					Resolution res(pit->second);
+					HIMPP_VI_DEV(last_element)->setResolution(res);
+				}
+				if ((pit = params.find("framerate")) != params.end()) {
+					uint32_t framerate = std::stoi(pit->second);
+					HIMPP_VI_DEV(last_element)->setFrameRate(framerate);
+				}
+
+				uint32_t vbcnt = 3;		// default value if 'vbcnt' option not present
+				if ((pit = params.find("vbcnt")) != params.end()) {
+					int32_t val = std::stoi(pit->second);
+					if (val > 0) { vbcnt = val; }
+				}
+				Resolution dim = HIMPP_VIDEO_ELEMENT(last_element)->resolution();
+				uint32_t blksiz = (dim.width() + 16) * dim.height() * 3 / 2;
+				if (blksiz && vbcnt) _sysctl.addVideoBuffer(blksiz, vbcnt);
 			}
-			Resolution dim = HIMPP_VIDEO_ELEMENT(last_element)->resolution();
-			_sysctl.addVideoBuffer(dim.width() * dim.height() * 3 / 2, vbcnt);
 		}
 		else if (name.compare(0, 5, "vichn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
-			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppViChan(HIMPP_VIDEO_ELEMENT(last_element), index));
+			if (name.size() < 8) break;
+			uint32_t index = std::stoul(name.substr(7));
+			if (add_element(last_element, name, HimppViChan(HIMPP_VIDEO_ELEMENT(last_element), index))) {
+				std::unordered_map<std::string, std::string>::iterator pit;
+				if ((pit = params.find("resolution")) != params.end()) {
+					Resolution res(pit->second);
+					HIMPP_VI_CHAN(last_element)->setResolution(res);
+				}
+				if ((pit = params.find("framerate")) != params.end() ||
+				    (pit = params.find("fr")) != params.end()) {
+					uint32_t framerate = std::stoi(pit->second);
+					HIMPP_VI_CHAN(last_element)->setFrameRate(framerate);
+				}
+
+				uint32_t vbcnt = 0;		// default value if 'vbcnt' option not present
+				if ((pit = params.find("vbcnt")) != params.end()) {
+					int32_t val = std::stoi(pit->second);
+					if (val > 0) { vbcnt = val; }
+				}
+				Resolution dim = HIMPP_VIDEO_ELEMENT(last_element)->resolution();
+				uint32_t blksiz = (dim.width() + 16) * dim.height() * 3 / 2;
+				if (blksiz && vbcnt) _sysctl.addVideoBuffer(blksiz, vbcnt);
+			}
 		}
 		else if (name.compare(0, 5, "vpgrp") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
 			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppVpssGroup(HIMPP_VIDEO_ELEMENT(last_element), index));
+			add_element(last_element, name, HimppVpssGroup(HIMPP_VIDEO_ELEMENT(last_element), index));
 		}
 		else if (name.compare(0, 5, "vpchn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
-			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppVpssChan(HIMPP_VIDEO_ELEMENT(last_element), index));
+			if (name.size() < 8) break;
+			uint32_t index = std::stoul(name.substr(7));
+			add_element(last_element, name, HimppVpssChan(HIMPP_VIDEO_ELEMENT(last_element), index));
 		}
 		else if (name.compare(0, 5, "vechn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
@@ -220,32 +253,38 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 				std::cout << name << ": " << "encoding not specified, using default(H264)" << std::endl;
 			}
 
-			last_element = add_element(name, HimppVencChan(HIMPP_VIDEO_ELEMENT(last_element), encoding, index));
+			if (add_element(last_element, name, HimppVencChan(HIMPP_VIDEO_ELEMENT(last_element), encoding, index))) {
+				if ((pit = params.find("resolution")) != params.end()) {
+					Resolution res(pit->second);
+					HIMPP_VENC_CHAN(last_element)->setResolution(res);
+				}
 
-			pit = params.find("resolution");
-			if (pit != params.end()) {
-				Resolution res(pit->second);
-				HIMPP_VENC_CHAN(last_element)->setResolution(res);
-			}
+				if ((pit = params.find("framerate")) != params.end() ||
+					(pit = params.find("fr")) != params.end()) {
+					uint32_t framerate = std::stoi(pit->second);
+					HIMPP_VENC_CHAN(last_element)->setFramerate(framerate);
+				}
 
-			pit = params.find("framerate");
-			if (pit != params.end()) {
-				uint32_t framerate = std::stoi(pit->second);
-				HIMPP_VENC_CHAN(last_element)->setFramerate(framerate);
+				if ((pit = params.find("bitrate")) != params.end() ||
+				    (pit = params.find("br")) != params.end()) {
+					uint32_t bitrate = std::stoul(pit->second);
+					HIMPP_VENC_CHAN(last_element)->setBitrate(bitrate);
+				}
 			}
 		}
 		else if (name.compare(0, 6, "acodec") == 0) {
-			last_element = add_element(name, HimppAudioCodec());
+			add_element(last_element, name, HimppAudioCodec());
 		}
 		else if (name.compare(0, 5, "aidev") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
 			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppAiDev(HIMPP_AUDIO_ELEMENT(last_element), index));
+			add_element(last_element, name, HimppAiDev(HIMPP_AUDIO_ELEMENT(last_element), index));
 		}
 		else if (name.compare(0, 5, "aichn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
-			uint32_t index = std::stoul(name.substr(5));
-			last_element = add_element(name, HimppAiChan(HIMPP_AUDIO_ELEMENT(last_element), index));
+			if (name.size() < 8) break;
+			uint32_t index = std::stoul(name.substr(7));
+			add_element(last_element, name, HimppAiChan(HIMPP_AUDIO_ELEMENT(last_element), index));
 		}
 		else if (name.compare(0, 5, "aechn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
@@ -272,7 +311,7 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			} else {
 				std::cout << name << ": " << "encoding not specified, using default(G711A)" << std::endl;
 			}
-			last_element = add_element(name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
+			add_element(last_element, name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
 		}
 
 		std::unordered_map<std::string, std::string>::iterator pit;

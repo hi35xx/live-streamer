@@ -61,8 +61,14 @@ public:
 
 	// implementation of HimppVideoElement
 	//MPP_CHN_S* bindSource();
+	virtual Resolution	resolution();
+	virtual uint32_t	framerate();
 
 	// implementation of VideoSource
+	virtual uint32_t	getFrameRate();
+	virtual void		setFrameRate(uint32_t value);
+	virtual Resolution	getResolution();
+	virtual void		setResolution(Resolution value);
 	VideoSource::Imaging& imaging();
 
 	VI_DEV deviceId() { return _devid; }
@@ -74,6 +80,8 @@ protected:
 private:
 	Imaging				_imaging;
 	VI_DEV				_devid;
+	Resolution			_resolution;
+	uint32_t			_framerate;
 };
 
 class HimppViChan : public HimppVideoElement, public DefaultVideoSource
@@ -123,9 +131,15 @@ public:
 
 	// implementation of HimppVideoElement
 	MPP_CHN_S* bindSource();
+	virtual Resolution	resolution();
+	virtual uint32_t	framerate();
 
 	// implementation of VideoSource
 	VideoSource::Imaging& imaging();
+	virtual uint32_t	getFrameRate();
+	virtual void		setFrameRate(uint32_t value);
+	virtual Resolution	getResolution();
+	virtual void		setResolution(Resolution value);
 
 	VI_CHN channelId() { return _chnid; }
 
@@ -137,6 +151,8 @@ private:
 	Imaging			_imaging;
 	VI_CHN			_chnid;
 	MPP_CHN_S		_mpp_chn;
+	Resolution		_resolution;
+	uint32_t		_framerate;
 };
 
 #endif // _HIMPP_VIDEO_VIU_H_
