@@ -135,14 +135,14 @@ uint32_t AudioElement::samplerate()
 	return upstream->samplerate();
 }
 
-uint32_t AudioElement::num_channels()
+uint32_t AudioElement::channels()
 {
 	AudioElement* upstream = AUDIO_ELEMENT(source());
 
 	if (!upstream)
 		throw IpcamError("Not implemented");
 
-	return upstream->num_channels();
+	return upstream->channels();
 }
 
 } // namespace Media

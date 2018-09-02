@@ -82,7 +82,7 @@ public:
 	virtual ~AudioElement();
 
 	virtual uint32_t samplerate();
-	virtual uint32_t num_channels();
+	virtual uint32_t channels();
 
 protected:
 	AudioElement(AudioElement* upstream);

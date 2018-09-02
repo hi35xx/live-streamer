@@ -83,6 +83,16 @@ bool HimppAudioCodec::setSampleRate(uint32_t sample_rate)
 	return false;
 }
 
+uint32_t HimppAudioCodec::samplerate()
+{
+	return _sample_rate;
+}
+
+uint32_t HimppAudioCodec::channels()
+{
+	return getChannels();
+}
+
 void HimppAudioCodec::doEnableElement()
 {
 	int fd = open(ACODEC_FILE, O_RDWR);
@@ -100,17 +110,29 @@ void HimppAudioCodec::doEnableElement()
 	unsigned int i2s_fs_sel = 0;
 	switch (_sample_rate) {
 	case AUDIO_SAMPLE_RATE_8000:
+		i2s_fs_sel = ACODEC_FS_8000;
+		break;
 	case AUDIO_SAMPLE_RATE_11025:
+		i2s_fs_sel = ACODEC_FS_11025;
+		break;
 	case AUDIO_SAMPLE_RATE_12000:
-		i2s_fs_sel = 0x18;
+		i2s_fs_sel = ACODEC_FS_12000;
 		break;
 	case AUDIO_SAMPLE_RATE_16000:
+		i2s_fs_sel = ACODEC_FS_16000;
+		break;
 	case AUDIO_SAMPLE_RATE_22050:
+		i2s_fs_sel = ACODEC_FS_22050;
+		break;
 	case AUDIO_SAMPLE_RATE_24000:
-		i2s_fs_sel = 0x19;
+		i2s_fs_sel = ACODEC_FS_24000;
 		break;
 	case AUDIO_SAMPLE_RATE_32000:
+		i2s_fs_sel = ACODEC_FS_32000;
+		break;
 	case AUDIO_SAMPLE_RATE_44100:
+		i2s_fs_sel = ACODEC_FS_44100;
+		break;
 	case AUDIO_SAMPLE_RATE_48000:
 		i2s_fs_sel = 0x1a;
 		break;
@@ -126,7 +148,16 @@ void HimppAudioCodec::doEnableElement()
 		throw IpcamError("Cannot set sample rate");
 	}
 
-	unsigned int gain_mic = 0x06;
+	// select IN or IN_Difference
+	ACODEC_MIXER_E input_mode = ACODEC_MIXER_IN;
+	if (ioctl(fd, ACODEC_SET_MIXER_MIC, &input_mode)) {
+		fprintf(stderr, "set acodec input mode failed\n");
+		close(fd);
+		throw IpcamError("Cannot set input mode");
+	}
+
+#if 1
+	unsigned int gain_mic = 0x0A;
 	if (ioctl(fd, ACODEC_SET_GAIN_MICL, &gain_mic)) {
 		fprintf(stderr, "set acodec micin volume failed\n");
 	}
@@ -143,6 +174,7 @@ void HimppAudioCodec::doEnableElement()
 	if (ioctl(fd, ACODEC_SET_ADCR_VOL, &vol_ctrl)) {
 		fprintf(stderr, "set acodec adc volume failed\n");
 	}
+#endif
 
 	close (fd);
 }
@@ -158,8 +190,7 @@ void HimppAudioCodec::doDisableElement()
 
 HimppAiDev::HimppAiDev(HimppAudioElement* source, AUDIO_DEV devid)
   : AudioElement(AUDIO_ELEMENT(source)),
-    HimppAudioElement(source), _devid(devid),
-    _sample_rate(AUDIO_SAMPLE_RATE_8000)
+    HimppAudioElement(source), _devid(devid)
 {
 }
 
@@ -177,24 +208,24 @@ void HimppAiDev::doEnableElement()
 	HI_S32 s32Ret;
 	AIO_ATTR_S  aio_attr;
 
-	aio_attr.enSamplerate = (AUDIO_SAMPLE_RATE_E)_sample_rate;
+	aio_attr.enSamplerate = (AUDIO_SAMPLE_RATE_E)samplerate();
 	aio_attr.enBitwidth = AUDIO_BIT_WIDTH_16;
 	aio_attr.enWorkmode = AIO_MODE_I2S_MASTER;
 	aio_attr.enSoundmode = AUDIO_SOUND_MODE_MONO;
-	aio_attr.u32EXFlag = 1;
+	aio_attr.u32EXFlag = 0;
 	aio_attr.u32FrmNum = 30;
 	aio_attr.u32PtNumPerFrm = AUDIO_PTNUMPERFRM;
-	aio_attr.u32ChnCnt = 2;
+	aio_attr.u32ChnCnt = 1;
 	aio_attr.u32ClkSel = 1;
 	s32Ret = HI_MPI_AI_SetPubAttr(_devid, &aio_attr);
 	if (s32Ret) {
-		fprintf(stderr, "failed to set AI dev%d attr\n", _devid);
+		fprintf(stderr, "failed to set AI dev%d attr [%#x]\n", _devid, s32Ret);
 		throw IpcamError("Failed to set aidev attr");
 	}
 
 	s32Ret = HI_MPI_AI_Enable(_devid);
 	if (s32Ret) {
-		fprintf(stderr, "failed to enable AI dev%d\n", _devid);
+		fprintf(stderr, "failed to enable AI dev%d [%#x]\n", _devid, s32Ret);
 		throw IpcamError("Failed to enable aidev");
 	}
 }
@@ -245,15 +276,61 @@ void HimppAiChan::doEnableElement()
 		fprintf(stderr, "failed to enable AI chn%d-%d\n", _mpp_chn.s32DevId, _chnid);
 		throw IpcamError("Failed to enable AI chn");
 	}
+
+#if 0
+	s32Ret = HI_MPI_AI_EnableReSmp(_mpp_chn.s32DevId, _chnid, AUDIO_SAMPLE_RATE_8000);
+	if (s32Ret) {
+		fprintf(stderr, "HI_MPI_AI_EnableReSmp(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+#endif
+
+#if 1
+	AI_VQE_CONFIG_S attr;
+	memset(&attr, 0, sizeof(attr));
+	attr.s32WorkSampleRate    = samplerate();
+	attr.s32FrameSample       = AUDIO_PTNUMPERFRM;
+	attr.enWorkstate          = VQE_WORKSTATE_COMMON;
+	attr.bAecOpen             = HI_FALSE;
+	attr.bAgcOpen             = HI_TRUE;
+	attr.stAgcCfg.bUsrMode    = HI_FALSE;
+	attr.bAnrOpen             = HI_TRUE;
+	attr.stAnrCfg.bUsrMode    = HI_FALSE;
+	attr.bHpfOpen             = HI_TRUE;
+	attr.stHpfCfg.bUsrMode    = HI_TRUE;
+	attr.stHpfCfg.enHpfFreq   = AUDIO_HPF_FREQ_150;
+	attr.bRnrOpen             = HI_FALSE;
+	attr.bEqOpen              = HI_FALSE;
+	attr.bHdrOpen             = HI_FALSE;
+	attr.stHdrCfg.bUsrMode    = HI_FALSE;
+	s32Ret = HI_MPI_AI_SetVqeAttr(_mpp_chn.s32DevId, _chnid, 0, 0, &attr);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AI_SetVqeAttr(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+
+	s32Ret = HI_MPI_AI_EnableVqe(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AI_EnableVqe(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+#endif
 }
 
 void HimppAiChan::doDisableElement()
 {
 	HI_S32 s32Ret;
 
+	s32Ret = HI_MPI_AI_DisableVqe(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AI_DisableVqe(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+
 	s32Ret = HI_MPI_AI_DisableChn(_mpp_chn.s32DevId, _chnid);
 	if (s32Ret != HI_SUCCESS) {
-		fprintf(stderr, "failed to disable AI chn%d-%d\n", _mpp_chn.s32DevId, _chnid);
+		fprintf(stderr, "HI_MPI_AI_DisableChn(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
 	}
 }
 
@@ -287,7 +364,7 @@ void HimppAencChan::watch_handler(ev::io& w, int revents)
 	int chnid = channelId();
 
 	AUDIO_STREAM_S stStream;
-	HI_S32 s32Ret = HI_MPI_AENC_GetStream(chnid, &stStream, HI_FALSE);
+	HI_S32 s32Ret = HI_MPI_AENC_GetStream(chnid, &stStream, 0);
 	if (HI_SUCCESS != s32Ret) {
 		HIMPP_PRINT("Get audio stream %d failed [%#x]\n", chnid, s32Ret);
 		return;
@@ -302,6 +379,7 @@ void HimppAencChan::watch_handler(ev::io& w, int revents)
 		buffer.pack = &stream_data_pack;
 		gettimeofday(&buffer.tstamp, NULL);
 
+		// remove the hisilicon header.
 		buffer.pack[0].addr = stStream.pStream + 4;
 		buffer.pack[0].len = stStream.u32Len - 4;
 
@@ -326,12 +404,12 @@ uint32_t HimppAencChan::bitrate()
 
 uint32_t HimppAencChan::channels()
 {
-	return 1;
+	return HIMPP_AUDIO_ELEMENT(source())->channels();
 }
 
 uint32_t HimppAencChan::samplerate()
 {
-	return 8000;
+	return HIMPP_AUDIO_ELEMENT(source())->samplerate();
 }
 
 void HimppAencChan::attach(StreamSink* sink)
@@ -404,11 +482,9 @@ void HimppAencChan::doEnableElement()
 		break;
 	case G711A:
 		attr.enType = PT_G711A;
-		enc_attr.g711.resv = 0;
 		break;
 	case G711U:
 		attr.enType = PT_G711U;
-		enc_attr.g711.resv = 0;
 		break;
 	case G726:
 		attr.enType = PT_G726;
@@ -416,7 +492,6 @@ void HimppAencChan::doEnableElement()
 		break;
 	case LPCM:
 		attr.enType = PT_LPCM;
-		enc_attr.lpcm.resv = 0;
 		break;
 	}
 	s32Ret = HI_MPI_AENC_CreateChn(_chnid, &attr);

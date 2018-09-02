@@ -44,13 +44,18 @@ class HimppAencChan;
 class HimppAudioCodec : public HimppAudioElement, public AudioSource 
 {
 public:
-	HimppAudioCodec(AUDIO_SAMPLE_RATE_E sample_rate = AUDIO_SAMPLE_RATE_8000);
+	HimppAudioCodec(AUDIO_SAMPLE_RATE_E sample_rate = AUDIO_SAMPLE_RATE_16000);
 	~HimppAudioCodec();
 
 	// implementation of AudioSource
 	uint32_t getChannels();
 	uint32_t getSampleRate();
 	bool setSampleRate(uint32_t sample_rate);
+
+	// implementation of AudioElement
+	virtual uint32_t samplerate();
+	virtual uint32_t channels();
+
 protected:
 	virtual void doEnableElement();
 	virtual void doDisableElement();
@@ -76,7 +81,6 @@ protected:
 
 private:
 	AUDIO_DEV	   _devid;
-	uint32_t		_sample_rate;
 };
 
 class HimppAiChan : public HimppAudioElement, public AudioSource
