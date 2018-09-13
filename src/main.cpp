@@ -77,6 +77,7 @@ static void display_usage(char *cmd)
 #if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
 	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
 	const char *plat_options = \
+		"  -pipe PIPE-STRING           Add media pipe\n"
 		"  -vsrc VIDEOSOURCE           Add video source\n"
 		"  -venc VIDEOENCODER          Add video encoder\n"
 		"  -asrc AUDIOSOURCE           Add audio source\n"
@@ -104,6 +105,7 @@ static const struct option longopts[] = {
 	{ "syslog",      no_argument,        NULL,   'S' },
 #if defined(HAVE_HI3518V100_SUPPORT) || defined(HAVE_HI3518V200_SUPPORT) \
 	|| defined(HAVE_HI3520V100_SUPPORT) || defined(HAVE_HI3520DV200_SUPPORT)
+	{ "pipe",        required_argument,  NULL,    0  },
 	{ "vsrc",        required_argument,  NULL,    0  },
 	{ "venc",        required_argument,  NULL,    0  },
 	{ "asrc",        required_argument,  NULL,    0  },

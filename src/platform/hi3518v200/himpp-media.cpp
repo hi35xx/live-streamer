@@ -50,28 +50,54 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
     _sysctl(HIMPP_SYS_ALIGN_WIDTH)
 {
 	for (auto arg : args) {
+		if (arg.first == "pipe") {
+			MediaElement* elem = buildElementPipe(arg.second);
+			if (!elem) {
+				fprintf(stderr, "pipe build failed: [%s]\n", arg.second.c_str());
+			}
+		}
 		if (arg.first == "vsrc") {
-			VideoSource* vsrc = VIDEO_SOURCE(buildElementPipe(arg.second));
-			if (vsrc) {
-				runtime->addVideoSource(vsrc);
+			MediaElementMap::iterator it = _elements.find(arg.second);
+			if (it != _elements.end()) {
+				VideoSource* vsrc = VIDEO_SOURCE(it->second.get());
+				if (vsrc) {
+					runtime->addVideoSource(vsrc);
+				}
+			} else {
+				fprintf(stderr, "VideoSource %s not found\n", arg.second.c_str());
 			}
 		}
 		else if (arg.first == "venc") {
-			VideoEncoder* venc = VIDEO_ENCODER(buildElementPipe(arg.second));
-			if (venc) {
-				runtime->addVideoEncoder(venc);
+			MediaElementMap::iterator it = _elements.find(arg.second);
+			if (it != _elements.end()) {
+				VideoEncoder* venc = VIDEO_ENCODER(it->second.get());
+				if (venc) {
+					runtime->addVideoEncoder(venc);
+				}
+			} else {
+				fprintf(stderr, "VideoEncoder %s not found\n", arg.second.c_str());
 			}
 		}
 		else if (arg.first == "asrc") {
-			AudioSource* asrc = AUDIO_SOURCE(buildElementPipe(arg.second));
-			if (asrc) {
-				runtime->addAudioSource(asrc);
+			MediaElementMap::iterator it = _elements.find(arg.second);
+			if (it != _elements.end()) {
+				AudioSource* asrc = AUDIO_SOURCE(it->second.get());
+				if (asrc) {
+					runtime->addAudioSource(asrc);
+				}
+			} else {
+				fprintf(stderr, "AudioSource %s not found\n", arg.second.c_str());
 			}
 		}
 		else if (arg.first == "aenc") {
-			AudioEncoder* aenc = AUDIO_ENCODER(buildElementPipe(arg.second));
-			if (aenc) {
-				runtime->addAudioEncoder(aenc);
+			MediaElementMap::iterator it = _elements.find(arg.second);
+			if (it != _elements.end()) {
+				AudioEncoder* aenc = AUDIO_ENCODER(it->second.get());
+				if (aenc) {
+					runtime->addAudioEncoder(aenc);
+				}
+			} else {
+				fprintf(stderr, "AudioEncoder %s not found\n", arg.second.c_str());
 			}
 		}
 		else if (arg.first == "stream") {
