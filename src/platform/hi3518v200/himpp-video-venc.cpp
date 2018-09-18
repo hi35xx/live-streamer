@@ -555,6 +555,7 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 	HI_U32 stattime;
 	stattime = _gop / _framerate;
 	stattime = stattime > 0 ? stattime : 1;
+	uint32_t ifr = VIDEO_ELEMENT(source())->framerate();
 
 	switch (_encoding) {
 	case H264:
@@ -563,8 +564,8 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 			attr.enRcMode = VENC_RC_MODE_H264CBR;
 			attr.stAttrH264Cbr.u32Gop = _gop;
 			attr.stAttrH264Cbr.u32StatTime = stattime;
-			attr.stAttrH264Cbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrH264Cbr.fr32DstFrmRate = _framerate;
+			attr.stAttrH264Cbr.u32SrcFrmRate = ifr;
+			attr.stAttrH264Cbr.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrH264Cbr.u32BitRate = _bitrate;
 			attr.stAttrH264Cbr.u32FluctuateLevel = 0;
 			break;
@@ -572,15 +573,15 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 			attr.enRcMode = VENC_RC_MODE_H264AVBR;
 			attr.stAttrH264AVbr.u32Gop = _gop;
 			attr.stAttrH264AVbr.u32StatTime = stattime;
-			attr.stAttrH264AVbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrH264AVbr.fr32DstFrmRate = _framerate;
+			attr.stAttrH264AVbr.u32SrcFrmRate = ifr;
+			attr.stAttrH264AVbr.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrH264AVbr.u32MaxBitRate = _bitrate;
 			break;
 		case FIXQP:
 			attr.enRcMode = VENC_RC_MODE_H264FIXQP;
 			attr.stAttrH264FixQp.u32Gop = _gop;
-			attr.stAttrH264FixQp.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrH264FixQp.fr32DstFrmRate = _framerate;
+			attr.stAttrH264FixQp.u32SrcFrmRate = ifr;
+			attr.stAttrH264FixQp.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrH264FixQp.u32IQp = 20;
 			attr.stAttrH264FixQp.u32PQp = 23;
 			break;
@@ -594,24 +595,24 @@ void HimppVencChan::prepareRcAttr(VENC_RC_ATTR_S &attr)
 		case CBR:
 			attr.enRcMode = VENC_RC_MODE_MJPEGCBR;
 			attr.stAttrMjpegeCbr.u32StatTime = 1;
-			attr.stAttrMjpegeCbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrMjpegeCbr.fr32DstFrmRate = _framerate;
+			attr.stAttrMjpegeCbr.u32SrcFrmRate = ifr;
+			attr.stAttrMjpegeCbr.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrMjpegeCbr.u32BitRate = _bitrate;
 			attr.stAttrMjpegeCbr.u32FluctuateLevel = 0;
 			break;
 		case VBR:
 			attr.enRcMode = VENC_RC_MODE_MJPEGVBR;
 			attr.stAttrMjpegeVbr.u32StatTime = 1;
-			attr.stAttrMjpegeVbr.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrMjpegeVbr.fr32DstFrmRate = _framerate;
+			attr.stAttrMjpegeVbr.u32SrcFrmRate = ifr;
+			attr.stAttrMjpegeVbr.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrMjpegeVbr.u32MaxBitRate = _bitrate;
 			attr.stAttrMjpegeVbr.u32MinQfactor = 50;
 			attr.stAttrMjpegeVbr.u32MaxQfactor = 95;
 			break;
 		case FIXQP:
 			attr.enRcMode = VENC_RC_MODE_MJPEGFIXQP;
-			attr.stAttrMjpegeFixQp.u32SrcFrmRate = VIDEO_ELEMENT(source())->framerate();
-			attr.stAttrMjpegeFixQp.fr32DstFrmRate = _framerate;
+			attr.stAttrMjpegeFixQp.u32SrcFrmRate = ifr;
+			attr.stAttrMjpegeFixQp.fr32DstFrmRate = MIN2(_framerate, ifr);
 			attr.stAttrMjpegeFixQp.u32Qfactor = 90;
 			break;
 		default:
