@@ -255,7 +255,27 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
 			if (name.size() < 8) break;
 			uint32_t index = std::stoul(name.substr(7));
-			add_element(last_element, name, HimppVpssChan(HIMPP_VIDEO_ELEMENT(last_element), index));
+			if (add_element(last_element, name, HimppVpssChan(HIMPP_VIDEO_ELEMENT(last_element), index))) {
+				std::unordered_map<std::string, std::string>::iterator pit;
+				if ((pit = params.find("resolution")) != params.end()) {
+					Resolution res(pit->second);
+					HIMPP_VPSS_CHAN(last_element)->setResolution(res);
+				}
+				if ((pit = params.find("framerate")) != params.end() ||
+				    (pit = params.find("fr")) != params.end()) {
+					uint32_t framerate = std::stoi(pit->second);
+					HIMPP_VPSS_CHAN(last_element)->setFrameRate(framerate);
+				}
+
+				uint32_t vbcnt = 0;		// default value if 'vbcnt' option not present
+				if ((pit = params.find("vbcnt")) != params.end()) {
+					int32_t val = std::stoi(pit->second);
+					if (val > 0) { vbcnt = val; }
+				}
+				Resolution dim = HIMPP_VIDEO_ELEMENT(last_element)->resolution();
+				uint32_t blksiz = (dim.width() + 16) * dim.height() * 3 / 2;
+				if (blksiz && vbcnt) _sysctl.addVideoBuffer(blksiz, vbcnt);
+			}
 		}
 		else if (name.compare(0, 5, "vechn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;

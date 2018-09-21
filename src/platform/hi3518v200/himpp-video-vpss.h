@@ -103,12 +103,17 @@ public:
 
 	// implementation of HimppVideoElement
 	MPP_CHN_S* bindSource();
+	virtual Resolution	resolution();
+	virtual uint32_t	framerate();
 
 	// implementation of Ipcam::Media::VideoSource
-	//uint32_t		getFrameRate();
-	//void			setFrameRate(uint32_t value);
-	//Resolution		getResolution();
-	//void			setResolution(Resolution value);
+	uint32_t		getFrameRate();
+	void			setFrameRate(uint32_t value);
+	Resolution		getResolution();
+	void			setResolution(Resolution value);
+
+	VPSS_GRP groupId() { return _grpid; }
+	VPSS_CHN channelId() { return _chnid; }
 
 protected:
 	void doEnableElement();
@@ -120,9 +125,12 @@ private:
 		VPSS_CHN_TYPE_BYPASS,
 		VPSS_CHN_TYPE_EXT
 	};
+	VPSS_GRP			_grpid;
 	VPSS_CHN			_chnid;
 	VPSS_CHN_TYPE		_type;
 	MPP_CHN_S			_mpp_chn;
+	Resolution			_resolution;
+	uint32_t			_framerate;
 };
 
 #endif // _HIMPP_VIDEO_VPSS_GROUP_H_

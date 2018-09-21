@@ -367,18 +367,25 @@ HimppVpssChan::HimppVpssChan(HimppVideoElement* source, VPSS_CHN chn)
   : VideoElement(VIDEO_ELEMENT(source)),
     HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _chnid(chn)
+    _grpid(0), _chnid(chn), _resolution(0, 0), _framerate(0)
 {
 	HimppVpssGroup* group = HIMPP_VPSS_GROUP(source);
+	HimppVpssChan* chan = HIMPP_VPSS_CHAN(source);
+	if (group) {
+		_grpid = group->groupId();
+	} else if (chan) {
+		_grpid = chan->groupId();
+	}
 
 	_mpp_chn.enModId = HI_ID_VPSS;
-	_mpp_chn.s32DevId = group->groupId();
+	_mpp_chn.s32DevId = _grpid;
 	_mpp_chn.s32ChnId = chn;
 
-	if (chn < VPSS_MAX_PHY_CHN_NUM)
+	if (chn < VPSS_MAX_PHY_CHN_NUM) {
 		_type = VPSS_CHN_TYPE_PHY;
-	else
+	} else {
 		_type = VPSS_CHN_TYPE_EXT;
+	}
 }
 
 HimppVpssChan::~HimppVpssChan()
@@ -390,12 +397,63 @@ MPP_CHN_S* HimppVpssChan::bindSource()
 	return &_mpp_chn;
 }
 
+Resolution HimppVpssChan::resolution()
+{
+	if (_resolution.valid())
+		return _resolution;
+
+	return HIMPP_VIDEO_ELEMENT(source())->resolution();
+}
+
+uint32_t HimppVpssChan::framerate()
+{
+	if (_framerate > 0)
+		return _framerate;
+
+	return HIMPP_VIDEO_ELEMENT(source())->framerate();
+}
+
+uint32_t HimppVpssChan::getFrameRate()
+{
+	return framerate();
+}
+
+void HimppVpssChan::setFrameRate(uint32_t value)
+{
+	uint32_t ifr = HIMPP_VIDEO_ELEMENT(source())->framerate();
+	if (value > ifr)
+		throw IpcamError("FrameRate too large");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+
+	_framerate = value;
+}
+
+Resolution HimppVpssChan::getResolution()
+{
+	return resolution();
+}
+
+void HimppVpssChan::setResolution(Resolution value)
+{
+	uint32_t w = value.width(), h = value.height();
+	if (w < VPSS_MIN_IMAGE_WIDTH || w > VPSS_MAX_IMAGE_WIDTH ||
+	    h < VPSS_MIN_IMAGE_HEIGHT || h > VPSS_MAX_IMAGE_HEIGHT)
+		throw IpcamError("Invalid resolution");
+
+	if (is_enabled()) {
+		// TODO: implementation
+	}
+
+	_resolution = value;
+}
+
 void HimppVpssChan::doEnableElement()
 {
-	HimppVpssGroup* group = HIMPP_VPSS_GROUP(source());
-	Resolution dim = resolution();
-	int grp = group->groupId();
-	int chn = _chnid;
+	Resolution idim = HIMPP_VIDEO_ELEMENT(source())->resolution();
+	uint32_t ifr = HIMPP_VIDEO_ELEMENT(source())->framerate();
 	VPSS_CHN_ATTR_S chn_attr;
 	VPSS_CHN_MODE_S chn_mode;
 	VPSS_EXT_CHN_ATTR_S ext_chn_attr;
@@ -407,31 +465,59 @@ void HimppVpssChan::doEnableElement()
 		chn_attr.bBorderEn = HI_FALSE;
 		chn_attr.bMirror = HI_FALSE;
 		chn_attr.bFlip = HI_FALSE;
-		chn_attr.s32SrcFrameRate = -1;
-		chn_attr.s32DstFrameRate = -1;
-		if ((s32Ret = HI_MPI_VPSS_SetChnAttr(grp, chn, &chn_attr)) != HI_SUCCESS) {
+		if (_framerate > 0) {
+			chn_attr.s32SrcFrameRate = ifr;
+			chn_attr.s32DstFrameRate = _framerate;
+		} else {
+			chn_attr.s32SrcFrameRate = -1;
+			chn_attr.s32DstFrameRate = -1;
+		}
+		if ((s32Ret = HI_MPI_VPSS_SetChnAttr(_grpid, _chnid, &chn_attr)) != HI_SUCCESS) {
 			HIMPP_PRINT("HI_MPI_VPSS_SetChnAttr %d-%d failed %#x\n",
-			            grp, chn, s32Ret);
+			            _grpid, _chnid, s32Ret);
 			throw IpcamError("Failed to enable vpss channel");
 		}
 		chn_mode.enChnMode = VPSS_CHN_MODE_USER;
-		chn_mode.u32Width = dim.width();
-		chn_mode.u32Height = dim.height();
+		if (_resolution.valid()) {
+			chn_mode.u32Width = _resolution.width();
+			chn_mode.u32Height = _resolution.height();
+		} else {
+			chn_mode.u32Width = idim.width();
+			chn_mode.u32Height = idim.height();
+		}
 		chn_mode.bDouble = HI_FALSE;
 		chn_mode.enPixelFormat = HIMPP_PIXEL_FORMAT;
 		chn_mode.enCompressMode = COMPRESS_MODE_NONE;
-		if ((s32Ret = HI_MPI_VPSS_SetChnMode(grp, chn, &chn_mode)) != HI_SUCCESS) {
+		if ((s32Ret = HI_MPI_VPSS_SetChnMode(_grpid, _chnid, &chn_mode)) != HI_SUCCESS) {
 			HIMPP_PRINT("HI_MPI_VPSS_SetChnMode %d-%d failed %#x\n",
-			            grp, chn, s32Ret);
+			            _grpid, _chnid, s32Ret);
 			throw IpcamError("Failed to enable vpss channel");
 		}
 		break;
 	case VPSS_CHN_TYPE_EXT:
-		ext_chn_attr.s32BindChn = 0;
-		ext_chn_attr.s32SrcFrameRate = framerate();
-		if ((s32Ret = HI_MPI_VPSS_SetExtChnAttr(grp, chn, &ext_chn_attr)) != HI_SUCCESS) {
+		if (!HIMPP_VPSS_CHAN(source()))
+			throw IpcamError("Not connect to VPSS channel");
+
+		ext_chn_attr.s32BindChn = HIMPP_VPSS_CHAN(source())->channelId();
+		if (_framerate > 0) {
+			ext_chn_attr.s32SrcFrameRate = ifr;
+			ext_chn_attr.s32DstFrameRate = _framerate;
+		} else {
+			ext_chn_attr.s32SrcFrameRate = -1;
+			ext_chn_attr.s32DstFrameRate = -1;
+		}
+		if (_resolution.valid()) {
+			ext_chn_attr.u32Width = _resolution.width();
+			ext_chn_attr.u32Height = _resolution.height();
+		} else {
+			ext_chn_attr.u32Width = idim.width();
+			ext_chn_attr.u32Height = idim.height();
+		}
+		ext_chn_attr.enPixelFormat = HIMPP_PIXEL_FORMAT;
+		ext_chn_attr.enCompressMode = COMPRESS_MODE_NONE;
+		if ((s32Ret = HI_MPI_VPSS_SetExtChnAttr(_grpid, _chnid, &ext_chn_attr)) != HI_SUCCESS) {
 			HIMPP_PRINT("HI_MPI_VPSS_SetExtChnAttr %d-%d failed %#x\n",
-			            grp, chn, s32Ret);
+			            _grpid, _chnid, s32Ret);
 			throw IpcamError("Failed to enable vpss channel");
 		}
 		break;
@@ -439,22 +525,19 @@ void HimppVpssChan::doEnableElement()
 		break;
 	}
 
-	if ((s32Ret = HI_MPI_VPSS_EnableChn(grp, chn)) != HI_SUCCESS) {
+	if ((s32Ret = HI_MPI_VPSS_EnableChn(_grpid, _chnid)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VPSS_EnableChn %d-%d failed [%#x]\n",
-		            grp, chn, s32Ret);
+		            _grpid, _chnid, s32Ret);
 		throw IpcamError("Failed to enable vpss channel");
 	}
 }
 
 void HimppVpssChan::doDisableElement()
 {
-	HimppVpssGroup* group = HIMPP_VPSS_GROUP(source());
-	int grp = group->groupId();
-	int chn = _chnid;
 	HI_S32 s32Ret;
 
-	if ((s32Ret = HI_MPI_VPSS_DisableChn(grp, chn)) != HI_SUCCESS) {
+	if ((s32Ret = HI_MPI_VPSS_DisableChn(_grpid, _chnid)) != HI_SUCCESS) {
 		HIMPP_PRINT("HI_MPI_VPSS_DisableChn %d-%d failed [%#x]\n",
-		            grp, chn, s32Ret);
+		            _grpid, _chnid, s32Ret);
 	}
 }
