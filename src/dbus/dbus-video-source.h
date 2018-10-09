@@ -39,6 +39,7 @@ class VideoSource :
 	public ipcam::Media::VideoSource::Imaging::LDC_adaptor,
 	public ipcam::Media::VideoSource::Imaging::Gamma_adaptor,
 	public ipcam::Media::VideoSource::Imaging::NoiseReduction_adaptor,
+	public ipcam::Media::VideoSource::Imaging::IrCutFilter_adaptor,
 	public IpcamBase
 {
 public:

@@ -221,6 +221,25 @@ public:
 		private:
 			Imaging& _imaging;
 		};
+		// IrCutFilter
+		class IrCutFilter
+		{
+		public:
+			IrCutFilter(Imaging& imaging);
+			virtual ~IrCutFilter();
+			virtual IrCutFilterMode	getMode();
+			virtual void			setMode(IrCutFilterMode value);
+			virtual int32_t			getThreshold();
+			virtual void			setThreshold(int32_t value);
+			virtual uint32_t		getHysteresis();
+			virtual void			setHysteresis(uint32_t value);
+			virtual uint32_t		getBrightness();
+			virtual void			setBrightness(uint32_t value);
+
+			Imaging& imaging() { return _imaging; }
+		private:
+			Imaging& _imaging;
+		};
 
 	public:
 		Imaging(VideoSource& videosource);
@@ -240,8 +259,6 @@ public:
 		virtual void				setSaturation(uint32_t value);
 		virtual uint32_t			getSharpness();
 		virtual void				setSharpness(uint32_t value);
-		virtual IrCutFilterMode		getIrCutFilterMode();
-		virtual void				setIrCutFilterMode(IrCutFilterMode value);
 
 		virtual AntiFlicker&		antiflicker();
 		virtual Backlight&			backlight();
@@ -252,6 +269,7 @@ public:
 		virtual LDC&				ldc();
 		virtual Gamma&				gamma();
 		virtual NoiseReduction&		noisereduction();
+		virtual IrCutFilter&		ircutfilter();
 
 		VideoSource& videoSource() { return _video_source; }
 	private:
@@ -412,6 +430,21 @@ public:
 			virtual NrParamTable&	getParamTable();
 			virtual void			setParamTable(NrParamTable& value);
 		};
+		// IrCutFilter
+		class IrCutFilter : public VideoSource::Imaging::IrCutFilter
+		{
+		public:
+			IrCutFilter(Imaging& imaging);
+			virtual ~IrCutFilter();
+			virtual IrCutFilterMode	getMode();
+			virtual void			setMode(IrCutFilterMode value);
+			virtual int32_t			getThreshold();
+			virtual void			setThreshold(int32_t value);
+			virtual uint32_t		getHysteresis();
+			virtual void			setHysteresis(uint32_t value);
+			virtual uint32_t		getBrightness();
+			virtual void			setBrightness(uint32_t value);
+		};
 
 	public:
 		Imaging(DefaultVideoSource& videosource);
@@ -431,8 +464,6 @@ public:
 		virtual void				setSaturation(uint32_t value);
 		virtual uint32_t			getSharpness();
 		virtual void				setSharpness(uint32_t value);
-		virtual IrCutFilterMode		getIrCutFilterMode();
-		virtual void				setIrCutFilterMode(IrCutFilterMode value);
 
 		virtual VideoSource::Imaging::AntiFlicker&		antiflicker();
 		virtual VideoSource::Imaging::Backlight&		backlight();
@@ -443,6 +474,7 @@ public:
 		virtual VideoSource::Imaging::LDC&				ldc();
 		virtual VideoSource::Imaging::Gamma&			gamma();
 		virtual VideoSource::Imaging::NoiseReduction&	noisereduction();
+		virtual VideoSource::Imaging::IrCutFilter&		ircutfilter();
 	};
 
 public:

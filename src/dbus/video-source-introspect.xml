@@ -12,7 +12,6 @@
     <property name="Chroma" type="u" access="readwrite"/>
     <property name="Saturation" type="u" access="readwrite"/>
     <property name="Sharpness" type="u" access="readwrite"/>
-    <property name="IrCutFilterMode" type="u" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.AntiFlicker">
     <property name="Mode" type="u" access="readwrite"/>
@@ -65,5 +64,11 @@
     <property name="Mode" type="u" access="readwrite"/>
     <property name="Level" type="u" access="readwrite"/>
     <property name="ParamTable" type="a(uii)" access="readwrite"/>
+  </interface>
+  <interface name="ipcam.Media.VideoSource.Imaging.IrCutFilter">
+    <property name="Mode" type="u" access="readwrite"/>
+    <property name="Threshold" type="i" access="readwrite"/>
+    <property name="Hysteresis" type="u" access="readwrite"/>
+    <property name="Brightness" type="u" access="readwrite"/>
   </interface>
 </node>

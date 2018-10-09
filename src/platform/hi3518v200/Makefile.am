@@ -39,7 +39,9 @@ libhi3518v200_la_SOURCES =  \
 	himpp-video-region.cpp \
 	himpp-video-region.h \
 	himpp-media.cpp \
-	himpp-media.h
+	himpp-media.h \
+	himpp-ircut.cpp \
+	himpp-ircut.h
 
 libhi3518v200_la_LIBADD = \
 	$(top_builddir)/src/common/libcommon.la

@@ -107,7 +107,7 @@ libhi3518v200_la_DEPENDENCIES =  \
 am_libhi3518v200_la_OBJECTS = himpp-base.lo himpp-sysctl.lo \
 	himpp-audio.lo himpp-video-sensor.lo himpp-video-isp.lo \
 	himpp-video-viu.lo himpp-video-vpss.lo himpp-video-venc.lo \
-	himpp-video-region.lo himpp-media.lo
+	himpp-video-region.lo himpp-media.lo himpp-ircut.lo
 libhi3518v200_la_OBJECTS = $(am_libhi3518v200_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -373,7 +373,9 @@ libhi3518v200_la_SOURCES = \
 	himpp-video-region.cpp \
 	himpp-video-region.h \
 	himpp-media.cpp \
-	himpp-media.h
+	himpp-media.h \
+	himpp-ircut.cpp \
+	himpp-ircut.h
 
 libhi3518v200_la_LIBADD = \
 	$(top_builddir)/src/common/libcommon.la
@@ -435,6 +437,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-audio.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-base.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-ircut.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-media.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-sysctl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/himpp-video-isp.Plo@am__quote@

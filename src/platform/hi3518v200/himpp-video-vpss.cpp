@@ -369,17 +369,16 @@ HimppVpssChan::HimppVpssChan(HimppVideoElement* source, VPSS_CHN chn)
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _grpid(0), _chnid(chn), _resolution(0, 0), _framerate(0)
 {
-	HimppVpssGroup* group = HIMPP_VPSS_GROUP(source);
-	HimppVpssChan* chan = HIMPP_VPSS_CHAN(source);
-	if (group) {
-		_grpid = group->groupId();
-	} else if (chan) {
-		_grpid = chan->groupId();
+	for (MediaElement* p = source; p; p = p->source()) {
+		HimppVpssGroup* group = HIMPP_VPSS_GROUP(p);
+		if (p != nullptr) {
+			_grpid = group->groupId();
+			_mpp_chn.enModId = HI_ID_VPSS;
+			_mpp_chn.s32DevId = _grpid;
+			_mpp_chn.s32ChnId = chn;
+			break;
+		}
 	}
-
-	_mpp_chn.enModId = HI_ID_VPSS;
-	_mpp_chn.s32DevId = _grpid;
-	_mpp_chn.s32ChnId = chn;
 
 	if (chn < VPSS_MAX_PHY_CHN_NUM) {
 		_type = VPSS_CHN_TYPE_PHY;

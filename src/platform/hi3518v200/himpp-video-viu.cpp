@@ -27,12 +27,50 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
+// HimppViDev::Imaging::IrCutFilter
+//////////////////////////////////////////////////////////////////////////////
+
+HimppViDev::Imaging::IrCutFilter::IrCutFilter(Imaging& imaging)
+  : DefaultVideoSource::Imaging::IrCutFilter(dynamic_cast<DefaultVideoSource::Imaging&>(imaging)),
+    _mode(IRCUT_OFF)
+{
+}
+
+HimppViDev::Imaging::IrCutFilter::~IrCutFilter()
+{
+}
+
+IrCutFilterMode HimppViDev::Imaging::IrCutFilter::getMode()
+{
+	return _mode;
+}
+
+void HimppViDev::Imaging::IrCutFilter::setMode(IrCutFilterMode value)
+{
+	HimppViDev& videv = dynamic_cast<HimppViDev&>(imaging().videoSource());
+	if (videv.is_enabled()) {
+		VI_CSC_ATTR_S csc_attr;
+		if (HI_MPI_VI_GetCSCAttr(videv.deviceId(), &csc_attr) != HI_SUCCESS)
+			throw IpcamError("get CSC attr failed");
+
+		uint32_t saturation = ((HimppViDev::Imaging&)imaging())._saturation;
+		csc_attr.u32SatuVal = (value == IRCUT_ON) ? 0 : saturation;
+		if (HI_MPI_VI_SetCSCAttr(videv.deviceId(), &csc_attr) != HI_SUCCESS)
+			throw IpcamError("set CSC attr failed");
+	}
+
+	_mode = value;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // HimppViDev::Imaging
 //////////////////////////////////////////////////////////////////////////////
 
 HimppViDev::Imaging::Imaging(HimppViDev& videv)
   : DefaultVideoSource::Imaging(dynamic_cast<DefaultVideoSource&>(videv)),
-    _brightness(50), _contrast(50), _chroma(50), _saturation(50)
+    _brightness(50), _contrast(50), _chroma(50), _saturation(50),
+    _ircutfilter(*this)
 {
 }
 
@@ -111,7 +149,7 @@ uint32_t HimppViDev::Imaging::getSaturation()
 void HimppViDev::Imaging::setSaturation(uint32_t val)
 {
 	HimppViDev& videv = dynamic_cast<HimppViDev&>(videoSource());
-	if (videv.is_enabled()) {
+	if (videv.is_enabled() && (_ircutfilter._mode != IRCUT_ON)) {
 		VI_CSC_ATTR_S csc_attr;
 		if (HI_MPI_VI_GetCSCAttr(videv.deviceId(), &csc_attr) != HI_SUCCESS)
 			throw IpcamError("get CSC attr failed");
@@ -122,6 +160,11 @@ void HimppViDev::Imaging::setSaturation(uint32_t val)
 	}
 
 	_saturation = val;
+}
+
+VideoSource::Imaging::IrCutFilter& HimppViDev::Imaging::ircutfilter()
+{
+	return _ircutfilter;
 }
 
 
@@ -235,7 +278,7 @@ void HimppViDev::doEnableElement()
 		csc_attr.u32LumaVal = _imaging._brightness;
 		csc_attr.u32ContrVal = _imaging._contrast;
 		csc_attr.u32HueVal = _imaging._chroma;
-		csc_attr.u32SatuVal = _imaging._saturation;
+		csc_attr.u32SatuVal = _imaging._ircutfilter._mode == IRCUT_ON ? 0 : _imaging._saturation;
 		if ((s32Ret = HI_MPI_VI_SetCSCAttr(_devid, &csc_attr)) != HI_SUCCESS) {
 			HIMPP_PRINT("HI_MPI_VI_SetCSCAttr %d failed [%#x]\n", _devid, s32Ret);
 		}
@@ -437,17 +480,14 @@ HimppViChan::HimppViChan(HimppVideoElement* source, VI_CHN chnid)
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _imaging(*this), _chnid(chnid), _resolution(0, 0), _framerate(0)
 {
-	HimppViDev* videv = NULL;
-	for (MediaElement* p = source; p; p = source->source()) {
-		if (HIMPP_VI_DEV(p)) {
-			videv = HIMPP_VI_DEV(p);
+	for (MediaElement* p = source; p; p = p->source()) {
+		HimppViDev* videv = HIMPP_VI_DEV(p);
+		if (videv != nullptr) {
+			_mpp_chn.enModId = HI_ID_VIU;
+			_mpp_chn.s32DevId = videv->deviceId();
+			_mpp_chn.s32ChnId = _chnid;
 			break;
 		}
-	}
-	if (videv) {
-		_mpp_chn.enModId = HI_ID_VIU;
-		_mpp_chn.s32DevId = videv->deviceId();
-		_mpp_chn.s32ChnId = _chnid;
 	}
 }
 

@@ -480,6 +480,59 @@ void VideoSource::Imaging::NoiseReduction::setParamTable(NrParamTable& value)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// VideoSource::Imaging::IrCutFilter
+//////////////////////////////////////////////////////////////////////////////
+
+VideoSource::Imaging::IrCutFilter::IrCutFilter(Imaging& imaging)
+  : _imaging(imaging)
+{
+}
+
+VideoSource::Imaging::IrCutFilter::~IrCutFilter()
+{
+}
+
+IrCutFilterMode VideoSource::Imaging::IrCutFilter::getMode()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::IrCutFilter::setMode(IrCutFilterMode value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+int32_t VideoSource::Imaging::IrCutFilter::getThreshold()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::IrCutFilter::setThreshold(int32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+uint32_t VideoSource::Imaging::IrCutFilter::getHysteresis()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::IrCutFilter::setHysteresis(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+uint32_t VideoSource::Imaging::IrCutFilter::getBrightness()
+{
+	throw IpcamError(property_not_implemented);
+}
+
+void VideoSource::Imaging::IrCutFilter::setBrightness(uint32_t value)
+{
+	throw IpcamError(property_not_implemented);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // VideoSource::Imaging
 //////////////////////////////////////////////////////////////////////////////
 
@@ -562,16 +615,6 @@ void VideoSource::Imaging::setSharpness(uint32_t value)
 	throw IpcamError(property_not_implemented);
 }
 
-IrCutFilterMode VideoSource::Imaging::getIrCutFilterMode()
-{
-	throw IpcamError(property_not_implemented);
-}
-
-void VideoSource::Imaging::setIrCutFilterMode(IrCutFilterMode value)
-{
-	throw IpcamError(property_not_implemented);
-}
-
 VideoSource::Imaging::AntiFlicker& VideoSource::Imaging::antiflicker()
 {
 	throw IpcamError(interface_not_implemented);
@@ -613,6 +656,11 @@ VideoSource::Imaging::Gamma& VideoSource::Imaging::gamma()
 }
 
 VideoSource::Imaging::NoiseReduction& VideoSource::Imaging::noisereduction()
+{
+	throw IpcamError(interface_not_implemented);
+}
+
+VideoSource::Imaging::IrCutFilter& VideoSource::Imaging::ircutfilter()
 {
 	throw IpcamError(interface_not_implemented);
 }
@@ -1255,6 +1303,75 @@ void DefaultVideoSource::Imaging::NoiseReduction::setParamTable(NrParamTable& va
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// DefaultVideoSource::Imaging::IrCutFilter
+//////////////////////////////////////////////////////////////////////////////
+
+DefaultVideoSource::Imaging::IrCutFilter::IrCutFilter(Imaging& imaging)
+  : VideoSource::Imaging::IrCutFilter(dynamic_cast<VideoSource::Imaging&>(imaging))
+{
+}
+
+DefaultVideoSource::Imaging::IrCutFilter::~IrCutFilter()
+{
+}
+
+IrCutFilterMode DefaultVideoSource::Imaging::IrCutFilter::getMode()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().ircutfilter().getMode();
+}
+
+void DefaultVideoSource::Imaging::IrCutFilter::setMode(IrCutFilterMode value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().ircutfilter().setMode(value);
+}
+
+int32_t DefaultVideoSource::Imaging::IrCutFilter::getThreshold()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().ircutfilter().getThreshold();
+}
+
+void DefaultVideoSource::Imaging::IrCutFilter::setThreshold(int32_t value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().ircutfilter().setThreshold(value);
+}
+
+uint32_t DefaultVideoSource::Imaging::IrCutFilter::getHysteresis()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().ircutfilter().getHysteresis();
+}
+
+void DefaultVideoSource::Imaging::IrCutFilter::setHysteresis(uint32_t value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().ircutfilter().setHysteresis(value);
+}
+
+uint32_t DefaultVideoSource::Imaging::IrCutFilter::getBrightness()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	return source->imaging().ircutfilter().getBrightness();
+}
+
+void DefaultVideoSource::Imaging::IrCutFilter::setBrightness(uint32_t value)
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
+	if (source == NULL) throw IpcamError(property_not_implemented);
+	source->imaging().ircutfilter().setBrightness(value);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // DefaultVideoSource::Imaging
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1365,20 +1482,6 @@ void DefaultVideoSource::Imaging::setSharpness(uint32_t value)
 	source->imaging().setSharpness(value);
 }
 
-IrCutFilterMode DefaultVideoSource::Imaging::getIrCutFilterMode()
-{
-	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
-	if (source == NULL) throw IpcamError(interface_not_implemented);
-	return source->imaging().getIrCutFilterMode();
-}
-
-void DefaultVideoSource::Imaging::setIrCutFilterMode(IrCutFilterMode value)
-{
-	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
-	if (source == NULL) throw IpcamError(interface_not_implemented);
-	return source->imaging().setIrCutFilterMode(value);
-}
-
 VideoSource::Imaging::AntiFlicker& DefaultVideoSource::Imaging::antiflicker()
 {
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
@@ -1440,6 +1543,13 @@ VideoSource::Imaging::NoiseReduction& DefaultVideoSource::Imaging::noisereductio
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
 	if (source == NULL) throw IpcamError(interface_not_implemented);
 	return source->imaging().noisereduction();
+}
+
+VideoSource::Imaging::IrCutFilter& DefaultVideoSource::Imaging::ircutfilter()
+{
+	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(videoSource()).source());
+	if (source == NULL) throw IpcamError(interface_not_implemented);
+	return source->imaging().ircutfilter();
 }
 
 //////////////////////////////////////////////////////////////////////////////

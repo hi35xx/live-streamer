@@ -25,6 +25,7 @@
 #include <himpp-video-viu.h>
 #include <himpp-video-vpss.h>
 #include <himpp-video-venc.h>
+#include <himpp-ircut.h>
 #include <himpp-audio.h>
 
 #include "himpp-media.h"
@@ -317,6 +318,9 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					HIMPP_VENC_CHAN(last_element)->setBitrate(bitrate);
 				}
 			}
+		}
+		else if (name.compare(0, 5, "ircut") == 0) {
+			add_element(last_element, name, HimppIrCut(HIMPP_VIDEO_ELEMENT(last_element), params));
 		}
 		else if (name.compare(0, 6, "acodec") == 0) {
 			add_element(last_element, name, HimppAudioCodec());

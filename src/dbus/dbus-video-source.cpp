@@ -39,6 +39,7 @@ namespace DBus {
 #define LDC_INTERFACE			"ipcam.Media.VideoSource.Imaging.LDC"
 #define GAMMA_INTERFACE			"ipcam.Media.VideoSource.Imaging.Gamma"
 #define NR_INTERFACE			"ipcam.Media.VideoSource.Imaging.NoiseReduction"
+#define IRCUT_INTERFACE			"ipcam.Media.VideoSource.Imaging.IrCutFilter"
 
 #define DEFINE_PROP(prop, get, set) \
 	_prop_handler.emplace(std::piecewise_construct, \
@@ -158,17 +159,6 @@ VideoSource::VideoSource
 		   const std::string &property, const DBus::Variant &value)
 		{
 			_video_source->imaging().setSharpness((uint32_t)value);
-		});
-	DEFINE_PROP(IMAGING_INTERFACE ".IrCutFilterMode",
-		[this](DBus::InterfaceAdaptor &interface,
-		   const std::string &property, DBus::Variant &value)
-		{
-			value.writer().append_uint32(_video_source->imaging().getIrCutFilterMode());
-		},
-		[this](DBus::InterfaceAdaptor &interface,
-		   const std::string &property, const DBus::Variant &value)
-		{
-			_video_source->imaging().setIrCutFilterMode((Ipcam::Media::IrCutFilterMode)(uint32_t)value);
 		});
 	// Handler of ipcam.Media.VideoSource.Imaging.AntiFlicker
 	DEFINE_PROP(ANTIFLICKER_INTERFACE ".Mode", 
@@ -564,6 +554,51 @@ VideoSource::VideoSource
 		{
 			NrParamTable table = value;
 			_video_source->imaging().noisereduction().setParamTable(table);
+		});
+	// Handler of ipcam.Media.VideoSource.Imaging.IrCutFilter
+	DEFINE_PROP(IRCUT_INTERFACE ".Mode", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32((uint32_t)_video_source->imaging().ircutfilter().getMode());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_video_source->imaging().ircutfilter().setMode((Ipcam::Media::IrCutFilterMode)(uint32_t)value);
+		});
+	DEFINE_PROP(IRCUT_INTERFACE ".Threshold", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_int32(_video_source->imaging().ircutfilter().getThreshold());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_video_source->imaging().ircutfilter().setThreshold((int32_t)value);
+		});
+	DEFINE_PROP(IRCUT_INTERFACE ".Hysteresis", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32(_video_source->imaging().ircutfilter().getHysteresis());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_video_source->imaging().ircutfilter().setHysteresis((uint32_t)value);
+		});
+	DEFINE_PROP(IRCUT_INTERFACE ".Brightness", 
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, DBus::Variant &value)
+		{
+			value.writer().append_uint32(_video_source->imaging().ircutfilter().getBrightness());
+		},
+		[this](DBus::InterfaceAdaptor &interface,
+		   const std::string &property, const DBus::Variant &value)
+		{
+			_video_source->imaging().ircutfilter().setBrightness((uint32_t)value);
 		});
 }
 

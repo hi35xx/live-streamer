@@ -35,6 +35,18 @@ public:
 	class Imaging : public DefaultVideoSource::Imaging
 	{
 	public:
+		class IrCutFilter : public DefaultVideoSource::Imaging::IrCutFilter
+		{
+		public:
+			IrCutFilter(Imaging& imaging);
+			virtual ~IrCutFilter();
+
+			IrCutFilterMode	getMode();
+			void			setMode(IrCutFilterMode value);
+		public:
+			IrCutFilterMode _mode;
+		};
+	public:
 		Imaging(HimppViDev& videv);
 		~Imaging();
 
@@ -47,12 +59,14 @@ public:
 		void			setChroma(uint32_t value);
 		uint32_t		getSaturation();
 		void			setSaturation(uint32_t value);
-	private:
-		friend class HimppViDev;
+
+		VideoSource::Imaging::IrCutFilter& ircutfilter();
+	public:
 		uint32_t		_brightness;
 		uint32_t		_contrast;
 		uint32_t		_chroma;
 		uint32_t		_saturation;
+		IrCutFilter		_ircutfilter;
 	};
 
 public:
