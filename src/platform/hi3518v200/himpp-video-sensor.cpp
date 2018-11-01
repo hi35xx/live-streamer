@@ -880,14 +880,14 @@ static ISP_PUB_ATTR_S smartsens_sc2235_pub_attr = {
 		.u32Width       = 1920,
 		.u32Height      = 1080,
 	},
-	.f32FrameRate       = 20,
+	.f32FrameRate       = 25,
 	.enBayer            = BAYER_BGGR
 };
 
 static VI_DEV_ATTR_S smartsens_sc2235_dev_attr = {
 	.enIntfMode     = VI_MODE_DIGITAL_CAMERA,
 	.enWorkMode     = VI_WORK_MODE_1Multiplex,
-	.au32CompMask   = { 0x3FF0000, 0x0 },
+	.au32CompMask   = { 0xFFF0000, 0x0 },
 	.enScanMode     = VI_SCAN_PROGRESSIVE,
 	.s32AdChnId     = { -1, -1, -1, -1 },
 	.enDataSeq      = VI_INPUT_DATA_YUYV,
