@@ -85,6 +85,8 @@ public:
 	virtual void		setResolution(Resolution value);
 	VideoSource::Imaging& imaging();
 
+	virtual void		setCropOffset(int32_t x, int32_t y);
+
 	VI_DEV deviceId() { return _devid; }
 
 protected:
@@ -96,6 +98,8 @@ private:
 	VI_DEV				_devid;
 	Resolution			_resolution;
 	uint32_t			_framerate;
+	int32_t				_xoffset;
+	int32_t				_yoffset;
 };
 
 class HimppViChan : public HimppVideoElement, public DefaultVideoSource

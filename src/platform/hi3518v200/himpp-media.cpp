@@ -211,6 +211,17 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					HIMPP_VI_DEV(last_element)->setFrameRate(framerate);
 				}
 
+				int32_t xoff = -1, yoff = -1;
+				if ((pit = params.find("xoff")) != params.end()) {
+					xoff = std::stoi(pit->second);
+				}
+				if ((pit = params.find("yoff")) != params.end()) {
+					yoff = std::stoi(pit->second);
+				}
+				if ((xoff != -1) || (yoff != -1)) {
+					HIMPP_VI_DEV(last_element)->setCropOffset(xoff, yoff);
+				}
+
 				uint32_t vbcnt = 3;		// default value if 'vbcnt' option not present
 				if ((pit = params.find("vbcnt")) != params.end()) {
 					int32_t val = std::stoi(pit->second);

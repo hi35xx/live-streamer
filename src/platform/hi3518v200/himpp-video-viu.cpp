@@ -176,7 +176,8 @@ HimppViDev::HimppViDev(HimppVideoElement* source, VI_DEV devid)
   : VideoElement(VIDEO_ELEMENT(source)),
     HimppVideoElement(source), DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _imaging(*this), _devid(devid),
-	_resolution(0, 0), _framerate(0)
+    _resolution(0, 0), _framerate(0),
+    _xoffset(-1), _yoffset(-1)
 {
 }
 
@@ -221,14 +222,20 @@ Resolution HimppViDev::getResolution()
 
 void HimppViDev::setResolution(Resolution value)
 {
-	Resolution ires = HIMPP_VIDEO_ELEMENT(source())->resolution();
-	if (value.width() > ires.width() || value.height() > ires.height())
+	Resolution inres = HIMPP_VIDEO_ELEMENT(source())->resolution();
+	if (value.width() > inres.width() || value.height() > inres.height())
 		throw IpcamError("Resolution larger than input");
 
 	if (is_enabled()) {
 		// TODO: implementation
 	}
 	_resolution = value;
+}
+
+void HimppViDev::setCropOffset(int32_t xoffset, int32_t yoffset)
+{
+	_xoffset = xoffset;
+	_yoffset = yoffset;
 }
 
 VideoSource::Imaging& HimppViDev::imaging()
@@ -258,8 +265,18 @@ void HimppViDev::doEnableElement()
 		RECT_S& rect = dev_attr->stDevRect;
 		uint32_t w = _resolution.width();
 		uint32_t h = _resolution.height();
-		rect.s32X = rect.s32X + (rect.u32Width - w) / 2;
-		rect.s32Y = rect.s32Y + (rect.u32Height - h) / 2;
+		int32_t xoffmax = rect.u32Width - w;
+		int32_t yoffmax = rect.u32Height - h;
+		int32_t xoff = xoffmax / 2;
+		int32_t yoff = yoffmax / 2;
+		if (_xoffset >= 0) {
+			xoff = _xoffset < xoffmax ? _xoffset : xoffmax;
+		}
+		if (_yoffset >= 0) {
+			yoff = _yoffset < yoffmax ? _yoffset : yoffmax;
+		}
+		rect.s32X = rect.s32X + xoff;
+		rect.s32Y = rect.s32Y + yoff;
 		rect.u32Width = w;
 		rect.u32Height = h;
 	}
