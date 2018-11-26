@@ -206,7 +206,8 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					Resolution res(pit->second);
 					HIMPP_VI_DEV(last_element)->setResolution(res);
 				}
-				if ((pit = params.find("framerate")) != params.end()) {
+				if ((pit = params.find("framerate")) != params.end() ||
+				    (pit = params.find("fr")) != params.end()) {
 					uint32_t framerate = std::stoi(pit->second);
 					HIMPP_VI_DEV(last_element)->setFrameRate(framerate);
 				}
