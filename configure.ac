@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Created by Anjuta application wizard.
 
-AC_INIT(live-streamer, 1.9.3)
+AC_INIT(live-streamer, 1.9.4)
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -214,6 +214,52 @@ AC_MSG_RESULT([$have_hi3518v200])
 AM_CONDITIONAL([ENABLE_HI3518V200], [test x$have_hi3518v200 = xyes])
 
 
+dnl check for hi3516cv300 mpp library
+AC_ARG_WITH(hi3516cv300,
+	[AS_HELP_STRING([--with-hi3516cv300=PATH],
+		[specify prefix directory for himpp-hi3516cv300 package.])],
+		[], [with_hi3516cv300=no])
+
+AC_MSG_CHECKING([for hi3516cv300 mpp library])
+case $with_hi3516cv300 in
+ yes)
+   hi3516cv300pfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3516cv300pfx=`echo "$with_hi3516cv300" | sed -e "$sed_quote_subst"` ;;
+ *)
+   AC_MSG_RESULT([$with_hi3516cv300])
+   AC_MSG_ERROR([hi3516cv300 must be an absolute path."])
+   ;;
+esac
+if test "x$with_hi3516cv300" != xno; then
+  hi3516cv300inc="-I$hi3516cv300pfx/include/hi3516cv300mpp"
+  hi3516cv300lib="-L$hi3516cv300pfx/lib \
+    -lmpi -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lVoiceEngine \
+    -lisp -l_hiae -l_hiawb -l_hiaf -l_hidefog -lpthread"
+  AC_CHECK_LIBRARY([${hi3516cv300inc}], $[{hi3516cv300lib}],
+    [AC_LANG_PROGRAM(
+      [#include <hi_comm_sys.h>
+       #include <mpi_sys.h>],
+      [HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();])
+    ], [have_hi3516cv300=yes], [have_hi3516cv300=no]
+  )
+  if test x$have_hi3516cv300 = xyes; then
+    HI3516CV300_CPPFLAGS=$hi3516cv300inc
+    HI3516CV300_LDFLAGS=$hi3516cv300lib
+    AC_DEFINE(HAVE_HI3516CV300_SUPPORT, 1, [support Hi3516cv300 MPP])
+    AC_SUBST(HI3516CV300_CPPFLAGS)
+    AC_SUBST(HI3516CV300_LDFLAGS)
+  fi
+else
+  have_hi3516cv300=no
+fi
+AC_MSG_RESULT([$have_hi3516cv300])
+AM_CONDITIONAL([ENABLE_HI3516CV300], [test x$have_hi3516cv300 = xyes])
+
+
 dnl check for hi3520v100 mpp library
 AC_ARG_WITH(hi3520v100,
 	[AS_HELP_STRING([--with-hi3520v100=PATH],
@@ -325,4 +371,5 @@ src/dbus/Makefile
 src/platform/Makefile
 src/common/Makefile
 src/platform/hi3518v200/Makefile
+src/platform/hi3516cv300/Makefile
 ])
