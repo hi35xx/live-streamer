@@ -202,14 +202,23 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			uint32_t index = std::stoul(name.substr(5));
 			if (add_element(last_element, name, HimppViDev(HIMPP_VIDEO_ELEMENT(last_element), index))) {
 				std::unordered_map<std::string, std::string>::iterator pit;
-				if ((pit = params.find("resolution")) != params.end()) {
-					Resolution res(pit->second);
-					HIMPP_VI_DEV(last_element)->setResolution(res);
-				}
 				if ((pit = params.find("framerate")) != params.end() ||
 				    (pit = params.find("fr")) != params.end()) {
 					uint32_t framerate = std::stoi(pit->second);
 					HIMPP_VI_DEV(last_element)->setFrameRate(framerate);
+				}
+				if ((pit = params.find("resolution")) != params.end()) {
+					// resolution can be '<resolution>[@<framerate>]'
+					std::string l;
+					std::stringstream ss(pit->second);
+					if (getline(ss, l, '@')) {
+						Resolution res(l);
+						HIMPP_VI_DEV(last_element)->setResolution(res);
+					}
+					if (getline(ss, l)) {
+						uint32_t framerate = std::stoi(l);
+						HIMPP_VI_DEV(last_element)->setFrameRate(framerate);
+					}
 				}
 
 				int32_t xoff = -1, yoff = -1;
@@ -239,14 +248,23 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			uint32_t index = std::stoul(name.substr(7));
 			if (add_element(last_element, name, HimppViChan(HIMPP_VIDEO_ELEMENT(last_element), index))) {
 				std::unordered_map<std::string, std::string>::iterator pit;
-				if ((pit = params.find("resolution")) != params.end()) {
-					Resolution res(pit->second);
-					HIMPP_VI_CHAN(last_element)->setResolution(res);
-				}
 				if ((pit = params.find("framerate")) != params.end() ||
 				    (pit = params.find("fr")) != params.end()) {
 					uint32_t framerate = std::stoi(pit->second);
 					HIMPP_VI_CHAN(last_element)->setFrameRate(framerate);
+				}
+				if ((pit = params.find("resolution")) != params.end()) {
+					// resolution can be '<resolution>[@<framerate>]'
+					std::string l;
+					std::stringstream ss(pit->second);
+					if (getline(ss, l, '@')) {
+						Resolution res(l);
+						HIMPP_VI_CHAN(last_element)->setResolution(res);
+					}
+					if (getline(ss, l)) {
+						uint32_t framerate = std::stoi(l);
+						HIMPP_VI_CHAN(last_element)->setFrameRate(framerate);
+					}
 				}
 
 				uint32_t vbcnt = 0;		// default value if 'vbcnt' option not present
@@ -270,14 +288,23 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			uint32_t index = std::stoul(name.substr(7));
 			if (add_element(last_element, name, HimppVpssChan(HIMPP_VIDEO_ELEMENT(last_element), index))) {
 				std::unordered_map<std::string, std::string>::iterator pit;
-				if ((pit = params.find("resolution")) != params.end()) {
-					Resolution res(pit->second);
-					HIMPP_VPSS_CHAN(last_element)->setResolution(res);
-				}
 				if ((pit = params.find("framerate")) != params.end() ||
 				    (pit = params.find("fr")) != params.end()) {
 					uint32_t framerate = std::stoi(pit->second);
 					HIMPP_VPSS_CHAN(last_element)->setFrameRate(framerate);
+				}
+				if ((pit = params.find("resolution")) != params.end()) {
+					// resolution can be '<resolution>[@<framerate>]'
+					std::string l;
+					std::stringstream ss(pit->second);
+					if (getline(ss, l, '@')) {
+						Resolution res(l);
+						HIMPP_VPSS_CHAN(last_element)->setResolution(res);
+					}
+					if (getline(ss, l)) {
+						uint32_t framerate = std::stoi(l);
+						HIMPP_VPSS_CHAN(last_element)->setFrameRate(framerate);
+					}
 				}
 
 				uint32_t vbcnt = 0;		// default value if 'vbcnt' option not present
@@ -313,15 +340,23 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			}
 
 			if (add_element(last_element, name, HimppVencChan(HIMPP_VIDEO_ELEMENT(last_element), encoding, index))) {
-				if ((pit = params.find("resolution")) != params.end()) {
-					Resolution res(pit->second);
-					HIMPP_VENC_CHAN(last_element)->setResolution(res);
-				}
-
 				if ((pit = params.find("framerate")) != params.end() ||
 					(pit = params.find("fr")) != params.end()) {
 					uint32_t framerate = std::stoi(pit->second);
 					HIMPP_VENC_CHAN(last_element)->setFramerate(framerate);
+				}
+				if ((pit = params.find("resolution")) != params.end()) {
+					// resolution can be '<resolution>[@<framerate>]'
+					std::string l;
+					std::stringstream ss(pit->second);
+					if (getline(ss, l, '@')) {
+						Resolution res(l);
+						HIMPP_VENC_CHAN(last_element)->setResolution(res);
+					}
+					if (getline(ss, l)) {
+						uint32_t framerate = std::stoi(l);
+						HIMPP_VENC_CHAN(last_element)->setFramerate(framerate);
+					}
 				}
 
 				if ((pit = params.find("bitrate")) != params.end() ||
