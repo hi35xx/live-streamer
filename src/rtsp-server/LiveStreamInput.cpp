@@ -425,9 +425,7 @@ RTPSink* LiveJPEGVideoServerMediaSubsession
                    FramedSource* /*inputSource*/)
 {
 	JPEGVideoRTPSink* rtpsink = JPEGVideoRTPSink::createNew(envir(), rtpGroupsock);
-
 	rtpsink->setPacketSizes(1000, 1456 * 10);
-
 	return rtpsink;
 }
 
@@ -450,8 +448,10 @@ void LiveJPEGVideoServerMediaSubsession
 	StreamState* streamState = (StreamState*)streamToken;
 	LiveJPEGStreamSource* source = (LiveJPEGStreamSource*)streamState->mediaSource();
 
-	source->play();
-	source->resume();
+	try {
+		source->play();
+		source->resume();
+	} catch (IpcamError& e) {}
 }
 
 void LiveJPEGVideoServerMediaSubsession
@@ -499,7 +499,13 @@ LiveAudioStreamSource::LiveAudioStreamSource
   : FramedSource(env), StreamSink(streamsource)
 {
 	source()->attach(this);
-	play();
+	try {
+		play();
+	}
+	catch (IpcamError& e) {
+		source()->detach(this);
+		handleClosure();
+	}
 }
 
 LiveAudioStreamSource::~LiveAudioStreamSource()
