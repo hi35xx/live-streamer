@@ -156,7 +156,7 @@ void HimppAudioCodec::doEnableElement()
 		throw IpcamError("Cannot set input mode");
 	}
 
-#if 1
+#if 0
 	unsigned int gain_mic = 0x0A;
 	if (ioctl(fd, ACODEC_SET_GAIN_MICL, &gain_mic)) {
 		fprintf(stderr, "set acodec micin volume failed\n");
@@ -175,6 +175,11 @@ void HimppAudioCodec::doEnableElement()
 		fprintf(stderr, "set acodec adc volume failed\n");
 	}
 #endif
+
+	int input_vol = 50;
+	if (ioctl(fd, ACODEC_SET_INPUT_VOL, &input_vol)) {
+		fprintf(stderr, "set acodec micin volume failed\n");
+	}
 
 	close (fd);
 }
@@ -216,7 +221,7 @@ void HimppAiDev::doEnableElement()
 	aio_attr.u32FrmNum = 30;
 	aio_attr.u32PtNumPerFrm = AUDIO_PTNUMPERFRM;
 	aio_attr.u32ChnCnt = 1;
-	aio_attr.u32ClkSel = 1;
+	aio_attr.u32ClkSel = 0;
 	s32Ret = HI_MPI_AI_SetPubAttr(_devid, &aio_attr);
 	if (s32Ret) {
 		fprintf(stderr, "failed to set AI dev%d attr [%#x]\n", _devid, s32Ret);
@@ -285,7 +290,7 @@ void HimppAiChan::doEnableElement()
 	}
 #endif
 
-#if 1
+#if 0
 	AI_VQE_CONFIG_S attr;
 	memset(&attr, 0, sizeof(attr));
 	attr.s32WorkSampleRate    = samplerate();

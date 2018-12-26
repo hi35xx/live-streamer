@@ -176,6 +176,11 @@ void HimppAudioCodec::doEnableElement()
 	}
 #endif
 
+	int input_vol = 30;
+	if (ioctl(fd, ACODEC_SET_INPUT_VOL, &input_vol)) {
+		fprintf(stderr, "set acodec micin volume failed\n");
+	}
+
 	close (fd);
 }
 
@@ -216,7 +221,7 @@ void HimppAiDev::doEnableElement()
 	aio_attr.u32FrmNum = 30;
 	aio_attr.u32PtNumPerFrm = AUDIO_PTNUMPERFRM;
 	aio_attr.u32ChnCnt = 1;
-	aio_attr.u32ClkSel = 1;
+	aio_attr.u32ClkSel = 0;
 	s32Ret = HI_MPI_AI_SetPubAttr(_devid, &aio_attr);
 	if (s32Ret) {
 		fprintf(stderr, "failed to set AI dev%d attr [%#x]\n", _devid, s32Ret);
