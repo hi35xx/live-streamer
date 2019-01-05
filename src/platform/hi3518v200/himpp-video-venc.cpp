@@ -639,7 +639,7 @@ void HimppVencChan::prepareChnAttr(VENC_CHN_ATTR_S &attr)
 		attr.stVeAttr.enType = PT_H264;
 		attr.stVeAttr.stAttrH264e.u32MaxPicWidth = ROUNDUP16(_resolution.width());
 		attr.stVeAttr.stAttrH264e.u32MaxPicHeight = ROUNDUP16(_resolution.height());
-		attr.stVeAttr.stAttrH264e.u32BufSize = ROUNDUP64(_resolution.width()) * ROUNDUP64(_resolution.height());
+		attr.stVeAttr.stAttrH264e.u32BufSize = ROUNDUP64(_resolution.width()) * ROUNDUP64(_resolution.height()) * 3 / 4;
 		attr.stVeAttr.stAttrH264e.u32PicWidth = _resolution.width();
 		attr.stVeAttr.stAttrH264e.u32PicHeight = _resolution.height();
 		attr.stVeAttr.stAttrH264e.u32Profile = _h264profile;
