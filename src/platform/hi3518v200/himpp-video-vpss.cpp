@@ -360,14 +360,147 @@ VideoSource::Imaging::NoiseReduction& HimppVpssGroup::Imaging::noisereduction()
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// HimppViChan::Imaging::LDC
+//////////////////////////////////////////////////////////////////////////////
+HimppVpssChan::Imaging::LDC::LDC(Imaging& imaging)
+  : DefaultVideoSource::Imaging::LDC(dynamic_cast<DefaultVideoSource::Imaging&>(imaging)),
+    _ldc_mode(LDC_OFF), _ldc_ratio(0)
+{
+}
+
+HimppVpssChan::Imaging::LDC::~LDC()
+{
+}
+
+LDCMode HimppVpssChan::Imaging::LDC::getMode()
+{
+	return _ldc_mode;
+}
+
+void HimppVpssChan::Imaging::LDC::setMode(LDCMode value)
+{
+	HimppVpssChan& vpchan = dynamic_cast<HimppVpssChan&>(imaging().videoSource());
+	if (vpchan.is_enabled()) {
+		HI_S32 s32Ret;
+		VPSS_LDC_ATTR_S ldc_attr;
+		VPSS_GRP grpid = vpchan.groupId();
+		VPSS_CHN chnid = vpchan.channelId();
+		if ((s32Ret = HI_MPI_VPSS_GetLDCAttr(grpid, chnid, &ldc_attr)) != HI_SUCCESS)
+			throw IpcamError("failed to get LDC attr\n");
+
+		ldc_attr.bEnable = (value == LDC_ON) ? HI_TRUE : HI_FALSE;
+
+		if ((s32Ret = HI_MPI_VPSS_SetLDCAttr(grpid, chnid, &ldc_attr)) != HI_SUCCESS)
+			throw IpcamError("failed to set LDC attr\n");
+	}
+
+	_ldc_mode = value;
+}
+
+uint32_t HimppVpssChan::Imaging::LDC::getRatio()
+{
+	return _ldc_ratio;
+}
+
+void HimppVpssChan::Imaging::LDC::setRatio(uint32_t value)
+{
+	HimppVpssChan& vpchan = dynamic_cast<HimppVpssChan&>(imaging().videoSource());
+	if (vpchan.is_enabled()) {
+		HI_S32 s32Ret;
+		VPSS_LDC_ATTR_S ldc_attr;
+		VPSS_GRP grpid = vpchan.groupId();
+		VPSS_CHN chnid = vpchan.channelId();
+		if ((s32Ret = HI_MPI_VPSS_GetLDCAttr(grpid, chnid, &ldc_attr)) != HI_SUCCESS)
+			throw IpcamError("failed to get LDC attr\n");
+
+		ldc_attr.stAttr.s32Ratio = value;
+
+		if ((s32Ret = HI_MPI_VPSS_SetLDCAttr(grpid, chnid, &ldc_attr)) != HI_SUCCESS)
+			throw IpcamError("failed to set LDC attr\n");
+	}
+
+	_ldc_ratio = value;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppVpssChan::Imaging
+//////////////////////////////////////////////////////////////////////////////
+
+HimppVpssChan::Imaging::Imaging(HimppVpssChan& vpchan)
+: DefaultVideoSource::Imaging(dynamic_cast<HimppVpssChan&>(vpchan)),
+  _ldc(*this), _mirror(false), _flip(false)
+{
+}
+
+HimppVpssChan::Imaging::~Imaging()
+{
+}
+
+bool HimppVpssChan::Imaging::getMirror()
+{
+	return _mirror;
+}
+
+void HimppVpssChan::Imaging::setMirror(bool value)
+{
+	HimppVpssChan& vpchan = dynamic_cast<HimppVpssChan&>(videoSource());
+	if (vpchan.is_enabled()) {
+		HI_U32 s32Ret;
+		VPSS_CHN_ATTR_S attr;
+		VPSS_GRP grpid = vpchan.groupId();
+		VPSS_CHN chnid = vpchan.channelId();
+		s32Ret = HI_MPI_VPSS_GetChnAttr(grpid, chnid, &attr);
+		if (s32Ret != HI_SUCCESS) {
+			throw IpcamError("Failed to get property");
+		}
+		attr.bMirror = (HI_BOOL)value;
+		s32Ret = HI_MPI_VPSS_SetChnAttr(grpid, chnid, &attr);
+		if (s32Ret != HI_SUCCESS) {
+			throw IpcamError("Failed to set property");
+		}
+	}
+	_mirror = value;
+}
+
+bool HimppVpssChan::Imaging::getFlip()
+{
+	return _flip;
+}
+
+void HimppVpssChan::Imaging::setFlip(bool value)
+{
+	HimppVpssChan& vpchan = dynamic_cast<HimppVpssChan&>(videoSource());
+	if (vpchan.is_enabled()) {
+		HI_U32 s32Ret;
+		VPSS_CHN_ATTR_S attr;
+		VPSS_GRP grpid = vpchan.groupId();
+		VPSS_CHN chnid = vpchan.channelId();
+		s32Ret = HI_MPI_VPSS_GetChnAttr(grpid, chnid, &attr);
+		if (s32Ret != HI_SUCCESS) {
+			throw IpcamError("Failed to get property");
+		}
+		attr.bFlip = (HI_BOOL)value;
+		s32Ret = HI_MPI_VPSS_SetChnAttr(grpid, chnid, &attr);
+		if (s32Ret != HI_SUCCESS) {
+			throw IpcamError("Failed to set property");
+		}
+	}
+	_flip = value;
+}
+
+VideoSource::Imaging::LDC& HimppVpssChan::Imaging::ldc()
+{
+	return dynamic_cast<VideoSource::Imaging::LDC&>(_ldc);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // HimppVpssChan
 //////////////////////////////////////////////////////////////////////////////
 
 HimppVpssChan::HimppVpssChan(HimppVideoElement* source, VPSS_CHN chn)
-  : VideoElement(VIDEO_ELEMENT(source)),
-    HimppVideoElement(source),
+  : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _grpid(0), _chnid(chn), _resolution(0, 0), _framerate(0)
+    _imaging(*this), _grpid(0), _chnid(chn), _resolution(0, 0), _framerate(0)
 {
 	for (MediaElement* p = source; p; p = p->source()) {
 		HimppVpssGroup* group = HIMPP_VPSS_GROUP(p);
@@ -449,6 +582,11 @@ void HimppVpssChan::setResolution(Resolution value)
 	_resolution = value;
 }
 
+VideoSource::Imaging& HimppVpssChan::imaging()
+{
+	return dynamic_cast<VideoSource::Imaging&>(_imaging);
+}
+
 void HimppVpssChan::doEnableElement()
 {
 	Resolution idim = HIMPP_VIDEO_ELEMENT(source())->resolution();
@@ -462,8 +600,8 @@ void HimppVpssChan::doEnableElement()
 	case VPSS_CHN_TYPE_PHY:
 		chn_attr.bSpEn = HI_FALSE;
 		chn_attr.bBorderEn = HI_FALSE;
-		chn_attr.bMirror = HI_FALSE;
-		chn_attr.bFlip = HI_FALSE;
+		chn_attr.bMirror = (HI_BOOL)_imaging._mirror;
+		chn_attr.bFlip = (HI_BOOL)_imaging._flip;
 		if (_framerate > 0) {
 			chn_attr.s32SrcFrameRate = ifr;
 			chn_attr.s32DstFrameRate = _framerate;
@@ -491,6 +629,19 @@ void HimppVpssChan::doEnableElement()
 			HIMPP_PRINT("HI_MPI_VPSS_SetChnMode %d-%d failed %#x\n",
 			            _grpid, _chnid, s32Ret);
 			throw IpcamError("Failed to enable vpss channel");
+		}
+
+		VPSS_LDC_ATTR_S ldc_attr;
+		ldc_attr.bEnable = (_imaging._ldc._ldc_mode == LDC_ON) ?
+			HI_TRUE : HI_FALSE;
+		ldc_attr.stAttr.enViewType = LDC_VIEW_TYPE_ALL;
+		ldc_attr.stAttr.s32CenterXOffset = 0;
+		ldc_attr.stAttr.s32CenterYOffset = 0;
+		ldc_attr.stAttr.s32Ratio = _imaging._ldc._ldc_ratio;
+
+		if ((s32Ret = HI_MPI_VPSS_SetLDCAttr(_grpid, _chnid, &ldc_attr)) != HI_SUCCESS) {
+			HIMPP_PRINT("HI_MPI_VPSS_SetLDCAttr %d failed [%#x]\n",
+			            _chnid, s32Ret);
 		}
 		break;
 	case VPSS_CHN_TYPE_EXT:

@@ -98,6 +98,40 @@ private:
 class HimppVpssChan : public HimppVideoElement, public DefaultVideoSource 
 {
 public:
+	class Imaging : public DefaultVideoSource::Imaging
+	{
+	public:
+		class LDC : public DefaultVideoSource::Imaging::LDC
+		{
+		public:
+			LDC(Imaging& imaging);
+			~LDC();
+
+			// implementation of VideoSource::Imaging::LDC
+			LDCMode		getMode();
+			void		setMode(LDCMode value);
+			uint32_t	getRatio();
+			void		setRatio(uint32_t value);
+		public:
+			LDCMode		_ldc_mode;
+			uint32_t	_ldc_ratio;
+		};
+	public:
+		Imaging(HimppVpssChan& vpchan);
+		~Imaging();
+
+		// implementation of VideoSource::Imaging
+		bool		getMirror();
+		void		setMirror(bool value);
+		bool		getFlip();
+		void		setFlip(bool value);
+		VideoSource::Imaging::LDC& ldc();
+	public:
+		LDC			_ldc;
+		bool		_mirror;
+		bool		_flip;
+	};
+public:
 	HimppVpssChan(HimppVideoElement* source, VPSS_CHN chnid);
 	~HimppVpssChan();
 
@@ -107,6 +141,7 @@ public:
 	virtual uint32_t	framerate();
 
 	// implementation of Ipcam::Media::VideoSource
+	VideoSource::Imaging& imaging();
 	uint32_t		getFrameRate();
 	void			setFrameRate(uint32_t value);
 	Resolution		getResolution();
@@ -125,6 +160,7 @@ private:
 		VPSS_CHN_TYPE_BYPASS,
 		VPSS_CHN_TYPE_EXT
 	};
+	Imaging				_imaging;
 	VPSS_GRP			_grpid;
 	VPSS_CHN			_chnid;
 	VPSS_CHN_TYPE		_type;
