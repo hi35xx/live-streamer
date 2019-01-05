@@ -195,6 +195,9 @@ Resolution HimppViDev::resolution()
 
 uint32_t HimppViDev::framerate()
 {
+	if (_framerate > 0)
+		return _framerate;
+
 	return HIMPP_VIDEO_ELEMENT(source())->framerate();
 }
 
@@ -205,14 +208,8 @@ uint32_t HimppViDev::getFrameRate()
 
 void HimppViDev::setFrameRate(uint32_t value)
 {
-	uint32_t ifr = HIMPP_VIDEO_ELEMENT(source())->framerate();
-	if (value > ifr)
-		throw IpcamError("FrameRate larger than input");
-
-	if (is_enabled()) {
-		// TODO: implementation
-	}
-	_framerate = value;
+	VideoSource* vsrc = VIDEO_SOURCE(source());
+	if (vsrc) vsrc->setFrameRate(value);
 }
 
 Resolution HimppViDev::getResolution()
@@ -225,6 +222,9 @@ void HimppViDev::setResolution(Resolution value)
 	Resolution inres = HIMPP_VIDEO_ELEMENT(source())->resolution();
 	if (value.width() > inres.width() || value.height() > inres.height())
 		throw IpcamError("Resolution larger than input");
+
+	VideoSource* vsrc = VIDEO_SOURCE(source());
+	if (vsrc) vsrc->setResolution(value);
 
 	if (is_enabled()) {
 		// TODO: implementation

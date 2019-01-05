@@ -203,8 +203,10 @@ public:
 	~HimppVideoISP();
 
 	// implementation of VideoSource
-	Resolution				getResolution();
 	uint32_t				getFrameRate();
+	void					setFrameRate(uint32_t value);
+	Resolution				getResolution();
+	void					setResolution(Resolution value);
 	VideoSource::Imaging&   imaging();
 
 	hiVI_DEV_ATTR_S*		videoInputConfig();
@@ -221,6 +223,8 @@ private:
 	HimppSensorModule   _sensor_module;
 	ISP_DEV				_isp_dev;
 	pthread_t			_isp_thread;
+	Resolution			_resolution;
+	uint32_t			_framerate;
 
 	bool initializeMipi();
 	bool loadSensorModule();

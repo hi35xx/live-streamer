@@ -45,11 +45,13 @@
 HimppVideoISP::HimppVideoISP(HimppVideoElement* source, std::string sensor)
   : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _imaging(*this),
-    _video_sensor(&himpp_video_sensor_map.at(sensor)),
-    _isp_dev(0), _isp_thread(-1)
+    _imaging(*this), _video_sensor(&himpp_video_sensor_map.at(sensor)),
+    _isp_dev(0), _isp_thread(-1), _resolution(0, 0), _framerate(-1)
 {
 	memset(&_sensor_module, 0, sizeof(_sensor_module));
+	ISP_PUB_ATTR_S &attr = *(ISP_PUB_ATTR_S*)*_video_sensor;
+	_resolution = Resolution(attr.stWndRect.u32Width, attr.stWndRect.u32Height);
+	_framerate = attr.f32FrameRate;
 }
 
 HimppVideoISP::~HimppVideoISP()
@@ -58,14 +60,28 @@ HimppVideoISP::~HimppVideoISP()
 
 Resolution HimppVideoISP::getResolution()
 {
-	ISP_PUB_ATTR_S *pstPubAttr = *_video_sensor;
-	return Resolution(pstPubAttr->stWndRect.u32Width, pstPubAttr->stWndRect.u32Height);
+	return _resolution;
+}
+
+void HimppVideoISP::setResolution(Resolution value)
+{
+	ISP_PUB_ATTR_S &attr = *(ISP_PUB_ATTR_S*)*_video_sensor;
+	if (value.width() > attr.stWndRect.u32Width || value.height() > attr.stWndRect.u32Height)
+		throw IpcamError("Resolution larger than input");
+	_resolution = value;
 }
 
 uint32_t HimppVideoISP::getFrameRate()
 {
-	ISP_PUB_ATTR_S *pstPubAttr = *_video_sensor;
-	return (uint32_t)pstPubAttr->f32FrameRate;
+	return _framerate;
+}
+
+void HimppVideoISP::setFrameRate(uint32_t value)
+{
+	ISP_PUB_ATTR_S &attr = *(ISP_PUB_ATTR_S*)*_video_sensor;
+	if (value > attr.f32FrameRate)
+		throw IpcamError("FrameRate larger than input");
+	_framerate = value;
 }
 
 VideoSource::Imaging& HimppVideoISP::imaging()
@@ -231,7 +247,12 @@ void HimppVideoISP::doEnableElement()
 	if ((s32Ret = HI_MPI_ISP_SetWDRMode(_isp_dev, &stWdrMode)) != HI_SUCCESS)
 		goto err_unreg_alg;
 
-	if (HI_MPI_ISP_SetPubAttr(_isp_dev, pstPubAttr) != HI_SUCCESS)
+	ISP_PUB_ATTR_S pubattr;
+	memcpy(&pubattr, pstPubAttr, sizeof(pubattr));
+	pubattr.stWndRect.u32Width = _resolution.width();
+	pubattr.stWndRect.u32Height = _resolution.height();
+	pubattr.f32FrameRate = _framerate;
+	if (HI_MPI_ISP_SetPubAttr(_isp_dev, &pubattr) != HI_SUCCESS)
 		goto err_unreg_alg;
 
 	if ((s32Ret = HI_MPI_ISP_Init(_isp_dev)) != HI_SUCCESS)
