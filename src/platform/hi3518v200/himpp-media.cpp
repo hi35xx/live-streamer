@@ -195,7 +195,20 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 				std::cout << name << ": " << "sensor must be specified" << std::endl;
 				break;
 			}
-			add_element(last_element, name, HimppVideoISP(HIMPP_VIDEO_ELEMENT(last_element), sensor_it->second));
+			if (add_element(last_element, name, HimppVideoISP(HIMPP_VIDEO_ELEMENT(last_element), sensor_it->second))) {
+				std::unordered_map<std::string, std::string>::iterator pit;
+				if ((pit = params.find("realtime")) != params.end() ||
+				    (pit = params.find("rt")) != params.end()) {
+					HIMPP_VIDEO_ISP(last_element)->rtsched() = true;
+				}
+				if ((pit = params.find("stack")) != params.end()) {
+					char *endptr;
+					uint32_t stacksize = strtoul(pit->second.c_str(), &endptr, 0);
+					if (toupper(*endptr) == 'K') stacksize *= 1024;
+					if (toupper(*endptr) == 'M') stacksize *= 1024 * 1024;
+					HIMPP_VIDEO_ISP(last_element)->stacksize() = stacksize;
+				}
+			}
 		}
 		else if (name.compare(0, 5, "videv") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;

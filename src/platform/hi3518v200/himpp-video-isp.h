@@ -191,23 +191,26 @@ public:
 		VideoSource::Imaging::Gamma&			gamma();
 
 	private:
-		AntiFlicker			_antiflicker;
-		Exposure			_exposure;
-		WhiteBalance		_whitebalance;
-		WideDynamicRange	_widedynamicrange;
-		Gamma				_gamma;
+		AntiFlicker				_antiflicker;
+		Exposure				_exposure;
+		WhiteBalance			_whitebalance;
+		WideDynamicRange		_widedynamicrange;
+		Gamma					_gamma;
 	};
 
 public:
 	HimppVideoISP(HimppVideoElement* source, std::string sensor);
 	~HimppVideoISP();
 
+	bool&					rtsched() { return _isp_rtsched; }
+	uint32_t&				stacksize() { return _isp_stacksize; }
+
 	// implementation of VideoSource
 	uint32_t				getFrameRate();
 	void					setFrameRate(uint32_t value);
 	Resolution				getResolution();
 	void					setResolution(Resolution value);
-	VideoSource::Imaging&   imaging();
+	VideoSource::Imaging&	imaging();
 
 	hiVI_DEV_ATTR_S*		videoInputConfig();
 
@@ -218,13 +221,15 @@ protected:
 	void doDisableElement();
 
 private:
-	Imaging				_imaging;
-	HimppVideoSensor*   _video_sensor;
-	HimppSensorModule   _sensor_module;
-	ISP_DEV				_isp_dev;
-	pthread_t			_isp_thread;
-	Resolution			_resolution;
-	uint32_t			_framerate;
+	Imaging					_imaging;
+	HimppVideoSensor*		_video_sensor;
+	HimppSensorModule		_sensor_module;
+	ISP_DEV					_isp_dev;
+	pthread_t				_isp_thread;
+	bool					_isp_rtsched;
+	uint32_t				_isp_stacksize;
+	Resolution				_resolution;
+	uint32_t				_framerate;
 
 	bool initializeMipi();
 	bool loadSensorModule();

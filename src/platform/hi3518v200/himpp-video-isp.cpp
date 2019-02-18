@@ -46,7 +46,8 @@ HimppVideoISP::HimppVideoISP(HimppVideoElement* source, std::string sensor)
   : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _imaging(*this), _video_sensor(&himpp_video_sensor_map.at(sensor)),
-    _isp_dev(0), _isp_thread(-1), _resolution(0, 0), _framerate(-1)
+    _isp_dev(0), _isp_thread(-1), _isp_rtsched(false), _isp_stacksize(0),
+    _resolution(0, 0), _framerate(-1)
 {
 	memset(&_sensor_module, 0, sizeof(_sensor_module));
 	ISP_PUB_ATTR_S &attr = *(ISP_PUB_ATTR_S*)*_video_sensor;
@@ -258,7 +259,11 @@ void HimppVideoISP::doEnableElement()
 	if ((s32Ret = HI_MPI_ISP_Init(_isp_dev)) != HI_SUCCESS)
 		goto err_unreg_alg;
 
-	if (pthread_create(&_isp_thread, 0, isp_thread_routine, NULL))
+	pthread_attr_t pth_attr;
+	pthread_attr_init(&pth_attr);
+	if (_isp_rtsched) pthread_attr_setschedpolicy(&pth_attr, SCHED_RR);
+	if (_isp_stacksize > 0) pthread_attr_setstacksize(&pth_attr, _isp_stacksize);
+	if (pthread_create(&_isp_thread, &pth_attr, isp_thread_routine, NULL))
 		goto err_exit_isp;
 
 	// initialize Exposure
