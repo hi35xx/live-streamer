@@ -221,8 +221,6 @@ FramedSource* LiveH264VideoServerMediaSubsession
 {
 	estBitrate = fVideoStreamSource->bitrate(); // kbps, estimate
 
-	OutPacketBuffer::maxSize = 400000;
-
 	// Create the video source:
 	LiveH264StreamSource *source = LiveH264StreamSource::createNew(envir(), fVideoStreamSource);
 	return H264VideoStreamDiscreteFramer::createNew(envir(), source);
@@ -407,8 +405,6 @@ FramedSource* LiveJPEGVideoServerMediaSubsession
 {
 	estBitrate = fVideoStreamSource->bitrate(); // kbps, estimate
 
-	OutPacketBuffer::maxSize = 400000;
-
 	return LiveJPEGStreamSource::createNew(envir(), fVideoStreamSource);
 }
 
@@ -579,10 +575,13 @@ FramedSource* LiveAudioServerMediaSubsession
 {
 	estBitrate = fAudioStreamSource->bitrate(); // kbps, estimate
 
-	OutPacketBuffer::maxSize = 64 * 1024;
-
+	unsigned packetMaxSize = OutPacketBuffer::maxSize;
+	OutPacketBuffer::maxSize = 4 * 1024;
 	// Create the audio source:
-	return LiveAudioStreamSource::createNew(envir(), fAudioStreamSource);
+	FramedSource* source = LiveAudioStreamSource::createNew(envir(), fAudioStreamSource);
+	OutPacketBuffer::maxSize = packetMaxSize;
+
+	return source;
 }
 
 RTPSink* LiveAudioServerMediaSubsession

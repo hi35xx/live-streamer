@@ -55,6 +55,7 @@ ev::default_loop mainloop;
 static const char *IPCAM_SERVER_NAME = "ipcam.Media";
 
 static std::string config_file;
+static unsigned output_packet_buffer_size = 400000;
 static int rtsp_port = 554;
 static DBusBusType bus_type = DBUS_BUS_SYSTEM;
 
@@ -65,6 +66,7 @@ static void display_usage(char *cmd)
 		"Common Options:\n"
 		"  -h, --help                  Show help options\n"
 		"  -B, --background            Run daemon in the background\n"
+		"  -b, --buffer=SIZE           Output packet buffer size\n"
 		"  -S, --syslog                Log output to syslog instead of stdout\n"
 		"      --system                Use system message bus\n"
 		"      --session               Use session message bus\n"
@@ -97,6 +99,7 @@ static void display_usage(char *cmd)
 static const char *optstr = "Bh?c:p:S";
 static const struct option longopts[] = {
 	{ "help",        no_argument,        NULL,   'h' },
+	{ "buffer",      required_argument,  NULL,   'b' },
 	{ "background",  required_argument,  NULL,   'B' },
 	{ "version",     no_argument,        NULL,    0  },
 	{ "configure",   required_argument,  NULL,   'c' },
@@ -156,6 +159,8 @@ int main(int argc, char *argv[])
 			if (fork() != 0)
 				return 0;
 			break;
+		case 'b':
+			output_packet_buffer_size = strtoul(optarg, NULL, 0);
 		case 'p':
 			rtsp_port = strtoul(optarg, NULL, 0);
 			break;
@@ -223,6 +228,9 @@ int main(int argc, char *argv[])
 	authDB = new UserAuthenticationDatabase;
 	authDB->addUserRecord("username1", "password1");
 #endif
+
+	// allow for some possibly large H.264 frames
+	OutPacketBuffer::maxSize = output_packet_buffer_size;
 
 	// Create the RTSP server
 	DynamicRTSPServer *rtspServer;
