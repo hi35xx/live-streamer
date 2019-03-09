@@ -57,46 +57,22 @@ void StreamSource::streamData(StreamBuffer* buffer)
 // StreamSink
 //////////////////////////////////////////////////////////////////////////////
 
-StreamSink::StreamSink(StreamSource* source)
-  : _source(source), _stream_stopped(true), _stream_paused(true)
-{
-}
-
-StreamSink::~StreamSink()
-{
-}
-
 void StreamSink::play()
 {
-	if (_stream_stopped) {
-		source()->play();
-		_stream_stopped = false;
-	}
 }
 
 void StreamSink::stop()
 {
-	if (!_stream_stopped) {
-		source()->stop();
-		_stream_stopped = true;
-	}
 }
 
 void StreamSink::pause()
 {
-	if (!_stream_paused) {
-		source()->pause();
-		_stream_paused = true;
-	}
 }
 
 void StreamSink::resume()
 {
-	if (_stream_paused) {
-		source()->resume();
-		_stream_paused = false;
-	}
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // VideoStreamSource

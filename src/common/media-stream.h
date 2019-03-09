@@ -48,6 +48,7 @@ class StreamSink;
 #define AUDIO_STREAM_SOURCE(o)		dynamic_cast<Ipcam::Media::AudioStreamSource*>(o)
 
 #define STREAM_SINK(o)				dynamic_cast<Ipcam::Media::StreamSink*>(o)
+#define AUDIO_STREAM_SINK(o)		dynamic_cast<Ipcam::Media::AudioStreamSink*>(o)
 
 struct StreamBuffer
 {
@@ -78,6 +79,7 @@ public:
 
 	virtual void attach(StreamSink* sink);
 	virtual void detach(StreamSink* sink);
+
 	virtual void play() = 0;
 	virtual void stop() = 0;
 	virtual void pause() = 0;
@@ -94,24 +96,11 @@ private:
 class StreamSink
 {
 public:
-	StreamSink(StreamSource* source);
-	virtual ~StreamSink();
-
-	void play();
-	void stop();
-	void pause();
-	void resume();
-
 	virtual void streamData(StreamBuffer* buffer) = 0;
-
-	StreamSource* source() { return _source; }
-	bool streamStopped() { return _stream_stopped; }
-	bool streamPaused() { return _stream_paused; }
-
-private:
-	StreamSource* _source;
-	bool _stream_stopped;
-	bool _stream_paused;
+	virtual void play();
+	virtual void stop();
+	virtual void pause();
+	virtual void resume();
 };
 
 class VideoStreamSource : public StreamSource
@@ -144,6 +133,15 @@ class AudioStreamSource : public StreamSource
 public:
 	virtual ~AudioStreamSource();
 
+	virtual AudioEncodingType encoding() = 0;
+	virtual uint32_t bitrate() = 0;
+	virtual uint32_t channels() = 0;
+	virtual uint32_t samplerate() = 0;
+};
+
+class AudioStreamSink : public StreamSink
+{
+public:
 	virtual AudioEncodingType encoding() = 0;
 	virtual uint32_t bitrate() = 0;
 	virtual uint32_t channels() = 0;

@@ -20,4 +20,6 @@ librtsp_server_la_SOURCES =  \
 	DynamicRTSPServer.cpp \
 	DynamicRTSPServer.hh \
 	LiveStreamInput.cpp \
-	LiveStreamInput.hh
+	LiveStreamInput.hh \
+	LiveStreamOutput.cpp \
+	LiveStreamOutput.hh

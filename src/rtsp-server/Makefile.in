@@ -104,7 +104,7 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 librtsp_server_la_LIBADD =
 am_librtsp_server_la_OBJECTS = EvUsageEnvironment.lo \
-	DynamicRTSPServer.lo LiveStreamInput.lo
+	DynamicRTSPServer.lo LiveStreamInput.lo LiveStreamOutput.lo
 librtsp_server_la_OBJECTS = $(am_librtsp_server_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -354,7 +354,9 @@ librtsp_server_la_SOURCES = \
 	DynamicRTSPServer.cpp \
 	DynamicRTSPServer.hh \
 	LiveStreamInput.cpp \
-	LiveStreamInput.hh
+	LiveStreamInput.hh \
+	LiveStreamOutput.cpp \
+	LiveStreamOutput.hh
 
 all: all-am
 
@@ -413,6 +415,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicRTSPServer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EvUsageEnvironment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LiveStreamInput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LiveStreamOutput.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

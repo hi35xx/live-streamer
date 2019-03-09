@@ -46,11 +46,11 @@ static std::vector<std::string> split(const std::string& s, char delim)
 	return result;
 }
 
-HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
-  : _runtime(runtime),
-    _sysctl(HIMPP_SYS_ALIGN_WIDTH)
+HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& pargs)
+: _runtime(runtime),
+  _sysctl(HIMPP_SYS_ALIGN_WIDTH)
 {
-	for (auto arg : args) {
+	for (auto arg : pargs) {
 		if (arg.first == "pipe") {
 			MediaElement* elem = buildElementPipe(arg.second);
 			if (!elem) {
@@ -127,6 +127,47 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
 					_runtime->addRTSPStream(sname, video, audio);
 			}
 		}
+		else if (arg.first == "aout") {
+			std::size_t colon_pos = arg.second.find(':');
+			std::string name = arg.second.substr(0, colon_pos);
+			MediaElementMap::iterator it = _elements.find(name);
+			do {
+				if (it == _elements.end()) {
+					fprintf(stderr, "MediaElement %s not found\n", name.c_str());
+					break;
+				}
+				AudioStreamSink* sink = AUDIO_STREAM_SINK(it->second.get());
+				if (sink == NULL) {
+					fprintf(stderr, "%s is not a AudioStreamSink\n", name.c_str());
+					break;
+				}
+				_audiosinks.push_back(sink);
+
+				in_addr addr = { .s_addr = inet_addr("239.255.42.42") };
+				u_int16_t portNum = 6666;
+				if (colon_pos != std::string::npos) {
+					std::string pdesc = arg.second.substr(colon_pos + 1);
+					std::vector<std::string> vp = split(pdesc, ',');
+					std::unordered_map<std::string, std::string> params;
+					for (auto str : vp) {
+						std::size_t dpos = str.find('=');
+						std::string k = str.substr(0, dpos);
+						std::string v = (dpos == std::string::npos) ? \
+							std::string() : str.substr(dpos + 1);
+						params.emplace(k, v);
+					}
+					std::unordered_map<std::string, std::string>::iterator pit;
+					if ((pit = params.find("addr")) != params.end()) {
+						addr.s_addr = std::stoi(pit->second);
+					}
+					if ((pit = params.find("port")) != params.end()) {
+						portNum = std::stoi(pit->second);
+					}
+				}
+
+				runtime->addAudioOutputStream(addr, portNum, sink);
+			} while (0);
+		}
 	}
 
 	_sysctl.addVideoBuffer(196 * 4, 2);
@@ -139,10 +180,19 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& args)
 			e->enable();
 		}
 	}
+
+	// start audio output sinks
+	for (auto sink : _audiosinks) {
+		sink->play();
+	}
 }
 
 HimppMedia::~HimppMedia()
 {
+	// stop audio output sinks
+	for (auto sink : _audiosinks) {
+		sink->stop();
+	}
 	// disable elements with MEFLAGS_INITIAL_ENABLED flag
 	for (auto &eit : _elements) {
 		MediaElement* e = eit.second.get();
@@ -181,18 +231,16 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			std::vector<std::string> vp = split(pdesc, ',');
 			for (auto it = vp.begin(); it != vp.end(); it++) {
 				std::size_t dpos = it->find('=');
-				if (dpos == std::string::npos) {
-					params.emplace(*it, std::string());
-				} else {
-					params.emplace(it->substr(0, dpos), it->substr(dpos + 1));
-				}
+				std::string k = it->substr(0, dpos);
+				std::string v = (dpos != std::string::npos) ? it->substr(dpos + 1) : std::string();
+				params.emplace(k, v);
 			}
 		}
 
 		if (name.compare(0, 3, "isp") == 0) {
 			auto sensor_it = params.find("sensor");
 			if (sensor_it == params.end()) {
-				std::cout << name << ": " << "sensor must be specified" << std::endl;
+				fprintf(stderr, "%s: sensor must be specified\n", name.c_str());
 				break;
 			}
 			if (add_element(last_element, name, HimppVideoISP(HIMPP_VIDEO_ELEMENT(last_element), sensor_it->second))) {
@@ -383,10 +431,20 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			add_element(last_element, name, HimppIrCut(HIMPP_VIDEO_ELEMENT(last_element), params));
 		}
 		else if (name.compare(0, 6, "acodec") == 0) {
-			add_element(last_element, name, HimppAudioCodec());
+			std::unordered_map<std::string, std::string>::iterator pit;
+			if (add_element(last_element, name, HimppAudioCodec())) {
+				HimppAudioCodec *acodec = HIMPP_AUDIO_CODEC(last_element);
+				if ((pit = params.find("invol")) != params.end()) {
+					acodec->setInputVol(std::stoi(pit->second));
+				}
+				if ((pit = params.find("outvol")) != params.end()) {
+					acodec->setOutputVol(std::stoi(pit->second));
+				}
+			}
 		}
 		else if (name.compare(0, 5, "aidev") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
+			if (name.size() < 6) break;
 			uint32_t index = std::stoul(name.substr(5));
 			add_element(last_element, name, HimppAiDev(HIMPP_AUDIO_ELEMENT(last_element), index));
 		}
@@ -398,6 +456,7 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 		}
 		else if (name.compare(0, 5, "aechn") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
+			if (name.size() < 6) break;
 			uint32_t index = std::stoul(name.substr(5));
 			AudioEncodingType encoding = G711A;
 			std::unordered_map<std::string, std::string>::iterator pit;
@@ -422,6 +481,46 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 				std::cout << name << ": " << "encoding not specified, using default(G711A)" << std::endl;
 			}
 			add_element(last_element, name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
+		}
+		else if (name.compare(0, 5, "aodev") == 0) {
+			if (!last_element && (_elements.find(name) == _elements.end())) break;
+			if (name.size() < 6) break;
+			uint32_t index = std::stoul(name.substr(5));
+			add_element(last_element, name, HimppAoDev(HIMPP_AUDIO_ELEMENT(last_element), index));
+		}
+		else if (name.compare(0, 5, "aochn") == 0) {
+			if (!last_element && (_elements.find(name) == _elements.end())) break;
+			if (name.size() < 8) break;
+			uint32_t index = std::stoul(name.substr(7));
+			add_element(last_element, name, HimppAoChan(HIMPP_AUDIO_ELEMENT(last_element), index));
+		}
+		else if (name.compare(0, 5, "adchn") == 0) {
+			if (!last_element && (_elements.find(name) == _elements.end())) break;
+			if (name.size() < 6) break;
+			uint32_t index = std::stoul(name.substr(5));
+			AudioEncodingType encoding = G711A;
+			std::unordered_map<std::string, std::string>::iterator pit;
+
+			pit = params.find("encoding");
+			if (pit != params.end()) {
+				if (pit->second == "ADPCM") {
+					encoding = ADPCM;
+				} else if (pit->second == "LPCM") {
+					encoding = LPCM;
+				} else if (pit->second == "G711A") {
+					encoding = G711A;
+				} else if (pit->second == "G711U") {
+					encoding = G711U;
+				} else if (pit->second == "G726") {
+					encoding = G726;
+				} else {
+					std::cerr << name << ": " << "invalid encoding \"" << pit->second << "\"." << std::endl;
+					break;
+				}
+			} else {
+				std::cout << name << ": " << "encoding not specified, using default(G711A)" << std::endl;
+			}
+			add_element(last_element, name, HimppAdecChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
 		}
 
 		std::unordered_map<std::string, std::string>::iterator pit;

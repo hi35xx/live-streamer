@@ -26,7 +26,7 @@
 #include <ServerMediaSession.hh>
 #include <FramedFilter.hh>
 #include <LiveStreamInput.hh>
-#include <LiveStreamInput.hh>
+#include <LiveStreamOutput.hh>
 
 #include <dbus-c++/dbus.h>
 #include <ipcam-runtime.h>
@@ -163,6 +163,13 @@ void IpcamRuntime::addVideoEncoder(VideoEncoder* video_encoder)
 		_video_encoder_list.emplace_back(new DBus::VideoEncoder(*this, obj_path, video_encoder));
 		break;
 	}
+}
+
+void IpcamRuntime::addAudioOutputStream(in_addr addr, uint16_t portNum, AudioStreamSink* streamSink)
+{
+	UsageEnvironment &envir = _rtsp_server->envir();
+
+	_aout_stream_list.emplace_back(new AudioOutputStream(envir, *streamSink, addr, portNum));
 }
 
 #ifdef HAVE_JSONCPP_SUPPORT

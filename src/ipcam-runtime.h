@@ -22,6 +22,8 @@
 
 #include <list>
 #include <ev++.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <media-stream.h>
 #include <video-source.h>
 #include <video-encoder.h>
@@ -38,6 +40,7 @@ class RTSPServer;
 
 class ServerMediaSession;
 class ServerMediaSubsession;
+class AudioOutputStream;
 
 namespace DBus
 {
@@ -62,6 +65,8 @@ public:
 	void addAudioEncoder(AudioEncoder* audio_encoder);
 	void addVideoSource(VideoSource* video_source);
 	void addVideoEncoder(VideoEncoder* video_encoder);
+
+	void addAudioOutputStream(in_addr addr, uint16_t portNum, AudioStreamSink* sink);
 
 	ev::default_loop &mainloop() { return _loop; }
 	DBus::Connection &dbus_conn() { return *_dbus_connection; }
@@ -88,12 +93,14 @@ private:
 	typedef std::list<std::unique_ptr<DBus::AudioEncoder>>	IpcamAudioEncoderList;
 	typedef std::list<std::unique_ptr<DBus::VideoSource>>	IpcamVideoSourceList;
 	typedef std::list<std::unique_ptr<DBus::VideoEncoder>>	IpcamVideoEncoderList;
+	typedef std::list<std::unique_ptr<AudioOutputStream>>  IpcamAudioOutStreamList;
 
 	IpcamStreamList			_stream_list;
 	IpcamAudioSourceList	_audio_source_list;
 	IpcamAudioEncoderList   _audio_encoder_list;
 	IpcamVideoSourceList	_video_source_list;
 	IpcamVideoEncoderList   _video_encoder_list;
+	IpcamAudioOutStreamList _aout_stream_list;
 };
 
 #endif // _IPCAM_RUNTIME_H_

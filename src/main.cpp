@@ -116,6 +116,7 @@ static const struct option longopts[] = {
 	{ "asrc",        required_argument,  NULL,    0  },
 	{ "aenc",        required_argument,  NULL,    0  },
 	{ "stream",      required_argument,  NULL,    0  },
+	{ "aout",        required_argument,  NULL,    0  },
 #endif
 	{ NULL,          no_argument,        NULL,    0  }
 };

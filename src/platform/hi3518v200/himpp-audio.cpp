@@ -25,6 +25,8 @@
 #include <mpi_sys.h>
 #include <mpi_ai.h>
 #include <mpi_aenc.h>
+#include <mpi_ao.h>
+#include <mpi_adec.h>
 #include <acodec.h>
 
 #include <himpp-common.h>
@@ -46,7 +48,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 HimppAudioCodec::HimppAudioCodec(AUDIO_SAMPLE_RATE_E sample_rate)
-  : AudioElement(NULL), HimppAudioElement(NULL), _sample_rate(sample_rate)
+: AudioElement(NULL), HimppAudioElement(NULL), _sample_rate(sample_rate),
+  _input_vol(56), _output_vol(0)
 {
 }
 
@@ -62,6 +65,26 @@ uint32_t HimppAudioCodec::getChannels()
 uint32_t HimppAudioCodec::getSampleRate()
 {
 	return _sample_rate;
+}
+
+int32_t HimppAudioCodec::getInputVol()
+{
+	return _input_vol;
+}
+
+void HimppAudioCodec::setInputVol(int32_t value)
+{
+	_input_vol = value;
+}
+
+int32_t HimppAudioCodec::getOutputVol()
+{
+	return _output_vol;
+}
+
+void HimppAudioCodec::setOutputVol(int32_t value)
+{
+	_output_vol = value;
 }
 
 bool HimppAudioCodec::setSampleRate(uint32_t sample_rate)
@@ -176,9 +199,14 @@ void HimppAudioCodec::doEnableElement()
 	}
 #endif
 
-	int input_vol = 50;
+	int input_vol = _input_vol;
 	if (ioctl(fd, ACODEC_SET_INPUT_VOL, &input_vol)) {
 		fprintf(stderr, "set acodec micin volume failed\n");
+	}
+
+	int output_vol = _output_vol;
+	if (ioctl(fd, ACODEC_SET_OUTPUT_VOL, &output_vol)) {
+		fprintf(stderr, "set acodec output volume failed\n");
 	}
 
 	close (fd);
@@ -544,4 +572,306 @@ void HimppAencChan::doDisableElement()
 	if (s32Ret != HI_SUCCESS) {
 		fprintf(stderr, "failed to destroy AENC chn%d\n", _chnid);
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppAoDev
+//////////////////////////////////////////////////////////////////////////////
+
+HimppAoDev::HimppAoDev(HimppAudioElement* source, AUDIO_DEV devid)
+: AudioElement(AUDIO_ELEMENT(source)),
+  HimppAudioElement(source),
+  _devid(devid)
+{
+}
+
+HimppAoDev::~HimppAoDev()
+{
+}
+
+void HimppAoDev::doEnableElement()
+{
+	HI_S32 s32Ret;
+	AIO_ATTR_S  aio_attr;
+
+	aio_attr.enSamplerate = (AUDIO_SAMPLE_RATE_E)samplerate();
+	aio_attr.enBitwidth = AUDIO_BIT_WIDTH_16;
+	aio_attr.enWorkmode = AIO_MODE_I2S_MASTER;
+	aio_attr.enSoundmode = AUDIO_SOUND_MODE_MONO;
+	aio_attr.u32EXFlag = 0;
+	aio_attr.u32FrmNum = 30;
+	aio_attr.u32PtNumPerFrm = AUDIO_PTNUMPERFRM;
+	aio_attr.u32ChnCnt = 1;
+	aio_attr.u32ClkSel = 0;
+	s32Ret = HI_MPI_AO_SetPubAttr(_devid, &aio_attr);
+	if (s32Ret) {
+		fprintf(stderr, "failed to set AO dev%d attr [%#x]\n", _devid, s32Ret);
+		throw IpcamError("Failed to set aodev attr");
+	}
+
+	s32Ret = HI_MPI_AO_Enable(_devid);
+	if (s32Ret) {
+		fprintf(stderr, "failed to enable AO dev%d [%#x]\n", _devid, s32Ret);
+		throw IpcamError("Failed to enable aodev");
+	}
+}
+
+void HimppAoDev::doDisableElement()
+{
+	HI_S32 s32Ret;
+
+	if ((s32Ret = HI_MPI_AO_Disable(_devid)) != HI_SUCCESS) {
+		fprintf(stderr, "failed to disable AO dev%d\n", _devid);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppAoChan
+//////////////////////////////////////////////////////////////////////////////
+
+HimppAoChan::HimppAoChan(HimppAudioElement* source, AO_CHN chnid)
+  : AudioElement(AUDIO_ELEMENT(source)),
+    HimppAudioElement(source), _chnid(chnid)
+{
+	HimppAoDev* aidev = HIMPP_AO_DEV(source);
+	_mpp_chn.enModId = HI_ID_AO;
+	_mpp_chn.s32DevId = aidev->deviceId();
+	_mpp_chn.s32ChnId = chnid;
+}
+
+HimppAoChan::~HimppAoChan()
+{
+}
+
+MPP_CHN_S* HimppAoChan::bindSource()
+{
+	return &_mpp_chn;
+}
+
+void HimppAoChan::doEnableElement()
+{
+	HI_S32 s32Ret;
+
+	s32Ret = HI_MPI_AO_EnableChn(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "failed to enable AO chn%d-%d\n", _mpp_chn.s32DevId, _chnid);
+		throw IpcamError("Failed to enable aochn");
+	}
+
+#if 0
+	s32Ret = HI_MPI_AO_EnableReSmp(_mpp_chn.s32DevId, _chnid, AUDIO_SAMPLE_RATE_8000);
+	if (s32Ret) {
+		fprintf(stderr, "HI_MPI_AI=O_EnableReSmp(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+#endif
+
+#if 0
+	AI_TALKVQE_CONFIG_S attr;
+	memset(&attr, 0, sizeof(attr));
+	attr.u32OpenMask = \
+		AI_TALKVQE_MASK_HPF | AI_TALKVQE_MASK_AEC | \
+		AI_TALKVQE_MASK_AGC | /*AI_TALKVQE_MASK_HDR |*/ \
+		AI_TALKVQE_MASK_AGC | AI_TALKVQE_MASK_EQ | \
+		AI_TALKVQE_MASK_ANR;
+	attr.s32WorkSampleRate    = samplerate();
+	attr.s32FrameSample       = AUDIO_PTNUMPERFRM;
+	attr.enWorkstate          = VQE_WORKSTATE_COMMON;
+	attr.stAgcCfg.bUsrMode    = HI_FALSE;
+	attr.stAnrCfg.bUsrMode    = HI_FALSE;
+	attr.stHpfCfg.bUsrMode    = HI_FALSE;
+	s32Ret = HI_MPI_AI_SetTalkVqeAttr(_mpp_chn.s32DevId, _chnid, 0, 0, &attr);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AI_SetVqeAttr(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+
+	s32Ret = HI_MPI_AO_EnableVqe(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AI_EnableVqe(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+#endif
+}
+
+void HimppAoChan::doDisableElement()
+{
+	HI_S32 s32Ret;
+
+	s32Ret = HI_MPI_AO_DisableVqe(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AO_DisableVqe(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+
+	s32Ret = HI_MPI_AO_DisableChn(_mpp_chn.s32DevId, _chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_AO_DisableChn(%d,%d) failed [%#x]\n",
+		        _mpp_chn.s32DevId, _chnid, s32Ret);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HimppAdecChan
+//////////////////////////////////////////////////////////////////////////////
+
+HimppAdecChan::HimppAdecChan
+(HimppAudioElement* source, AudioEncodingType encoding, ADEC_CHN chnid)
+: AudioElement(AUDIO_ELEMENT(source)), HimppAudioElement(source),
+  _chnid(chnid), _encoding(encoding)
+
+{
+}
+
+HimppAdecChan::~HimppAdecChan()
+{
+}
+
+MPP_CHN_S* HimppAdecChan::bindSource()
+{
+}
+
+void HimppAdecChan::doEnableElement()
+{
+	HI_S32 s32Ret;
+	ADEC_CHN_ATTR_S attr;
+	union {
+		ADEC_ATTR_ADPCM_S   adpcm;
+		ADEC_ATTR_G711_S	g711;
+		ADEC_ATTR_G726_S	g726;
+		ADEC_ATTR_LPCM_S	lpcm;
+	} dec_attr;
+
+	attr.u32BufSize = 20;
+	attr.pValue = &dec_attr;
+	attr.enMode = ADEC_MODE_STREAM;
+
+	switch (_encoding) {
+	case ADPCM:
+		attr.enType = PT_ADPCMA;
+		dec_attr.adpcm.enADPCMType = AUDIO_ADPCM_TYPE;
+		break;
+	case G711A:
+		attr.enType = PT_G711A;
+		break;
+	case G711U:
+		attr.enType = PT_G711U;
+		break;
+	case G726:
+		attr.enType = PT_G726;
+		dec_attr.g726.enG726bps = G726_BPS;
+		break;
+	case LPCM:
+		attr.enType = PT_LPCM;
+		attr.enMode = ADEC_MODE_PACK;
+		break;
+	}
+	s32Ret = HI_MPI_ADEC_CreateChn(_chnid, &attr);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "failed to create ADEC chn%d\n", _chnid);
+		throw IpcamError("Failed to create ADEC channel");
+	}
+
+	MPP_CHN_S src_chn;
+	src_chn.enModId = HI_ID_ADEC;
+	src_chn.s32DevId = 0;
+	src_chn.s32ChnId = _chnid;
+	HimppAudioElement* asrc = HIMPP_AUDIO_ELEMENT(source());
+	s32Ret = HI_MPI_SYS_Bind(&src_chn, asrc->bindSource());
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_SYS_Bind ADEC chn%d failed [%#x]\n",
+				_chnid, s32Ret);
+		goto err_destroy_chn;
+	}
+
+	return;
+
+err_destroy_chn:
+	HI_MPI_ADEC_DestroyChn(_chnid);
+
+	throw IpcamError("Failed to bind audio source");
+}
+
+void HimppAdecChan::doDisableElement()
+{
+	HI_S32 s32Ret;
+
+	MPP_CHN_S src_chn;
+	src_chn.enModId = HI_ID_AENC;
+	src_chn.s32DevId = 0;
+	src_chn.s32ChnId = _chnid;
+	HimppAudioElement* asrc = HIMPP_AUDIO_ELEMENT(source());
+	s32Ret = HI_MPI_SYS_UnBind(&src_chn, asrc->bindSource());
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "HI_MPI_SYS_UnBind ADEC chn%d failed [%#x]\n",
+				_chnid, s32Ret);
+	}
+
+	s32Ret = HI_MPI_ADEC_DestroyChn(_chnid);
+	if (s32Ret != HI_SUCCESS) {
+		fprintf(stderr, "failed to destroy AENC chn%d\n", _chnid);
+	}
+}
+
+AudioEncodingType HimppAdecChan::encoding()
+{
+	return _encoding;
+}
+
+uint32_t HimppAdecChan::bitrate()
+{
+	return 64;
+}
+
+uint32_t HimppAdecChan::channels()
+{
+	return 1;
+}
+
+uint32_t HimppAdecChan::samplerate()
+{
+	return 8000;
+}
+
+void HimppAdecChan::streamData(StreamBuffer* buffer)
+{
+	AUDIO_STREAM_S stStream;
+	HI_S32 s32Ret;
+
+	for (int i = 0; i < (int)buffer->pack_count; i++) {
+		uint8_t* addr = buffer->pack[i].addr;
+		uint32_t len = buffer->pack[i].len;
+		uint8_t frame[len + 4];
+		frame[0] = 0x00; frame[1] = 0x01; *((uint16_t*)&frame[2]) = len / 2;
+		memmove(&frame[4], addr, len);
+		stStream.pStream = frame;
+		stStream.u32Len = len + 4;
+		s32Ret = HI_MPI_ADEC_SendStream(_chnid, &stStream, HI_TRUE);
+		if (s32Ret != HI_SUCCESS) {
+			fprintf(stderr, "HI_MPI_ADEC_SendFrame(%d) failed with %#x\n",
+			        _chnid, s32Ret);
+			break;
+		}
+	}
+}
+
+void HimppAdecChan::play()
+{
+	enable();
+}
+
+void HimppAdecChan::stop()
+{
+	disable();
+}
+
+void HimppAdecChan::pause()
+{
+}
+
+void HimppAdecChan::resume()
+{
 }

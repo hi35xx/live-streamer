@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
 /*
- * himpp-media.h
- * Copyright (C) 2015 Watson Xu <xuhuashan@gmail.com>
+ * LiveStreamOutput.h
+ * Copyright (C) 2019 Watson Xu <watson@localhost.localdomain>
  *
  * live-streamer is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,37 +17,36 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _HIMPP_MEDIA_H_
-#define _HIMPP_MEDIA_H_
+#ifndef _LIVESTREAMOUTPUT_H_
+#define _LIVESTREAMOUTPUT_H_
 
-#include <list>
-#include <memory>
-#include <himpp-sysctl.h>
+#include <GroupsockHelper.hh>
+#include <UsageEnvironment.hh>
 #include <media-stream.h>
-#include <ipcam-runtime.h>
 
 using namespace Ipcam::Media;
 
-class HimppMedia;
+class LiveAudioSink;
 
-typedef std::vector<std::pair<std::string, std::string>> PlatformArguments;
-
-class HimppMedia
+class AudioOutputStream
 {
 public:
-	HimppMedia(IpcamRuntime* runtime, PlatformArguments& args);
-	~HimppMedia();
+	AudioOutputStream(UsageEnvironment& env, AudioStreamSink& sink,
+	                  struct in_addr &addr, portNumBits num);
+	~AudioOutputStream();
+
+	void play();
+	void stop();
 
 private:
-	typedef std::unique_ptr<MediaElement>	MediaElementUPtr;
-	typedef std::unordered_map<std::string, MediaElementUPtr> MediaElementMap;
-	typedef std::list<AudioStreamSink*> AudioStreamSinkList;
-	MediaElementMap				_elements;
-	AudioStreamSinkList			_audiosinks;
-	IpcamRuntime*				_runtime;
-	HimppSysctl					_sysctl;
-
-	MediaElement* buildElementPipe(const std::string& description);
+	AudioStreamSink& streamSink;
+	bool streamStarted;
+	Groupsock rtpGroupsock;
+	Groupsock rtcpGroupsock;
+	RTPSource* rtpSource;
+	RTCPInstance* rtcpInstance;
+	LiveAudioSink* rtpSink;
 };
 
-#endif // _HIMPP_MEDIA_H_
+#endif // _LIVESTREAMOUTPUT_H_
+

@@ -25,22 +25,24 @@
 
 #include "LiveStreamInput.hh"
 
+using namespace Ipcam::Media;
 
-class LiveH264StreamSource: public FramedSource, public Ipcam::Media::StreamSink
+class LiveH264StreamSource: public FramedSource, public StreamSink
 {
 public:
 	static LiveH264StreamSource* createNew(UsageEnvironment& env, H264VideoStreamSource* stream);
 
 	void streamData(StreamBuffer* buffer);
 protected:
-	LiveH264StreamSource(UsageEnvironment& env, H264VideoStreamSource* stream);
+	LiveH264StreamSource(UsageEnvironment& env, H264VideoStreamSource* source);
 	// called only by createNew(), or by subclass constructors
 	virtual ~LiveH264StreamSource();
-
-private:
 	// redefined virtual functions:
 	virtual void doGetNextFrame();
 	virtual void doStopGettingFrames();
+
+private:
+	H264VideoStreamSource* fStreamSource;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,29 +50,29 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 LiveH264StreamSource*
-LiveH264StreamSource::createNew(UsageEnvironment& env, H264VideoStreamSource* stream)
+LiveH264StreamSource::createNew(UsageEnvironment& env, H264VideoStreamSource* source)
 {
-	return new LiveH264StreamSource(env, stream);
+	return new LiveH264StreamSource(env, source);
 }
 
 LiveH264StreamSource::LiveH264StreamSource
-(UsageEnvironment& env, H264VideoStreamSource* streamsource)
-: FramedSource(env), StreamSink(streamsource)
+(UsageEnvironment& env, H264VideoStreamSource* source)
+: FramedSource(env), fStreamSource(source)
 {
-	source()->attach(this);
+	fStreamSource->attach(this);
 	try {
-		play();
+		fStreamSource->play();
 	}
 	catch (IpcamError& e) {
-		source()->detach(this);
+		fStreamSource->detach(this);
 		handleClosure();
 	}
 }
 
 LiveH264StreamSource::~LiveH264StreamSource()
 {
-	source()->detach(this);
-	stop();
+	fStreamSource->detach(this);
+	fStreamSource->stop();
 }
 
 void LiveH264StreamSource::streamData(StreamBuffer* buffer)
@@ -106,7 +108,7 @@ void LiveH264StreamSource::streamData(StreamBuffer* buffer)
 		}
 	}
 
-	pause();
+	fStreamSource->pause();
 
 	// After delivering the data, inform the reader that it is now available:
 	FramedSource::afterGetting(this);
@@ -114,12 +116,12 @@ void LiveH264StreamSource::streamData(StreamBuffer* buffer)
 
 void LiveH264StreamSource::doGetNextFrame()
 {
-	resume();
+	fStreamSource->resume();
 }
 
 void LiveH264StreamSource::doStopGettingFrames()
 {
-	pause();
+	fStreamSource->pause();
 }
 
 
@@ -265,18 +267,21 @@ void LiveH264VideoServerMediaSubsession
 // LiveJPEGStreamSource
 //////////////////////////////////////////////////////////////////////////////
 
-class LiveJPEGStreamSource: public JPEGVideoSource, public Ipcam::Media::StreamSink
+class LiveJPEGStreamSource: public JPEGVideoSource, public StreamSink
 {
 public:
-	static LiveJPEGStreamSource* createNew(UsageEnvironment& env, JPEGVideoStreamSource* streamsource);
+	static LiveJPEGStreamSource* createNew(UsageEnvironment& env, JPEGVideoStreamSource* source);
+
+	// implementation of StreamSink
+	void streamData(StreamBuffer* buffer);
+	void play();
+	void stop();
 
 protected:
-	LiveJPEGStreamSource(UsageEnvironment& env, JPEGVideoStreamSource* streamsource);
+	LiveJPEGStreamSource(UsageEnvironment& env, JPEGVideoStreamSource* source);
 	virtual ~LiveJPEGStreamSource();
 
-	void streamData(StreamBuffer* buffer);
-
-protected: // redefined virtual functions
+	// implementation of JPEGVideoSource
 	virtual void doGetNextFrame();
 	virtual void doStopGettingFrames();
 
@@ -286,38 +291,40 @@ protected: // redefined virtual functions
 	virtual u_int8_t height();
 
 private:
+	JPEGVideoStreamSource* fStreamSource;
+	bool fStreamStarted;
 	u_int8_t fLastQFactor;
 	u_int8_t fLastWidth, fLastHeight; // actual dimensions / 8
 };
 
 LiveJPEGStreamSource*
-LiveJPEGStreamSource::createNew(UsageEnvironment& env, JPEGVideoStreamSource* streamsource)
+LiveJPEGStreamSource::createNew(UsageEnvironment& env, JPEGVideoStreamSource* source)
 {
-	return new LiveJPEGStreamSource(env, streamsource);
+	return new LiveJPEGStreamSource(env, source);
 }
 
 LiveJPEGStreamSource
-::LiveJPEGStreamSource(UsageEnvironment& env, JPEGVideoStreamSource* streamsource)
-  : JPEGVideoSource(env),
-    StreamSink(streamsource), fLastQFactor(0),
-    fLastWidth(0), fLastHeight(0)
+::LiveJPEGStreamSource(UsageEnvironment& env, JPEGVideoStreamSource* source)
+: JPEGVideoSource(env), fStreamSource(source), fStreamStarted(false),
+  fLastQFactor(0), fLastWidth(0), fLastHeight(0)
 {
-	source()->attach(this);
+	fStreamSource->attach(this);
 }
 
 LiveJPEGStreamSource::~LiveJPEGStreamSource()
 {
-	source()->detach(this);
+	stop();
+	fStreamSource->detach(this);
 }
 
 void LiveJPEGStreamSource::doGetNextFrame()
 {
-	resume();
+	fStreamSource->resume();
 }
 
 void LiveJPEGStreamSource::doStopGettingFrames()
 {
-	pause();
+	fStreamSource->pause();
 }
 
 void LiveJPEGStreamSource::streamData(StreamBuffer* buffer)
@@ -352,10 +359,26 @@ void LiveJPEGStreamSource::streamData(StreamBuffer* buffer)
 		}
 	}
 
-	pause();
+	fStreamSource->pause();
 
 	// After delivering the data, inform the reader that it is now available:
 	FramedSource::afterGetting(this);
+}
+
+void LiveJPEGStreamSource::play()
+{
+	if (!fStreamStarted) {
+		fStreamSource->play();
+		fStreamStarted = true;
+	}
+}
+
+void LiveJPEGStreamSource::stop()
+{
+	if (fStreamStarted) {
+		fStreamSource->stop();
+		fStreamStarted = false;
+	}
 }
 
 u_int8_t LiveJPEGStreamSource::type()
@@ -446,8 +469,9 @@ void LiveJPEGVideoServerMediaSubsession
 
 	try {
 		source->play();
-		source->resume();
-	} catch (IpcamError& e) {}
+	} catch (IpcamError& e) {
+		fprintf(stderr, "Failed to start JPEG stream: %s\n", e.what());
+	}
 }
 
 void LiveJPEGVideoServerMediaSubsession
@@ -458,8 +482,11 @@ void LiveJPEGVideoServerMediaSubsession
 	StreamState* streamState = (StreamState*)streamToken;
 	LiveJPEGStreamSource* source = (LiveJPEGStreamSource*)streamState->mediaSource();
 
-	source->pause();
-	source->stop();
+	try {
+		source->stop();
+	} catch (IpcamError& e) {
+		fprintf(stderr, "Failed to stop JPEG stream: %s\n", e.what());
+	}
 }
 
 
@@ -470,44 +497,45 @@ void LiveJPEGVideoServerMediaSubsession
 class LiveAudioStreamSource: public FramedSource, public StreamSink
 {
 public:
-	static LiveAudioStreamSource* createNew(UsageEnvironment& env, AudioStreamSource* streamsource);
+	static LiveAudioStreamSource* createNew(UsageEnvironment& env, AudioStreamSource* source);
 
 	void streamData(StreamBuffer* buffer);
 protected:
-	LiveAudioStreamSource(UsageEnvironment& env, AudioStreamSource* streamsource);
+	LiveAudioStreamSource(UsageEnvironment& env, AudioStreamSource* source);
 	// called only by createNew(), or by subclass constructors
 	virtual ~LiveAudioStreamSource();
-
-private:
 	// redefined virtual functions:
 	virtual void doGetNextFrame();
 	virtual void doStopGettingFrames();
+
+private:
+	AudioStreamSource* fStreamSource;
 };
 
 LiveAudioStreamSource* LiveAudioStreamSource::createNew
-(UsageEnvironment& env, AudioStreamSource* streamsource)
+(UsageEnvironment& env, AudioStreamSource* source)
 {
-	return new LiveAudioStreamSource(env, streamsource);
+	return new LiveAudioStreamSource(env, source);
 }
 
 LiveAudioStreamSource::LiveAudioStreamSource
-(UsageEnvironment& env, AudioStreamSource* streamsource)
-  : FramedSource(env), StreamSink(streamsource)
+(UsageEnvironment& env, AudioStreamSource* source)
+  : FramedSource(env), fStreamSource(source)
 {
-	source()->attach(this);
+	fStreamSource->attach(this);
 	try {
-		play();
+		fStreamSource->play();
 	}
 	catch (IpcamError& e) {
-		source()->detach(this);
+		fStreamSource->detach(this);
 		handleClosure();
 	}
 }
 
 LiveAudioStreamSource::~LiveAudioStreamSource()
 {
-	source()->detach(this);
-	stop();
+	fStreamSource->detach(this);
+	fStreamSource->stop();
 }
 
 void LiveAudioStreamSource::streamData(StreamBuffer* buffer)
@@ -536,7 +564,7 @@ void LiveAudioStreamSource::streamData(StreamBuffer* buffer)
 		}
 	}
 
-	pause();
+	fStreamSource->pause();
 
 	// After delivering the data, inform the reader that it is now available:
 	FramedSource::afterGetting(this);
@@ -544,12 +572,12 @@ void LiveAudioStreamSource::streamData(StreamBuffer* buffer)
 
 void LiveAudioStreamSource::doGetNextFrame()
 {
-	resume();
+	fStreamSource->resume();
 }
 
 void LiveAudioStreamSource::doStopGettingFrames()
 {
-	pause();
+	fStreamSource->pause();
 }
 
 
