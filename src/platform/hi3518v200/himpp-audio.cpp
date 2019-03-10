@@ -845,10 +845,16 @@ void HimppAdecChan::streamData(StreamBuffer* buffer)
 		uint8_t* addr = buffer->pack[i].addr;
 		uint32_t len = buffer->pack[i].len;
 		uint8_t frame[len + 4];
-		frame[0] = 0x00; frame[1] = 0x01; *((uint16_t*)&frame[2]) = len / 2;
-		memmove(&frame[4], addr, len);
-		stStream.pStream = frame;
-		stStream.u32Len = len + 4;
+		if (_encoding == LPCM) {
+			stStream.pStream = addr;
+			stStream.u32Len = len;
+		} else {
+			*((uint16_t*)&frame[0]) = 0x0100;
+			*((uint16_t*)&frame[2]) = len / 2;
+			memmove(&frame[4], addr, len);
+			stStream.pStream = frame;
+			stStream.u32Len = len + 4;
+		}
 		s32Ret = HI_MPI_ADEC_SendStream(_chnid, &stStream, HI_TRUE);
 		if (s32Ret != HI_SUCCESS) {
 			fprintf(stderr, "HI_MPI_ADEC_SendFrame(%d) failed with %#x\n",
