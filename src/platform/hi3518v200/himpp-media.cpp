@@ -143,8 +143,8 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& pargs)
 				}
 				_audiosinks.push_back(sink);
 
-				in_addr addr = { .s_addr = inet_addr("239.255.42.42") };
-				u_int16_t portNum = 6666;
+				in_addr addr = { .s_addr = INADDR_ANY };
+				u_int16_t portNum = 6000;
 				if (colon_pos != std::string::npos) {
 					std::string pdesc = arg.second.substr(colon_pos + 1);
 					std::vector<std::string> vp = split(pdesc, ',');
@@ -158,7 +158,7 @@ HimppMedia::HimppMedia(IpcamRuntime *runtime, PlatformArguments& pargs)
 					}
 					std::unordered_map<std::string, std::string>::iterator pit;
 					if ((pit = params.find("addr")) != params.end()) {
-						addr.s_addr = std::stoi(pit->second);
+						addr.s_addr = inet_addr(pit->second.c_str());
 					}
 					if ((pit = params.find("port")) != params.end()) {
 						portNum = std::stoi(pit->second);

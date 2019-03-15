@@ -111,20 +111,13 @@ void afterPlaying(void* /*clientData*/)
 AudioOutputStream::AudioOutputStream
 (UsageEnvironment& env, AudioStreamSink& sink, struct in_addr &addr, portNumBits num)
 : streamSink(sink), streamStarted(false),
-  rtpGroupsock(env, addr, Port(num), 0),
-  rtcpGroupsock(env, addr, Port(num + 1), 0)
+  rtpGroupsock(env, addr, Port(num), 0)
 {
 	rtpSink = LiveAudioSink::createNew(env, streamSink);
 
 	rtpSource = SimpleRTPSource::createNew(env, &rtpGroupsock, 96,
 	                                       streamSink.samplerate(),
 	                                       "audio/PCMA", 0, False);
-	const unsigned estimatedSessionBandwidth = 64;
-	const unsigned char *CNAME = (const unsigned char*)"live-streamer";
-	rtcpInstance = 
-		  RTCPInstance::createNew(env, &rtcpGroupsock,
-		                          estimatedSessionBandwidth, CNAME,
-		                          NULL, rtpSource);
 
 	rtpSink->startPlaying(*rtpSource, afterPlaying, this);
 }
@@ -133,7 +126,6 @@ AudioOutputStream::~AudioOutputStream()
 {
 	stop();
 
-	if (rtcpInstance) Medium::close(rtcpInstance);
 	if (rtpSink) Medium::close(rtpSink);
 	if (rtpSource) Medium::close(rtpSource);
 }

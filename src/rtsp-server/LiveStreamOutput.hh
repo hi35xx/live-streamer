@@ -42,9 +42,7 @@ private:
 	AudioStreamSink& streamSink;
 	bool streamStarted;
 	Groupsock rtpGroupsock;
-	Groupsock rtcpGroupsock;
 	RTPSource* rtpSource;
-	RTCPInstance* rtcpInstance;
 	LiveAudioSink* rtpSink;
 };
 
