@@ -369,6 +369,7 @@ void LiveJPEGStreamSource::play()
 {
 	if (!fStreamStarted) {
 		fStreamSource->play();
+		fStreamSource->resume();
 		fStreamStarted = true;
 	}
 }

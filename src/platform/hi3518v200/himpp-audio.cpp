@@ -462,11 +462,14 @@ void HimppAencChan::play()
 
 void HimppAencChan::stop()
 {
+	_io.stop();
 	disable();
 }
 
 void HimppAencChan::resume()
 {
+	if (!is_enabled()) return;
+
 	_io.set<HimppAencChan, &HimppAencChan::watch_handler>(this);
 	_io.set(HI_MPI_AENC_GetFd(channelId()), ev::READ);
 	_io.start();

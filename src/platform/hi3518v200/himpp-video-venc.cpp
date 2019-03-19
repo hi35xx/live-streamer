@@ -88,11 +88,14 @@ void HimppVencChan::play()
 
 void HimppVencChan::stop()
 {
+	_io.stop();
 	disable();
 }
 
 void HimppVencChan::resume()
 {
+	if (!is_enabled()) return;
+
 	_io.set<HimppVencChan, &HimppVencChan::watch_handler>(this);
 	_io.set(HI_MPI_VENC_GetFd(channelId()), ev::READ);
 	_io.start();
