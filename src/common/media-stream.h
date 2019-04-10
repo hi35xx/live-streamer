@@ -28,7 +28,7 @@ namespace Ipcam {
 namespace Media {
 
 enum VideoEncodingType { H264, MJPEG, JPEG, MPEG4 };
-enum AudioEncodingType { ADPCM, LPCM, G711A, G711U, G726 };
+enum AudioEncodingType { ADPCM, LPCM, G711A, G711U, G726, AAC };
 
 class StreamBuffer;
 class H264StreamBuffer;

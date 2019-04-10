@@ -23,3 +23,9 @@ librtsp_server_la_SOURCES =  \
 	LiveStreamInput.hh \
 	LiveStreamOutput.cpp \
 	LiveStreamOutput.hh
+
+if ENABLE_VO_AACENC
+librtsp_server_la_SOURCES += \
+	AACAudioEncoder.cpp \
+	AACAudioEncoder.hh
+endif

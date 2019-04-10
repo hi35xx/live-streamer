@@ -17,11 +17,20 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <SimpleRTPSink.hh>
 #include <H264VideoRTPSink.hh>
 #include <H264VideoStreamDiscreteFramer.hh>
 #include <JPEGVideoSource.hh>
 #include <JPEGVideoRTPSink.hh>
+#include <MPEG4GenericRTPSink.hh>
+
+#ifdef HAVE_VO_AACENC_SUPPORT
+#include <AACAudioEncoder.hh>
+#endif
 
 #include "LiveStreamInput.hh"
 
@@ -608,10 +617,25 @@ FramedSource* LiveAudioServerMediaSubsession
 	OutPacketBuffer::maxSize = 4 * 1024;
 	// Create the audio source:
 	FramedSource* source = LiveAudioStreamSource::createNew(envir(), fAudioStreamSource);
+#ifdef HAVE_VO_AACENC_SUPPORT
+	if (fAudioStreamSource->encoding() == AAC) {
+		uint32_t sampleRate = fAudioStreamSource->samplerate();
+		uint32_t channels = fAudioStreamSource->channels();
+		source = AACAudioEncoder
+			::createNew(envir(), source, channels, sampleRate, estBitrate);
+	}
+#endif
 	OutPacketBuffer::maxSize = packetMaxSize;
 
 	return source;
 }
+
+static unsigned const samplingFrequencyTable[16] = {
+  96000, 88200, 64000, 48000,
+  44100, 32000, 24000, 22050,
+  16000, 12000, 11025, 8000,
+  7350, 0, 0, 0
+};
 
 RTPSink* LiveAudioServerMediaSubsession
 ::createNewRTPSink(Groupsock* rtpGroupsock,
@@ -620,32 +644,55 @@ RTPSink* LiveAudioServerMediaSubsession
 {
 	uint32_t samplerate = fAudioStreamSource->samplerate();
 	uint32_t nr_chans = 1;
-	const char *mimeType = "";
 	unsigned char payloadFormatCode = rtpPayloadTypeIfDynamic;
 
+	RTPSink *rtp_sink = NULL;
 	AudioEncodingType encoding;
 	encoding = fAudioStreamSource->encoding();
-	switch (encoding) {
-	case ADPCM:
-		mimeType = "DVI4";
-		break;
-	case LPCM:
-		mimeType = "L16";
-		break;
-	case G711A:
-		mimeType = "PCMA";
-		break;
-	case G711U:
-		mimeType = "PCMU";
-		break;
-	case G726:
-		mimeType = "G726-40";
-		break;
+
+	if (encoding == AAC) {
+		char config_str[5];
+		uint8_t profile = 1;
+		uint8_t sample_rate_index = 11;
+		for (int i = 0; i <= 15; i++) {
+			if (samplerate == samplingFrequencyTable[i]) {
+				sample_rate_index = i;
+				break;
+			}
+		}
+		unsigned char config[2];
+		config[0] = ((profile + 1) << 3) | (sample_rate_index >> 1);
+		config[1] = (sample_rate_index << 7) | (nr_chans << 3);
+		sprintf(config_str, "%02X%02X", config[0], config[1]);
+		rtp_sink = MPEG4GenericRTPSink::
+			createNew(envir(), rtpGroupsock, payloadFormatCode, samplerate,
+			          "audio", "AAC-hbr", config_str, nr_chans);
+	} else {
+		const char *mimeType = "";
+		switch (encoding) {
+		case ADPCM:
+			mimeType = "DVI4";
+			break;
+		case LPCM:
+			mimeType = "L16";
+			break;
+		case G711A:
+			mimeType = "PCMA";
+			break;
+		case G711U:
+			mimeType = "PCMU";
+			break;
+		case G726:
+			mimeType = "G726-40";
+			break;
+		default:
+			break;
+		}
+		rtp_sink = SimpleRTPSink
+			::createNew(envir(), rtpGroupsock,
+			            payloadFormatCode, samplerate,
+			            "audio", mimeType, nr_chans);
 	}
 
-	RTPSink *rtp_sink
-		= SimpleRTPSink::createNew(envir(), rtpGroupsock,
-		                           payloadFormatCode, samplerate,
-		                           "audio", mimeType, nr_chans);
 	return rtp_sink;
 }

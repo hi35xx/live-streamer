@@ -44,6 +44,11 @@ live_streamer_CPPFLAGS += $(JSONCPP_CPPFLAGS)
 live_streamer_LDFLAGS += $(JSONCPP_LIBS)
 endif
 
+if ENABLE_VO_AACENC
+live_streamer_CPPFLAGS += $(VO_AACENC_CPPFLAGS)
+live_streamer_LDFLAGS += $(VO_AACENC_LIBS)
+endif
+
 if ENABLE_HI3518V100
 live_streamer_CPPFLAGS += $(HI3518V100_CPPFLAGS) -I$(srcdir)/platform/hi3518v100
 live_streamer_LDFLAGS += $(HI3518V100_LDFLAGS)

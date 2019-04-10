@@ -527,6 +527,7 @@ void HimppAencChan::doEnableElement()
 		enc_attr.g726.enG726bps = G726_BPS;
 		break;
 	case LPCM:
+	case AAC: // will be encoded using AACAudioEncoder filter
 		attr.enType = PT_LPCM;
 		break;
 	}

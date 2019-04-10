@@ -88,6 +88,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@ENABLE_VO_AACENC_TRUE@am__append_1 = \
+@ENABLE_VO_AACENC_TRUE@	AACAudioEncoder.cpp \
+@ENABLE_VO_AACENC_TRUE@	AACAudioEncoder.hh
+
 subdir = src/rtsp-server
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -103,8 +107,15 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 librtsp_server_la_LIBADD =
+am__librtsp_server_la_SOURCES_DIST = EvUsageEnvironment.cpp \
+	EvUsageEnvironment.h DynamicRTSPServer.cpp \
+	DynamicRTSPServer.hh LiveStreamInput.cpp LiveStreamInput.hh \
+	LiveStreamOutput.cpp LiveStreamOutput.hh AACAudioEncoder.cpp \
+	AACAudioEncoder.hh
+@ENABLE_VO_AACENC_TRUE@am__objects_1 = AACAudioEncoder.lo
 am_librtsp_server_la_OBJECTS = EvUsageEnvironment.lo \
-	DynamicRTSPServer.lo LiveStreamInput.lo LiveStreamOutput.lo
+	DynamicRTSPServer.lo LiveStreamInput.lo LiveStreamOutput.lo \
+	$(am__objects_1)
 librtsp_server_la_OBJECTS = $(am_librtsp_server_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -163,7 +174,7 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(librtsp_server_la_SOURCES)
-DIST_SOURCES = $(librtsp_server_la_SOURCES)
+DIST_SOURCES = $(am__librtsp_server_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -282,6 +293,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VO_AACENC_CFLAGS = @VO_AACENC_CFLAGS@
+VO_AACENC_LIBS = @VO_AACENC_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -348,16 +361,10 @@ AM_CXXFLAGS = -Wall
 noinst_LTLIBRARIES = \
 	librtsp-server.la
 
-librtsp_server_la_SOURCES = \
-	EvUsageEnvironment.cpp \
-	EvUsageEnvironment.h \
-	DynamicRTSPServer.cpp \
-	DynamicRTSPServer.hh \
-	LiveStreamInput.cpp \
-	LiveStreamInput.hh \
-	LiveStreamOutput.cpp \
-	LiveStreamOutput.hh
-
+librtsp_server_la_SOURCES = EvUsageEnvironment.cpp \
+	EvUsageEnvironment.h DynamicRTSPServer.cpp \
+	DynamicRTSPServer.hh LiveStreamInput.cpp LiveStreamInput.hh \
+	LiveStreamOutput.cpp LiveStreamOutput.hh $(am__append_1)
 all: all-am
 
 .SUFFIXES:
@@ -412,6 +419,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AACAudioEncoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicRTSPServer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EvUsageEnvironment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LiveStreamInput.Plo@am__quote@

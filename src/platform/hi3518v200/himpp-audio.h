@@ -213,8 +213,6 @@ public:
 	uint32_t			channels();
 	uint32_t			samplerate();
 
-	void				playFile(char* filename);
-
 	ADEC_CHN channelId() { return _chnid; }
 
 protected:

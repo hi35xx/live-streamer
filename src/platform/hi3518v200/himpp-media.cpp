@@ -461,8 +461,7 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 			AudioEncodingType encoding = G711A;
 			std::unordered_map<std::string, std::string>::iterator pit;
 
-			pit = params.find("encoding");
-			if (pit != params.end()) {
+			if ((pit = params.find("encoding")) != params.end()) {
 				if (pit->second == "ADPCM") {
 					encoding = ADPCM;
 				} else if (pit->second == "LPCM") {
@@ -473,14 +472,20 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					encoding = G711U;
 				} else if (pit->second == "G726") {
 					encoding = G726;
+				} else if (pit->second == "AAC") {
+					encoding = AAC;
 				} else {
 					std::cerr << name << ": " << "invalid encoding \"" << pit->second << "\"." << std::endl;
 					break;
 				}
-			} else {
-				std::cout << name << ": " << "encoding not specified, using default(G711A)" << std::endl;
 			}
-			add_element(last_element, name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index));
+			if (add_element(last_element, name, HimppAencChan(HIMPP_AUDIO_ELEMENT(last_element), encoding, index))) {
+				if ((pit = params.find("bitrate")) != params.end() ||
+				    (pit = params.find("br")) != params.end()) {
+					uint32_t bitrate = std::stoul(pit->second);
+					HIMPP_AENC_CHAN(last_element)->setBitrate(bitrate);
+				}
+			}
 		}
 		else if (name.compare(0, 5, "aodev") == 0) {
 			if (!last_element && (_elements.find(name) == _elements.end())) break;
