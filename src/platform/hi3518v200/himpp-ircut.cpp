@@ -377,7 +377,7 @@ void HimppIrCut::ircut_on()
 	_status = IRCUT_ON;
 
 	_ircut_timer.stop();
-	_ircut_timer.set(0.1, 0.0);
+	_ircut_timer.set(0.5, 0.0);
 	_ircut_timer.start();
 }
 
