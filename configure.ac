@@ -195,7 +195,7 @@ case $with_hi3518v200 in
 esac
 if test "x$with_hi3518v200" != xno; then
   hi3518v200inc="-I$hi3518v200pfx/include/hi3518v200mpp"
-  hi3518v200lib="-L$hi3518v200pfx/lib \ 
+  hi3518v200lib="-L$hi3518v200pfx/lib \
     -lmpi -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lVoiceEngine \
     -lisp -l_hiae -l_hiawb -l_hiaf -l_hidefog -lpthread"
   AC_CHECK_LIBRARY([${hi3518v200inc}], $[{hi3518v200lib}],
@@ -264,6 +264,52 @@ else
 fi
 AC_MSG_RESULT([$have_hi3516cv300])
 AM_CONDITIONAL([ENABLE_HI3516CV300], [test x$have_hi3516cv300 = xyes])
+
+
+dnl check for hi3516ev200 mpp library
+AC_ARG_WITH(hi3516ev200,
+	[AS_HELP_STRING([--with-hi3516ev200=PATH],
+		[specify prefix directory for himpp-hi3516ev200 package.])],
+		[], [with_hi3516ev200=no])
+
+AC_MSG_CHECKING([for hi3516ev200 mpp library])
+case $with_hi3516ev200 in
+ yes)
+   hi3516ev200pfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3516ev200pfx=`echo "$with_hi3516ev200" | sed -e "$sed_quote_subst"` ;;
+ *)
+   AC_MSG_RESULT([$with_hi3516ev200])
+   AC_MSG_ERROR([hi3516ev200 must be an absolute path."])
+   ;;
+esac
+if test "x$with_hi3516ev200" != xno; then
+  hi3516ev200inc="-I$hi3516ev200pfx/include/hi3516ev200mpp"
+  hi3516ev200lib="-L$hi3516ev200pfx/lib \
+    -lmpi -lsecurec -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lhive_EQ -lVoiceEngine \
+    -lisp -l_hiae -l_hiawb -l_hidrc -l_hildci -l_hidehaze -lpthread"
+  AC_CHECK_LIBRARY([${hi3516ev200inc}], $[{hi3516ev200lib}],
+    [AC_LANG_PROGRAM(
+      [#include <hi_comm_sys.h>
+       #include <mpi_sys.h>],
+      [HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();])
+    ], [have_hi3516ev200=yes], [have_hi3516ev200=no]
+  )
+  if test x$have_hi3516ev200 = xyes; then
+    HI3516EV200_CPPFLAGS=$hi3516ev200inc
+    HI3516EV200_LDFLAGS=$hi3516ev200lib
+    AC_DEFINE(HAVE_HI3516EV200_SUPPORT, 1, [support Hi3516ev200 MPP])
+    AC_SUBST(HI3516EV200_CPPFLAGS)
+    AC_SUBST(HI3516EV200_LDFLAGS)
+  fi
+else
+  have_hi3516ev200=no
+fi
+AC_MSG_RESULT([$have_hi3516ev200])
+AM_CONDITIONAL([ENABLE_HI3516EV200], [test x$have_hi3516ev200 = xyes])
 
 
 dnl check for hi3520v100 mpp library
@@ -378,4 +424,5 @@ src/platform/Makefile
 src/common/Makefile
 src/platform/hi3518v200/Makefile
 src/platform/hi3516cv300/Makefile
+src/platform/hi3516ev200/Makefile
 ])

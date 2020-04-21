@@ -102,12 +102,15 @@ bin_PROGRAMS = live-streamer$(EXEEXT)
 @ENABLE_HI3516CV300_TRUE@am__append_11 = $(HI3516CV300_CPPFLAGS) -I$(srcdir)/platform/hi3516cv300
 @ENABLE_HI3516CV300_TRUE@am__append_12 = $(HI3516CV300_LDFLAGS)
 @ENABLE_HI3516CV300_TRUE@am__append_13 = $(builddir)/platform/hi3516cv300/libhi3516cv300.la
-@ENABLE_HI3520V100_TRUE@am__append_14 = $(HI3520V100_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
-@ENABLE_HI3520V100_TRUE@am__append_15 = $(HI3520V100_LDFLAGS)
-@ENABLE_HI3520V100_TRUE@am__append_16 = $(builddir)/platform/hi3520v100/libhi3520v100.la
-@ENABLE_HI3520DV200_TRUE@am__append_17 = $(HI3520DV200_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
-@ENABLE_HI3520DV200_TRUE@am__append_18 = $(HI3520DV200_LDFLAGS)
-@ENABLE_HI3520DV200_TRUE@am__append_19 = $(builddir)/platform/hi3520v100/libhi3520v100.la
+@ENABLE_HI3516EV200_TRUE@am__append_14 = $(HI3516EV200_CPPFLAGS) -I$(srcdir)/platform/hi3516ev200
+@ENABLE_HI3516EV200_TRUE@am__append_15 = $(HI3516EV200_LDFLAGS)
+@ENABLE_HI3516EV200_TRUE@am__append_16 = $(builddir)/platform/hi3516ev200/libhi3516ev200.la
+@ENABLE_HI3520V100_TRUE@am__append_17 = $(HI3520V100_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520V100_TRUE@am__append_18 = $(HI3520V100_LDFLAGS)
+@ENABLE_HI3520V100_TRUE@am__append_19 = $(builddir)/platform/hi3520v100/libhi3520v100.la
+@ENABLE_HI3520DV200_TRUE@am__append_20 = $(HI3520DV200_CPPFLAGS) -I$(srcdir)/platform/hi3520v100
+@ENABLE_HI3520DV200_TRUE@am__append_21 = $(HI3520DV200_LDFLAGS)
+@ENABLE_HI3520DV200_TRUE@am__append_22 = $(builddir)/platform/hi3520v100/libhi3520v100.la
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
@@ -130,7 +133,7 @@ live_streamer_DEPENDENCIES = $(builddir)/common/libcommon.la \
 	$(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_7) \
 	$(am__append_10) $(am__append_13) $(am__append_16) \
-	$(am__append_19)
+	$(am__append_19) $(am__append_22)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -299,6 +302,8 @@ GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
 HI3516CV300_CPPFLAGS = @HI3516CV300_CPPFLAGS@
 HI3516CV300_LDFLAGS = @HI3516CV300_LDFLAGS@
+HI3516EV200_CPPFLAGS = @HI3516EV200_CPPFLAGS@
+HI3516EV200_LDFLAGS = @HI3516EV200_LDFLAGS@
 HI3518V100_CPPFLAGS = @HI3518V100_CPPFLAGS@
 HI3518V100_LDFLAGS = @HI3518V100_LDFLAGS@
 HI3518V200_CPPFLAGS = @HI3518V200_CPPFLAGS@
@@ -437,15 +442,16 @@ live_streamer_LDFLAGS = $(LIVE555_LDFLAGS) $(DBUSXX_LIBS) \
 	$(FREETYPE_LIBS) $(FONTCONFIG_LIBS) $(SDL_LIBS) \
 	$(LIBEV_LDFLAGS) -ldl $(am__append_2) $(am__append_4) \
 	$(am__append_6) $(am__append_9) $(am__append_12) \
-	$(am__append_15) $(am__append_18)
+	$(am__append_15) $(am__append_18) $(am__append_21)
 live_streamer_CPPFLAGS = $(AM_CPPFLAGS) $(am__append_1) \
 	$(am__append_3) $(am__append_5) $(am__append_8) \
-	$(am__append_11) $(am__append_14) $(am__append_17)
+	$(am__append_11) $(am__append_14) $(am__append_17) \
+	$(am__append_20)
 live_streamer_LDADD = $(builddir)/common/libcommon.la \
 	$(builddir)/dbus/libdbus-iface.la \
 	$(builddir)/rtsp-server/librtsp-server.la $(am__append_7) \
 	$(am__append_10) $(am__append_13) $(am__append_16) \
-	$(am__append_19)
+	$(am__append_19) $(am__append_22)
 all: all-recursive
 
 .SUFFIXES:

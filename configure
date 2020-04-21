@@ -643,6 +643,10 @@ ENABLE_HI3520V100_FALSE
 ENABLE_HI3520V100_TRUE
 HI3520V100_LDFLAGS
 HI3520V100_CPPFLAGS
+ENABLE_HI3516EV200_FALSE
+ENABLE_HI3516EV200_TRUE
+HI3516EV200_LDFLAGS
+HI3516EV200_CPPFLAGS
 ENABLE_HI3516CV300_FALSE
 ENABLE_HI3516CV300_TRUE
 HI3516CV300_LDFLAGS
@@ -811,6 +815,7 @@ with_live555
 with_hi3518v100
 with_hi3518v200
 with_hi3516cv300
+with_hi3516ev200
 with_hi3520v100
 with_hi3520dv200
 '
@@ -1485,6 +1490,8 @@ Optional Packages:
   --with-hi3518v200=PATH  specify prefix directory for himpp-hi3518v200
                           package.
   --with-hi3516cv300=PATH specify prefix directory for himpp-hi3516cv300
+                          package.
+  --with-hi3516ev200=PATH specify prefix directory for himpp-hi3516ev200
                           package.
   --with-hi3520v100=PATH  specify prefix directory for himpp-hi3520v100
                           package.
@@ -16560,6 +16567,94 @@ fi
 
 
 
+# Check whether --with-hi3516ev200 was given.
+if test "${with_hi3516ev200+set}" = set; then :
+  withval=$with_hi3516ev200;
+else
+  with_hi3516ev200=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hi3516ev200 mpp library" >&5
+$as_echo_n "checking for hi3516ev200 mpp library... " >&6; }
+case $with_hi3516ev200 in
+ yes)
+   hi3516ev200pfx="$ac_sysroot/usr" ;;
+ no|'')
+   ;;
+ /*)
+   hi3516ev200pfx=`echo "$with_hi3516ev200" | sed -e "$sed_quote_subst"` ;;
+ *)
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_hi3516ev200" >&5
+$as_echo "$with_hi3516ev200" >&6; }
+   as_fn_error $? "hi3516ev200 must be an absolute path.\"" "$LINENO" 5
+   ;;
+esac
+if test "x$with_hi3516ev200" != xno; then
+  hi3516ev200inc="-I$hi3516ev200pfx/include/hi3516ev200mpp"
+  hi3516ev200lib="-L$hi3516ev200pfx/lib \
+    -lmpi -lsecurec -ldnvqe -lhive_RES -lhive_AEC -lupvqe -lhive_ANR -lhive_EQ -lVoiceEngine \
+    -lisp -l_hiae -l_hiawb -l_hidrc -l_hildci -l_hidehaze -lpthread"
+
+  new_CPPFLAGS=${hi3516ev200inc}
+  new_LDFLAGS=${hi3516ev200lib}
+
+
+
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  CPPFLAGS="$CPPFLAGS $new_CPPFLAGS"
+  LDFLAGS="$LDFLAGS $new_LDFLAGS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <hi_comm_sys.h>
+       #include <mpi_sys.h>
+int
+main ()
+{
+HI_MPI_SYS_Init();
+       HI_MPI_SYS_Exit();
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_hi3516ev200=yes
+else
+  have_hi3516ev200=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+
+  if test x$have_hi3516ev200 = xyes; then
+    HI3516EV200_CPPFLAGS=$hi3516ev200inc
+    HI3516EV200_LDFLAGS=$hi3516ev200lib
+
+$as_echo "#define HAVE_HI3516EV200_SUPPORT 1" >>confdefs.h
+
+
+
+  fi
+else
+  have_hi3516ev200=no
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_hi3516ev200" >&5
+$as_echo "$have_hi3516ev200" >&6; }
+ if test x$have_hi3516ev200 = xyes; then
+  ENABLE_HI3516EV200_TRUE=
+  ENABLE_HI3516EV200_FALSE='#'
+else
+  ENABLE_HI3516EV200_TRUE='#'
+  ENABLE_HI3516EV200_FALSE=
+fi
+
+
+
+
 # Check whether --with-hi3520v100 was given.
 if test "${with_hi3520v100+set}" = set; then :
   withval=$with_hi3520v100;
@@ -16804,7 +16899,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/rtsp-server/Makefile src/dbus/Makefile src/platform/Makefile src/common/Makefile src/platform/hi3518v200/Makefile src/platform/hi3516cv300/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/rtsp-server/Makefile src/dbus/Makefile src/platform/Makefile src/common/Makefile src/platform/hi3518v200/Makefile src/platform/hi3516cv300/Makefile src/platform/hi3516ev200/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16961,6 +17056,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_HI3516CV300_TRUE}" && test -z "${ENABLE_HI3516CV300_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_HI3516CV300\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_HI3516EV200_TRUE}" && test -z "${ENABLE_HI3516EV200_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_HI3516EV200\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_HI3520V100_TRUE}" && test -z "${ENABLE_HI3520V100_FALSE}"; then
@@ -17953,6 +18052,7 @@ do
     "src/common/Makefile") CONFIG_FILES="$CONFIG_FILES src/common/Makefile" ;;
     "src/platform/hi3518v200/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3518v200/Makefile" ;;
     "src/platform/hi3516cv300/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3516cv300/Makefile" ;;
+    "src/platform/hi3516ev200/Makefile") CONFIG_FILES="$CONFIG_FILES src/platform/hi3516ev200/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

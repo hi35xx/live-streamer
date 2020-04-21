@@ -24,6 +24,8 @@
 #include <SimpleRTPSink.hh>
 #include <H264VideoRTPSink.hh>
 #include <H264VideoStreamDiscreteFramer.hh>
+#include <H265VideoRTPSink.hh>
+#include <H265VideoStreamDiscreteFramer.hh>
 #include <JPEGVideoSource.hh>
 #include <JPEGVideoRTPSink.hh>
 #include <MPEG4GenericRTPSink.hh>
@@ -35,6 +37,7 @@
 #include "LiveStreamInput.hh"
 
 using namespace Ipcam::Media;
+
 
 class LiveH264StreamSource: public FramedSource, public StreamSink
 {
@@ -157,7 +160,7 @@ LiveH264VideoServerMediaSubsession::~LiveH264VideoServerMediaSubsession()
 	delete[] fAuxSDPLine;
 }
 
-static void afterPlayingDummy(void* clientData) {
+static void H264AfterPlayingDummy(void* clientData) {
 	LiveH264VideoServerMediaSubsession* subsess = (LiveH264VideoServerMediaSubsession*)clientData;
 	subsess->afterPlayingDummy1();
 }
@@ -170,7 +173,7 @@ void LiveH264VideoServerMediaSubsession::afterPlayingDummy1()
 	setDoneFlag();
 }
 
-static void checkForAuxSDPLine(void* clientData)
+static void H264CheckForAuxSDPLine(void* clientData)
 {
 	LiveH264VideoServerMediaSubsession* subsess = (LiveH264VideoServerMediaSubsession*)clientData;
 	subsess->checkForAuxSDPLine1();
@@ -200,7 +203,7 @@ void LiveH264VideoServerMediaSubsession::checkForAuxSDPLine1()
 		// try again after a brief delay:
 		int uSecsToDelay = 100000; // 100 ms
 		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay,
-		                                                         (TaskFunc*)checkForAuxSDPLine, this);
+		                                                         (TaskFunc*)H264CheckForAuxSDPLine, this);
 	}
 }
 
@@ -216,10 +219,10 @@ char const* LiveH264VideoServerMediaSubsession
 		fDummyRTPSink = rtpSink;
 
 		// Start reading the file:
-		fDummyRTPSink->startPlaying(*inputSource, afterPlayingDummy, this);
+		fDummyRTPSink->startPlaying(*inputSource, H264AfterPlayingDummy, this);
 
 		// Check whether the sink's 'auxSDPLine()' is ready:
-		checkForAuxSDPLine(this);
+		H264CheckForAuxSDPLine(this);
 	}
 
 	envir().taskScheduler().doEventLoop(&fDoneFlag);
@@ -243,7 +246,7 @@ RTPSink* LiveH264VideoServerMediaSubsession
 		   FramedSource* /*inputSource*/)
 {
 	H264VideoRTPSink *rtpsink = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
-	rtpsink->setPacketSizes(1000, 1456 * 10);
+	rtpsink->setPacketSizes(1000, 1456 * 8);
 	return rtpsink;
 }
 
@@ -266,6 +269,242 @@ void LiveH264VideoServerMediaSubsession
 }
 
 void LiveH264VideoServerMediaSubsession
+::pauseStream(unsigned clientSessionId, void* streamToken)
+{
+	OnDemandServerMediaSubsession::pauseStream(clientSessionId, streamToken);
+}
+
+
+class LiveH265StreamSource: public FramedSource, public StreamSink
+{
+public:
+	static LiveH265StreamSource* createNew(UsageEnvironment& env, H264VideoStreamSource* stream);
+
+	void streamData(StreamBuffer* buffer);
+protected:
+	LiveH265StreamSource(UsageEnvironment& env, H264VideoStreamSource* source);
+	// called only by createNew(), or by subclass constructors
+	virtual ~LiveH265StreamSource();
+	// redefined virtual functions:
+	virtual void doGetNextFrame();
+	virtual void doStopGettingFrames();
+
+private:
+	H264VideoStreamSource* fStreamSource;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// LiveH265StreamSource
+//////////////////////////////////////////////////////////////////////////////
+
+LiveH265StreamSource*
+LiveH265StreamSource::createNew(UsageEnvironment& env, H264VideoStreamSource* source)
+{
+	return new LiveH265StreamSource(env, source);
+}
+
+LiveH265StreamSource::LiveH265StreamSource
+(UsageEnvironment& env, H264VideoStreamSource* source)
+: FramedSource(env), fStreamSource(source)
+{
+	fStreamSource->attach(this);
+	try {
+		fStreamSource->play();
+	}
+	catch (IpcamError& e) {
+		fStreamSource->detach(this);
+		handleClosure();
+	}
+}
+
+LiveH265StreamSource::~LiveH265StreamSource()
+{
+	fStreamSource->detach(this);
+	fStreamSource->stop();
+}
+
+void LiveH265StreamSource::streamData(StreamBuffer* buffer)
+{
+	// check if we're ready for the data
+	if (!isCurrentlyAwaitingData()) {
+		envir() << "WARN: LiveH265StreamSource is not ready for data yet\n";
+		return;
+	}
+
+	H264StreamBuffer* h265buffer = static_cast<H264StreamBuffer*>(buffer);
+
+	fPresentationTime = h265buffer->tstamp;
+	fFrameSize = 0;
+	for (unsigned i = 0; i < h265buffer->pack_count; i++) {
+		uint8_t *ptr = h265buffer->pack[i].addr;
+		uint32_t len = h265buffer->pack[i].len;
+
+		if ((ptr == NULL) || (len == 0)) break;
+
+		if (len >= 4 && ptr[0] == 0x00 && ptr[1] == 0x00
+		    && ptr[2] == 0x00 && ptr[3] == 0x01)
+		{
+			ptr += 4;
+			len -= 4;
+		}
+
+		if (fFrameSize + len < fMaxSize) {
+			memmove(&fTo[fFrameSize], ptr, len);
+			fFrameSize += len;
+		} else {
+			fNumTruncatedBytes += len;
+		}
+	}
+
+	fStreamSource->pause();
+
+	// After delivering the data, inform the reader that it is now available:
+	FramedSource::afterGetting(this);
+}
+
+void LiveH265StreamSource::doGetNextFrame()
+{
+	fStreamSource->resume();
+}
+
+void LiveH265StreamSource::doStopGettingFrames()
+{
+	fStreamSource->pause();
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// LiveH265VideoServerMediaSubsession
+//////////////////////////////////////////////////////////////////////////////
+
+LiveH265VideoServerMediaSubsession*
+LiveH265VideoServerMediaSubsession::createNew(UsageEnvironment& env, H264VideoStreamSource* streamsource)
+{
+	return new LiveH265VideoServerMediaSubsession(env, streamsource);
+}
+
+LiveH265VideoServerMediaSubsession
+::LiveH265VideoServerMediaSubsession(UsageEnvironment& env, H264VideoStreamSource* streamsource)
+  : OnDemandServerMediaSubsession(env, True /* always reuse the first source */),
+    fVideoStreamSource(streamsource),
+    fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
+{
+}
+
+LiveH265VideoServerMediaSubsession::~LiveH265VideoServerMediaSubsession()
+{
+	delete[] fAuxSDPLine;
+}
+
+static void H265AfterPlayingDummy(void* clientData) {
+	LiveH265VideoServerMediaSubsession* subsess = (LiveH265VideoServerMediaSubsession*)clientData;
+	subsess->afterPlayingDummy1();
+}
+
+void LiveH265VideoServerMediaSubsession::afterPlayingDummy1()
+{
+	// Unschedule any pending 'checking' task:
+	envir().taskScheduler().unscheduleDelayedTask(nextTask());
+	// Signal the event loop that we're done:
+	setDoneFlag();
+}
+
+static void H265CheckForAuxSDPLine(void* clientData)
+{
+	LiveH265VideoServerMediaSubsession* subsess = (LiveH265VideoServerMediaSubsession*)clientData;
+	subsess->checkForAuxSDPLine1();
+}
+
+void LiveH265VideoServerMediaSubsession::checkForAuxSDPLine1()
+{
+	char const* dasl;
+
+	if (fAuxSDPLine != NULL) {
+		// Signal the event loop that we're done:
+		setDoneFlag();
+	} else if (fDummyRTPSink != NULL && (dasl = fDummyRTPSink->auxSDPLine()) != NULL) {
+		char framerate[32], dimension[32];
+		Resolution res = fVideoStreamSource->resolution();
+		sprintf(framerate, "a=framerate:%d\r\n", fVideoStreamSource->framerate());
+		sprintf(dimension, "a=x-dimensions:%d,%d\r\n", res.width(), res.height());
+		fAuxSDPLine = new char[strlen(dasl) + strlen(framerate) + strlen(dimension) + 1];
+		if (fAuxSDPLine != NULL) {
+			sprintf(fAuxSDPLine, "%s%s%s", dasl, framerate, dimension);
+		}
+		fDummyRTPSink = NULL;
+
+		// Signal the event loop that we're done:
+		setDoneFlag();
+	} else if (!fDoneFlag) {
+		// try again after a brief delay:
+		int uSecsToDelay = 100000; // 100 ms
+		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay,
+		                                                         (TaskFunc*)H265CheckForAuxSDPLine, this);
+	}
+}
+
+char const* LiveH265VideoServerMediaSubsession
+::getAuxSDPLine(RTPSink* rtpSink, FramedSource* inputSource)
+{
+	if (fAuxSDPLine != NULL) return fAuxSDPLine; // it's already been set up (for a previous client)
+
+	if (fDummyRTPSink == NULL) { // we're not already setting it up for another, concurrent stream
+		// Note: For H265 video files, the 'config' information ("profile-level-id" and "sprop-parameter-sets") isn't known
+		// until we start reading the file.  This means that "rtpSink"s "auxSDPLine()" will be NULL initially,
+		// and we need to start reading data from our file until this changes.
+		fDummyRTPSink = rtpSink;
+
+		// Start reading the file:
+		fDummyRTPSink->startPlaying(*inputSource, H265AfterPlayingDummy, this);
+
+		// Check whether the sink's 'auxSDPLine()' is ready:
+		H265CheckForAuxSDPLine(this);
+	}
+
+	envir().taskScheduler().doEventLoop(&fDoneFlag);
+
+	return fAuxSDPLine;
+}
+
+FramedSource* LiveH265VideoServerMediaSubsession
+::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate)
+{
+	estBitrate = fVideoStreamSource->bitrate(); // kbps, estimate
+
+	// Create the video source:
+	LiveH265StreamSource *source = LiveH265StreamSource::createNew(envir(), fVideoStreamSource);
+	return H265VideoStreamDiscreteFramer::createNew(envir(), source);
+}
+
+RTPSink* LiveH265VideoServerMediaSubsession
+::createNewRTPSink(Groupsock* rtpGroupsock,
+		   unsigned char rtpPayloadTypeIfDynamic,
+		   FramedSource* /*inputSource*/)
+{
+	H265VideoRTPSink *rtpsink = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+	rtpsink->setPacketSizes(1000, 1456 * 8);
+	return rtpsink;
+}
+
+void LiveH265VideoServerMediaSubsession
+::startStream(unsigned clientSessionId, void* streamToken,
+              TaskFunc* rtcpRRHandler,
+              void* rtcpRRHandlerClientData,
+              unsigned short& rtpSeqNum,
+              unsigned& rtpTimestamp,
+              ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+              void* serverRequestAlternativeByteHandlerClientData)
+{
+	OnDemandServerMediaSubsession::startStream(clientSessionId, streamToken, rtcpRRHandler,
+	                                           rtcpRRHandlerClientData,
+	                                           rtpSeqNum,
+	                                           rtpTimestamp,
+	                                           serverRequestAlternativeByteHandler,
+	                                           serverRequestAlternativeByteHandlerClientData);
+	fVideoStreamSource->requestIDR();
+}
+
+void LiveH265VideoServerMediaSubsession
 ::pauseStream(unsigned clientSessionId, void* streamToken)
 {
 	OnDemandServerMediaSubsession::pauseStream(clientSessionId, streamToken);
@@ -454,7 +693,7 @@ RTPSink* LiveJPEGVideoServerMediaSubsession
                    FramedSource* /*inputSource*/)
 {
 	JPEGVideoRTPSink* rtpsink = JPEGVideoRTPSink::createNew(envir(), rtpGroupsock);
-	rtpsink->setPacketSizes(1000, 1456 * 10);
+	rtpsink->setPacketSizes(1000, 1456 * 8);
 	return rtpsink;
 }
 

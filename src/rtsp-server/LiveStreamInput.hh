@@ -69,6 +69,50 @@ private:
 };
 
 
+class LiveH265VideoServerMediaSubsession: public OnDemandServerMediaSubsession
+{
+public:
+	static LiveH265VideoServerMediaSubsession*
+		createNew(UsageEnvironment& env, H264VideoStreamSource* stream);
+
+	// Used to implement "getAuxSDPLine()":
+	void checkForAuxSDPLine1();
+	void afterPlayingDummy1();
+
+	void startStream(unsigned clientSessionId, void* streamToken,
+	                 TaskFunc* rtcpRRHandler,
+	                 void* rtcpRRHandlerClientData,
+	                 unsigned short& rtpSeqNum,
+	                 unsigned& rtpTimestamp,
+	                 ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
+	                 void* serverRequestAlternativeByteHandlerClientData);
+	void pauseStream(unsigned clientSessionId, void* streamToken);
+
+protected:
+	LiveH265VideoServerMediaSubsession(UsageEnvironment& env, H264VideoStreamSource* stream);
+	// called only by createNew();
+	virtual ~LiveH265VideoServerMediaSubsession();
+
+	void setDoneFlag() { fDoneFlag = ~0; }
+
+protected: // redefined virtual functions
+	virtual char const* getAuxSDPLine(RTPSink* rtpSink,
+	                                  FramedSource* inputSource);
+
+	virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
+	                                            unsigned& estBitrate);
+	virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
+	                                  unsigned char rtpPayloadTypeIfDynamic,
+	                                  FramedSource* inputSource);
+
+private:
+	H264VideoStreamSource* fVideoStreamSource;
+	char* fAuxSDPLine;
+	char fDoneFlag; // used when setting up "fAuxSDPLine"
+	RTPSink* fDummyRTPSink; // ditto
+};
+
+
 class LiveJPEGVideoServerMediaSubsession: public OnDemandServerMediaSubsession
 {
 public:

@@ -42,6 +42,12 @@ public:
 	uint32_t width() const { return _width; }
 	uint32_t height() const { return _height; }
 	bool valid() const { return (_width > 0) && (_height > 0); }
+	bool operator == (const Resolution& r) const {
+		return (r._width == _width) && (r._height == _height);
+	}
+	bool operator != (const Resolution& r) const {
+		return (r._width != _width) || (r._height != _height);
+	}
 
 private:
 	uint32_t _width;
