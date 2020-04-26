@@ -397,12 +397,12 @@ void HimppVpssChan::Imaging::LDC::setMode(LDCMode value)
 	_ldc_mode = value;
 }
 
-uint32_t HimppVpssChan::Imaging::LDC::getRatio()
+int32_t HimppVpssChan::Imaging::LDC::getRatio()
 {
 	return _ldc_ratio;
 }
 
-void HimppVpssChan::Imaging::LDC::setRatio(uint32_t value)
+void HimppVpssChan::Imaging::LDC::setRatio(int32_t value)
 {
 	HimppVpssChan& vpchan = dynamic_cast<HimppVpssChan&>(imaging().videoSource());
 	if (vpchan.is_enabled()) {

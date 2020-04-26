@@ -272,12 +272,12 @@ void HimppViChan::Imaging::LDC::setMode(LDCMode value)
 	_ldc_mode = value;
 }
 
-uint32_t HimppViChan::Imaging::LDC::getRatio()
+int32_t HimppViChan::Imaging::LDC::getRatio()
 {
 	return _ldc_ratio;
 }
 
-void HimppViChan::Imaging::LDC::setRatio(uint32_t value)
+void HimppViChan::Imaging::LDC::setRatio(int32_t value)
 {
 	HimppViChan& vichan = dynamic_cast<HimppViChan&>(imaging().videoSource());
 	if (vichan.is_enabled()) {

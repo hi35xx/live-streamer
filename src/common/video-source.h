@@ -185,8 +185,8 @@ public:
 			virtual ~LDC();
 			virtual LDCMode			getMode();
 			virtual void			setMode(LDCMode value);
-			virtual uint32_t		getRatio();
-			virtual void			setRatio(uint32_t value);
+			virtual int32_t			getRatio();
+			virtual void			setRatio(int32_t value);
 
 			Imaging& imaging() { return _imaging; }
 		private:
@@ -405,8 +405,8 @@ public:
 			virtual ~LDC();
 			virtual LDCMode			getMode();
 			virtual void			setMode(LDCMode value);
-			virtual uint32_t		getRatio();
-			virtual void			setRatio(uint32_t value);
+			virtual int32_t			getRatio();
+			virtual void			setRatio(int32_t value);
 		};
 		// Gamma
 		class Gamma : public VideoSource::Imaging::Gamma

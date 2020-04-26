@@ -110,11 +110,11 @@ public:
 			// implementation of VideoSource::Imaging::LDC
 			LDCMode		getMode();
 			void		setMode(LDCMode value);
-			uint32_t	getRatio();
-			void		setRatio(uint32_t value);
+			int32_t		getRatio();
+			void		setRatio(int32_t value);
 		public:
 			LDCMode		_ldc_mode;
-			uint32_t	_ldc_ratio;
+			int32_t		_ldc_ratio;
 		};
 	public:
 		Imaging(HimppVpssChan& vpchan);

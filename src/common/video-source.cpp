@@ -403,12 +403,12 @@ void VideoSource::Imaging::LDC::setMode(LDCMode value)
 	throw IpcamError(property_not_implemented);
 }
 
-uint32_t VideoSource::Imaging::LDC::getRatio()
+int32_t VideoSource::Imaging::LDC::getRatio()
 {
 	throw IpcamError(property_not_implemented);
 }
 
-void VideoSource::Imaging::LDC::setRatio(uint32_t value)
+void VideoSource::Imaging::LDC::setRatio(int32_t value)
 {
 	throw IpcamError(property_not_implemented);
 }
@@ -1206,14 +1206,14 @@ void DefaultVideoSource::Imaging::LDC::setMode(LDCMode value)
 	source->imaging().ldc().setMode(value);
 }
 
-uint32_t DefaultVideoSource::Imaging::LDC::getRatio()
+int32_t DefaultVideoSource::Imaging::LDC::getRatio()
 {
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
 	if (source == NULL) throw IpcamError(property_not_implemented);
 	return source->imaging().ldc().getRatio();
 }
 
-void DefaultVideoSource::Imaging::LDC::setRatio(uint32_t value)
+void DefaultVideoSource::Imaging::LDC::setRatio(int32_t value)
 {
 	DefaultVideoSource* source = DEFAULT_VIDEO_SOURCE(dynamic_cast<DefaultVideoSource&>(imaging().videoSource()).source());
 	if (source == NULL) throw IpcamError(property_not_implemented);

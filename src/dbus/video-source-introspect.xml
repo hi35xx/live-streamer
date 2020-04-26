@@ -19,7 +19,7 @@
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.BacklightCompensation">
     <property name="Mode" type="u" access="readwrite"/>
-    <property name="Level" type="u" access="readwrite"/>
+    <property name="Level" type="i" access="readwrite"/>
   </interface>
   <interface name="ipcam.Media.VideoSource.Imaging.Focus">
     <property name="AutoFocusMode" type="u" access="readwrite"/>
