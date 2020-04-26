@@ -55,6 +55,7 @@ protected:
 
 private:
 	H264VideoStreamSource* fStreamSource;
+	bool fStreamStarted;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -69,11 +70,12 @@ LiveH264StreamSource::createNew(UsageEnvironment& env, H264VideoStreamSource* so
 
 LiveH264StreamSource::LiveH264StreamSource
 (UsageEnvironment& env, H264VideoStreamSource* source)
-: FramedSource(env), fStreamSource(source)
+: FramedSource(env), fStreamSource(source), fStreamStarted(false)
 {
 	fStreamSource->attach(this);
 	try {
 		fStreamSource->play();
+		fStreamStarted = true;
 	}
 	catch (IpcamError& e) {
 		fStreamSource->detach(this);
@@ -84,7 +86,7 @@ LiveH264StreamSource::LiveH264StreamSource
 LiveH264StreamSource::~LiveH264StreamSource()
 {
 	fStreamSource->detach(this);
-	fStreamSource->stop();
+	if (fStreamStarted) fStreamSource->stop();
 }
 
 void LiveH264StreamSource::streamData(StreamBuffer* buffer)
@@ -291,6 +293,7 @@ protected:
 
 private:
 	H264VideoStreamSource* fStreamSource;
+	bool fStreamStarted;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -305,11 +308,12 @@ LiveH265StreamSource::createNew(UsageEnvironment& env, H264VideoStreamSource* so
 
 LiveH265StreamSource::LiveH265StreamSource
 (UsageEnvironment& env, H264VideoStreamSource* source)
-: FramedSource(env), fStreamSource(source)
+: FramedSource(env), fStreamSource(source), fStreamStarted(false)
 {
 	fStreamSource->attach(this);
 	try {
 		fStreamSource->play();
+		fStreamStarted = true;
 	}
 	catch (IpcamError& e) {
 		fStreamSource->detach(this);
@@ -320,7 +324,7 @@ LiveH265StreamSource::LiveH265StreamSource
 LiveH265StreamSource::~LiveH265StreamSource()
 {
 	fStreamSource->detach(this);
-	fStreamSource->stop();
+	if (fStreamStarted) fStreamSource->stop();
 }
 
 void LiveH265StreamSource::streamData(StreamBuffer* buffer)
@@ -561,8 +565,8 @@ LiveJPEGStreamSource
 
 LiveJPEGStreamSource::~LiveJPEGStreamSource()
 {
-	stop();
 	fStreamSource->detach(this);
+	if (fStreamStarted) stop();
 }
 
 void LiveJPEGStreamSource::doGetNextFrame()
@@ -759,6 +763,7 @@ protected:
 
 private:
 	AudioStreamSource* fStreamSource;
+	bool fStreamStarted;
 };
 
 LiveAudioStreamSource* LiveAudioStreamSource::createNew
@@ -769,11 +774,12 @@ LiveAudioStreamSource* LiveAudioStreamSource::createNew
 
 LiveAudioStreamSource::LiveAudioStreamSource
 (UsageEnvironment& env, AudioStreamSource* source)
-  : FramedSource(env), fStreamSource(source)
+  : FramedSource(env), fStreamSource(source), fStreamStarted(false)
 {
 	fStreamSource->attach(this);
 	try {
 		fStreamSource->play();
+		fStreamStarted = true;
 	}
 	catch (IpcamError& e) {
 		fStreamSource->detach(this);
@@ -784,7 +790,7 @@ LiveAudioStreamSource::LiveAudioStreamSource
 LiveAudioStreamSource::~LiveAudioStreamSource()
 {
 	fStreamSource->detach(this);
-	fStreamSource->stop();
+	if (fStreamStarted) fStreamSource->stop();
 }
 
 void LiveAudioStreamSource::streamData(StreamBuffer* buffer)
