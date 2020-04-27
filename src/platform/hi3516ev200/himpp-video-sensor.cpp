@@ -233,6 +233,107 @@ static HIMPP_SENSOR_CONFIG omnivision_os05a_sensor_config = {
 };
 
 /***************************************************************************
+ * SMARTSENS SC5335
+ ***************************************************************************/
+
+static combo_dev_attr_t smartsens_sc5335_combo_dev_attr = {
+	.devno = 0,
+	.input_mode = INPUT_MODE_MIPI,
+	.data_rate = MIPI_DATA_RATE_X1,
+	.img_rect = { 0, 0, 2592, 1944 },
+	{
+		.mipi_attr = {
+			.input_data_type = DATA_TYPE_RAW_10BIT,
+			.wdr_mode = HI_MIPI_WDR_MODE_NONE,
+			.lane_id = { 0, 1, -1, -1 }
+		}
+	}
+};
+
+static VI_DEV_ATTR_S smartsens_sc5335_dev_attr = {
+	.enIntfMode     = VI_MODE_MIPI,
+	.enWorkMode     = VI_WORK_MODE_1Multiplex,
+	.au32ComponentMask   = { 0xFFC00000, 0x0 },
+	.enScanMode     = VI_SCAN_PROGRESSIVE,
+	.as32AdChnId     = { -1, -1, -1, -1 },
+	.enDataSeq      = VI_DATA_SEQ_YUYV,
+	.stSynCfg       = {
+		.enVsync        = VI_VSYNC_PULSE,
+		.enVsyncNeg     = VI_VSYNC_NEG_LOW,
+		.enHsync        = VI_HSYNC_VALID_SINGNAL,
+		.enHsyncNeg     = VI_HSYNC_NEG_HIGH,
+		.enVsyncValid   = VI_VSYNC_VALID_SINGAL,
+		.enVsyncValidNeg = VI_VSYNC_VALID_NEG_HIGH,
+		.stTimingBlank  = {
+			.u32HsyncHfb = 0,  .u32HsyncAct = 1280,  .u32HsyncHbb = 0,
+			.u32VsyncVfb = 0,  .u32VsyncVact = 720, .u32VsyncVbb = 0,
+			.u32VsyncVbfb = 0, .u32VsyncVbact = 0,   .u32VsyncVbbb = 0
+		}
+	},
+	.enInputDataType    = VI_DATA_TYPE_RGB,
+	.bDataReverse       = HI_FALSE,
+	.stSize             = { 2592, 1944 },
+	.stBasAttr         = {
+		.stSacleAttr    = {
+			.stBasSize = { 2592, 1944 },
+		},
+		.stRephaseAttr  = {
+			.enHRephaseMode = VI_REPHASE_MODE_NONE,
+			.enVRephaseMode = VI_REPHASE_MODE_NONE,
+		}
+	},
+	.stWDRAttr          = {
+		.enWDRMode      = WDR_MODE_NONE,
+		.u32CacheLine   = 1944
+	},
+	.enDataRate		= DATA_RATE_X1
+};
+
+static VI_PIPE_ATTR_S smartsens_sc5335_pipe_attr = {
+	.enPipeBypassMode   = VI_PIPE_BYPASS_NONE,
+	.bYuvSkip           = HI_FALSE,
+	.bIspBypass         = HI_FALSE,
+	.u32MaxW            = 2592,
+	.u32MaxH            = 1944,
+	.enPixFmt           = PIXEL_FORMAT_RGB_BAYER_10BPP,
+	.enCompressMode     = COMPRESS_MODE_NONE,
+	.enBitWidth         = DATA_BITWIDTH_10,
+	.bNrEn              = HI_FALSE,
+	.stNrAttr           = {
+		.enPixFmt       = PIXEL_FORMAT_YVU_SEMIPLANAR_420,
+		.enBitWidth     = DATA_BITWIDTH_8,
+		.enNrRefSource  = VI_NR_REF_FROM_RFR,
+		.enCompressMode = COMPRESS_MODE_NONE,
+	},
+	.bSharpenEn         = HI_FALSE,
+	.stFrameRate        = { -1, -1 }
+};
+
+static ISP_PUB_ATTR_S smartsens_sc5335_pub_attr = {
+	.stWndRect          = {
+		.s32X           = 0,
+		.s32Y           = 0,
+		.u32Width       = 2592,
+		.u32Height      = 1944,
+	},
+	.stSnsSize          = { 2592, 1944 },
+	.f32FrameRate       = 15,
+	.enBayer            = BAYER_BGGR,
+	.enWDRMode          = WDR_MODE_NONE,
+	.u8SnsMode          = 0,
+};
+
+static HIMPP_SENSOR_CONFIG smartsens_sc5335_sensor_config = {
+	.name               = "sc5335",
+	.module_path        = "libsns_sc5335_mipi.so",
+	.object_name		= "stSnsSmartsensObj",
+	.combo_dev_attr     = &smartsens_sc5335_combo_dev_attr,
+	.vi_dev_attr        = &smartsens_sc5335_dev_attr,
+	.vi_pipe_attr       = &smartsens_sc5335_pipe_attr,
+	.isp_pub_attr       = &smartsens_sc5335_pub_attr,
+};
+
+/***************************************************************************
  * SMARTSENS SC4236
  ***************************************************************************/
 
@@ -1044,6 +1145,7 @@ public:
 #define addSensor(sensor) himpp_video_sensor_map.emplace(sensor.name, &sensor)
 		addSensor(galaxycore_gc2053_sensor_config);
 		addSensor(omnivision_os05a_sensor_config);
+		addSensor(smartsens_sc5335_sensor_config);
 		addSensor(smartsens_sc4236_sensor_config);
 		addSensor(smartsens_sc2231_sensor_config);
 		addSensor(smartsens_sc2235_sensor_config);
