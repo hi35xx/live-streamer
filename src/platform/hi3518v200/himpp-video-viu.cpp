@@ -177,7 +177,7 @@ HimppViDev::HimppViDev(HimppVideoElement* source, VI_DEV devid)
     HimppVideoElement(source), DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _imaging(*this), _devid(devid),
     _resolution(0, 0), _framerate(0),
-    _xoffset(-1), _yoffset(-1)
+    _xoffset(0), _yoffset(0)
 {
 }
 
@@ -265,18 +265,12 @@ void HimppViDev::doEnableElement()
 		RECT_S& rect = dev_attr->stDevRect;
 		uint32_t w = _resolution.width();
 		uint32_t h = _resolution.height();
-		int32_t xoffmax = rect.u32Width - w;
-		int32_t yoffmax = rect.u32Height - h;
-		int32_t xoff = xoffmax / 2;
-		int32_t yoff = yoffmax / 2;
-		if (_xoffset >= 0) {
-			xoff = _xoffset < xoffmax ? _xoffset : xoffmax;
-		}
-		if (_yoffset >= 0) {
-			yoff = _yoffset < yoffmax ? _yoffset : yoffmax;
-		}
-		rect.s32X = rect.s32X + xoff;
-		rect.s32Y = rect.s32Y + yoff;
+		int32_t dx2 = (rect.u32Width - w) / 2;
+		int32_t dy2 = (rect.u32Height - h) / 2;
+		int32_t xoff = MAX2(MIN2(_xoffset, dx2), -dx2);
+		int32_t yoff = MAX2(MIN2(_yoffset, dy2), -dy2);
+		rect.s32X = rect.s32X + dx2 + xoff;
+		rect.s32Y = rect.s32Y + dy2 + yoff;
 		rect.u32Width = w;
 		rect.u32Height = h;
 	}

@@ -268,7 +268,8 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					}
 				}
 
-				if ((pit = params.find("offset")) != params.end()) {
+				if ((pit = params.find("offset")) != params.end() ||
+				    (pit = params.find("off")) != params.end()) {
 					int32_t xoff = 0, yoff = 0;
 					std::string l;
 					std::stringstream ss(pit->second);

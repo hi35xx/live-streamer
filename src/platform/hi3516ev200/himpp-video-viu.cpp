@@ -17,6 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <hi_math.h>
 #include <hi_mipi.h>
 #include <mpi_sys.h>
 #include <mpi_vi.h>
@@ -421,7 +422,7 @@ HimppViChan::HimppViChan(HimppVideoElement* source, VI_CHN chnid)
   : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _imaging(*this), _chnid(chnid), _resolution(0, 0), _framerate(0),
-    _xoffset(-1), _yoffset(-1)
+    _xoffset(0), _yoffset(0)
 {
 	for (MediaElement* p = source; p; p = p->source()) {
 		HimppViDev* videv = HIMPP_VI_DEV(p);
@@ -522,10 +523,14 @@ void HimppViChan::doEnableElement()
 		if ((mode == VI_ONLINE_VPSS_OFFLINE) || (mode == VI_OFFLINE_VPSS_OFFLINE)) {
 			if (_resolution.valid() && _resolution != in_res) {
 				VI_CROP_INFO_S crop;
+				int32_t dx2 = (in_res.width() - _resolution.width()) / 2;
+				int32_t dy2 = (in_res.height() - _resolution.height()) / 2;
+				int32_t xoff = MAX2(MIN2(_xoffset, dx2), -dx2);
+				int32_t yoff = MAX2(MIN2(_yoffset, dy2), -dy2);
 				crop.bEnable = HI_TRUE;
 				crop.enCropCoordinate = VI_CROP_ABS_COOR;
-				crop.stCropRect.s32X = _xoffset >= 0 ? _xoffset : (in_res.width() - _resolution.width()) / 2;
-				crop.stCropRect.s32Y = _yoffset >= 0 ? _yoffset : (in_res.height() - _resolution.height()) / 2;
+				crop.stCropRect.s32X = dx2 + xoff;
+				crop.stCropRect.s32Y = dy2 + yoff;
 				crop.stCropRect.u32Width = _resolution.width();
 				crop.stCropRect.u32Height = _resolution.height();
 				if ((s32Ret = HI_MPI_VI_SetChnCrop(0, _chnid, &crop)) != HI_SUCCESS) {
