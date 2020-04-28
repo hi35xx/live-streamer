@@ -47,8 +47,11 @@ public:
 	HimppVideoSensor*	sensor() { return _video_sensor; }
 	VI_DEV deviceId() { return _devid; }
 
-	VI_VPSS_MODE_E		getOnlineMode() { return _online_mode; }
+	VI_VPSS_MODE_E		getOnlineMode() const { return _online_mode; }
 	void				setOnlineMode(VI_VPSS_MODE_E mode) { _online_mode = mode; }
+
+	const POINT_S&		getCropOffset() const { return _crop_offset; }
+	void				setCropOffset(const POINT_S& offset) { _crop_offset = offset; }
 
 protected:
 	void doEnableElement();
@@ -64,6 +67,7 @@ private:
 	VI_VPSS_MODE_E		_online_mode;
 	Resolution			_resolution;
 	uint32_t			_framerate;
+	POINT_S				_crop_offset;
 };
 
 class HimppViChan : public HimppVideoElement, public DefaultVideoSource
@@ -121,8 +125,6 @@ public:
 	virtual Resolution	getResolution();
 	virtual void		setResolution(Resolution value);
 
-	virtual void		setCropOffset(int32_t x, int32_t y);
-
 	VI_CHN channelId() { return _chnid; }
 
 protected:
@@ -135,8 +137,6 @@ private:
 	MPP_CHN_S		_mpp_chn;
 	Resolution		_resolution;
 	uint32_t		_framerate;
-	int32_t			_xoffset;
-	int32_t			_yoffset;
 };
 
 #endif // _HIMPP_VIDEO_VIU_H_

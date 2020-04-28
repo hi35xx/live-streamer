@@ -203,7 +203,7 @@ void *HimppVideoISP::isp_thread_routine(void *arg)
 void HimppVideoISP::doEnableElement()
 {
 	HI_S32 s32Ret;
-	ISP_PUB_ATTR_S *pstPubAttr = *videoSensor();
+	ISP_PUB_ATTR_S ispPubAttr = *(ISP_PUB_ATTR_S*)*videoSensor();
 	//ISP_WDR_MODE_S stWdrMode;
 
 	if (!loadSensorModule())
@@ -218,14 +218,23 @@ void HimppVideoISP::doEnableElement()
 		goto err_unreg_alg;
 	}
 
-	/* isp set wdr mode */
-#if 0
-	stWdrMode.enWDRMode = WDR_MODE_NONE;
-	if ((s32Ret = HI_MPI_ISP_SetWDRMode(_isp_dev, &stWdrMode)) != HI_SUCCESS)
-		goto err_unreg_alg;
-#endif
+	// Find the HimppViDev to get resolution and crop info
+	for (auto e = source(); e; e = e->source()) {
+		HimppViDev *videv = dynamic_cast<HimppViDev*>(e);
+		if (videv) {
+			Resolution res = videv->resolution();
+			POINT_S offset = videv->getCropOffset();
+			uint32_t in_x = ispPubAttr.stSnsSize.u32Width;
+			uint32_t in_y = ispPubAttr.stSnsSize.u32Height;
+			ispPubAttr.stWndRect.s32X = (in_x - res.width()) / 2 + offset.s32X;
+			ispPubAttr.stWndRect.s32Y = (in_y - res.height()) / 2 + offset.s32Y;
+			ispPubAttr.stWndRect.u32Width = res.width();
+			ispPubAttr.stWndRect.u32Height = res.height();
 
-	if (HI_MPI_ISP_SetPubAttr(_isp_dev, pstPubAttr) != HI_SUCCESS)
+			break;
+		}
+	}
+	if (HI_MPI_ISP_SetPubAttr(_isp_dev, &ispPubAttr) != HI_SUCCESS)
 		goto err_unreg_alg;
 
 	if ((s32Ret = HI_MPI_ISP_Init(_isp_dev)) != HI_SUCCESS)

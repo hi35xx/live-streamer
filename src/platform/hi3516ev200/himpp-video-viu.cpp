@@ -40,7 +40,7 @@ HimppViDev::HimppViDev(HimppVideoElement* source, VI_DEV devid, std::string sens
     HimppVideoElement(source), DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
     _video_sensor(&himpp_video_sensor_map.at(sensor)),
     _devid(devid), _online_mode(VI_ONLINE_VPSS_ONLINE),
-    _resolution(0, 0), _framerate(0)
+    _resolution(0, 0), _framerate(0), _crop_offset({0, 0})
 {
 }
 
@@ -200,24 +200,15 @@ void HimppViDev::doEnableElement()
 		throw IpcamError("Failed to bind pipe");
 	}
 	// create pipe
-	VI_PIPE_ATTR_S *pipe_attr = *_video_sensor;
-	if ((s32Ret = HI_MPI_VI_CreatePipe(0, pipe_attr)) != HI_SUCCESS) {
+	VI_PIPE_ATTR_S pipe_attr = *(VI_PIPE_ATTR_S*)*_video_sensor;
+	if (_resolution.valid()) {
+		pipe_attr.u32MaxW = _resolution.width();
+		pipe_attr.u32MaxH = _resolution.height();
+	}
+	if ((s32Ret = HI_MPI_VI_CreatePipe(0, &pipe_attr)) != HI_SUCCESS) {
 		HI_MPI_VI_DisableDev(_devid);
 		HIMPP_PRINT("HI_MPI_VI_CreatePipe %d failed [%#x]\n", _devid, s32Ret);
 		throw IpcamError("Failed to create pipe");
-	}
-	ISP_PUB_ATTR_S *pstPubAttr = *_video_sensor;
-	Resolution inres(pstPubAttr->stWndRect.u32Width, pstPubAttr->stWndRect.u32Height);
-	if (_resolution.valid() && _resolution != inres) {
-		CROP_INFO_S crop;
-		crop.bEnable = HI_TRUE;
-		crop.stRect.s32X = (inres.width() - _resolution.width()) / 2;
-		crop.stRect.s32Y = (inres.height() - _resolution.height()) / 2;
-		crop.stRect.u32Width = _resolution.width();
-		crop.stRect.u32Height = _resolution.height();
-		if ((s32Ret = HI_MPI_VI_SetPipeCrop(0, &crop)) != HI_SUCCESS) {
-			HIMPP_PRINT("HI_MPI_VI_SetPipeCrop %d failed [%#x]\n", _devid, s32Ret);
-		}
 	}
 	if ((s32Ret = HI_MPI_VI_StartPipe(0)) != HI_SUCCESS) {
 		HI_MPI_VI_DisableDev(_devid);
@@ -421,8 +412,7 @@ VideoSource::Imaging::LDC& HimppViChan::Imaging::ldc()
 HimppViChan::HimppViChan(HimppVideoElement* source, VI_CHN chnid)
   : VideoElement(VIDEO_ELEMENT(source)), HimppVideoElement(source),
     DefaultVideoSource(DEFAULT_VIDEO_SOURCE(source)),
-    _imaging(*this), _chnid(chnid), _resolution(0, 0), _framerate(0),
-    _xoffset(0), _yoffset(0)
+    _imaging(*this), _chnid(chnid), _resolution(0, 0), _framerate(0)
 {
 	for (MediaElement* p = source; p; p = p->source()) {
 		HimppViDev* videv = HIMPP_VI_DEV(p);
@@ -476,12 +466,6 @@ void HimppViChan::setResolution(Resolution value)
 	_resolution = value;
 }
 
-void HimppViChan::setCropOffset(int32_t xoffset, int32_t yoffset)
-{
-	_xoffset = xoffset;
-	_yoffset = yoffset;
-}
-
 void HimppViChan::doEnableElement()
 {
 	HI_U32 s32Ret;
@@ -523,14 +507,10 @@ void HimppViChan::doEnableElement()
 		if ((mode == VI_ONLINE_VPSS_OFFLINE) || (mode == VI_OFFLINE_VPSS_OFFLINE)) {
 			if (_resolution.valid() && _resolution != in_res) {
 				VI_CROP_INFO_S crop;
-				int32_t dx2 = (in_res.width() - _resolution.width()) / 2;
-				int32_t dy2 = (in_res.height() - _resolution.height()) / 2;
-				int32_t xoff = MAX2(MIN2(_xoffset, dx2), -dx2);
-				int32_t yoff = MAX2(MIN2(_yoffset, dy2), -dy2);
 				crop.bEnable = HI_TRUE;
 				crop.enCropCoordinate = VI_CROP_ABS_COOR;
-				crop.stCropRect.s32X = dx2 + xoff;
-				crop.stCropRect.s32Y = dy2 + yoff;
+				crop.stCropRect.s32X = (in_res.width() - _resolution.width()) / 2;
+				crop.stCropRect.s32Y = (in_res.height() - _resolution.height()) / 2;
 				crop.stCropRect.u32Width = _resolution.width();
 				crop.stCropRect.u32Height = _resolution.height();
 				if ((s32Ret = HI_MPI_VI_SetChnCrop(0, _chnid, &crop)) != HI_SUCCESS) {

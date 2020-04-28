@@ -223,12 +223,22 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 					}
 				}
 
+				if ((pit = params.find("offset")) != params.end() ||
+				    (pit = params.find("off")) != params.end()) {
+					POINT_S offset = { 0, 0 };
+					std::string l;
+					std::stringstream ss(pit->second);
+					if (getline(ss, l, ',')) offset.s32X = std::stoi(l);
+					if (getline(ss, l))      offset.s32Y = std::stoi(l);
+					HIMPP_VI_DEV(last_element)->setCropOffset(offset);
+				}
+
 				if ((pit = params.find("online")) != params.end()) {
 					uint32_t mode = std::stoi(pit->second);
 					HIMPP_VI_DEV(last_element)->setOnlineMode((VI_VPSS_MODE_E)mode);
 				}
 
-				uint32_t vbcnt = 0;		// default value if 'vbcnt' option not present
+				uint32_t vbcnt = 2;		// default value if 'vbcnt' option not present
 				if ((pit = params.find("vbcnt")) != params.end()) {
 					int32_t val = std::stoi(pit->second);
 					if (val > 0) { vbcnt = val; }
@@ -266,16 +276,6 @@ MediaElement* HimppMedia::buildElementPipe(const std::string& description)
 						uint32_t framerate = std::stoi(l);
 						HIMPP_VI_CHAN(last_element)->setFrameRate(framerate);
 					}
-				}
-
-				if ((pit = params.find("offset")) != params.end() ||
-				    (pit = params.find("off")) != params.end()) {
-					int32_t xoff = 0, yoff = 0;
-					std::string l;
-					std::stringstream ss(pit->second);
-					if (getline(ss, l, ',')) xoff = std::stoi(l);
-					if (getline(ss, l))      yoff = std::stoi(l);
-					HIMPP_VI_CHAN(last_element)->setCropOffset(xoff, yoff);
 				}
 
 				uint32_t vbcnt = 2;		// default value if 'vbcnt' option not present
