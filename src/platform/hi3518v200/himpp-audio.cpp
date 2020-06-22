@@ -736,6 +736,7 @@ HimppAdecChan::~HimppAdecChan()
 
 MPP_CHN_S* HimppAdecChan::bindSource()
 {
+	return NULL;
 }
 
 void HimppAdecChan::doEnableElement()
@@ -804,7 +805,7 @@ void HimppAdecChan::doDisableElement()
 	HI_S32 s32Ret;
 
 	MPP_CHN_S src_chn;
-	src_chn.enModId = HI_ID_AENC;
+	src_chn.enModId = HI_ID_ADEC;
 	src_chn.s32DevId = 0;
 	src_chn.s32ChnId = _chnid;
 	HimppAudioElement* asrc = HIMPP_AUDIO_ELEMENT(source());
